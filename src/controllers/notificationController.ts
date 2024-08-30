@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { UserService } from "../services/userService";
 import { Notification } from "../interfaces/data";
 import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
+import { NotificationService } from "../services/notificationService";
 
-const userService = new UserService();
+const notificationService = new NotificationService();
 
 const sendNotification = async (req: Request, res: Response) => {
     try {
@@ -12,7 +12,7 @@ const sendNotification = async (req: Request, res: Response) => {
             req.body;
         if (type == "accepted") {
             const notificationUpdate =
-                await userService.getUpdateNotificationType(notificationId);
+                await notificationService.getUpdateNotificationType(notificationId);
         }
         const data: Notification = {
             senderId,
@@ -22,7 +22,7 @@ const sendNotification = async (req: Request, res: Response) => {
             content,
             requestId
         };
-        const notification = await userService.getCreateNotification(data);
+        const notification = await notificationService.getCreateNotification(data);
         return res.status(200).json({ notification });
     } catch (error: any) {
         console.log(error.message);
@@ -39,7 +39,7 @@ const notifications = async (req: AuthenticatedRequest, res: Response) => {
                 .status(400)
                 .json({ message: "User ID not found in request" });
         }
-        const notifications = await userService.getNotificationsByUserId(
+        const notifications = await notificationService.getNotificationsByUserId(
             userId
         );
 

@@ -1,12 +1,14 @@
-import { signUp ,generateOtp, loginUser, verifyEmail, verifyOtp,updatePassword,sellBook, rentBook,logoutUser,loginByGoogle,updateUser,bookDetail,
-   genresOfBooks,exploreBooks,sendNotification,notifications,updateProfileImage,deleteUserImage,getUser,createChatRoom,checkUserSent,checkAccept,sendUnlinkEmail,googleLog,linkGoogleAccount,messageCreation,userMessagesList,chat,sendMessage,allMessages,saveRequest,checkRequestAcceptOrNot,calculateDistance,userDetails,lenderDetails,
-   rentedBooks,
-   soldBooks,acceptRequest,lendingProcess,createCheckout,createOrder,orders
+import { signUp ,generateOtp, loginUser, verifyEmail, verifyOtp,updatePassword,logoutUser,loginByGoogle,updateUser,
+updateProfileImage,deleteUserImage,getUser,sendUnlinkEmail,googleLog,linkGoogleAccount,userDetails,
+calculateDistance,
 } from '../controllers/userController';
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
-// import {multerUpload} from '../utils/imageFunctions/cloudinaryConfig';
 import {verifyToken} from '../utils/middleware/authMiddleware';
+import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search } from '../controllers/bookController';
+import { notifications, sendNotification } from '../controllers/notificationController';
+import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList } from '../controllers/messageController';
+import { acceptRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
 
 const userRouter=express.Router()
 
@@ -33,8 +35,6 @@ userRouter.post('/sell-book',verifyToken,upload.array('images', 10),sellBook)
 userRouter.get('/genres',verifyToken,genresOfBooks)
 
 userRouter.get('/books',verifyToken,exploreBooks)
-
-// userRouter.get('/genres',verifyToken,genres)
 
 userRouter.get('/book/:Id',verifyToken,bookDetail)
 
@@ -64,8 +64,6 @@ userRouter.post('/create-chatRoom',verifyToken,createChatRoom)
 
 userRouter.get('/chat-room/:chatRoomId',verifyToken,chat)
 
-// userRouter.get('/chats',verifyToken,receiverChat)
-
 userRouter.post('/send-message',verifyToken,sendMessage)
 
 userRouter.get('/messages/:chatRoomId',verifyToken,allMessages)
@@ -91,13 +89,15 @@ userRouter.get('/user-details/:lenderId',verifyToken,userDetails)
 userRouter.put('/request-accept',verifyToken,acceptRequest)
 
 userRouter.get('/lending-details/:requestId',verifyToken,lendingProcess)
-// router.post('/add-book',multerUpload,addbook)
 
 userRouter.post('/create-checkout',verifyToken,createCheckout)
 
 userRouter.post('/create-order',verifyToken,createOrder)
 
 userRouter.get('/orders/:userId',verifyToken,orders)
+
+userRouter.get('/search/:searchQuery',verifyToken,search)
+
 export default userRouter 
 
 

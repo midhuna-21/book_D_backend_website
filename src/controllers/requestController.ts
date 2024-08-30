@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import { UserService } from "../services/userService";
 import {Requests} from "../interfaces/data";
+import { RequestService } from "../services/requestService";
 
-
-const userService = new UserService();
+const requestService = new RequestService();
 
 const checkAccept = async (req: Request, res: Response) => {
     try {
@@ -14,7 +13,7 @@ const checkAccept = async (req: Request, res: Response) => {
                 .json({ message: "User ID or Book ID not found in request" });
         }
 
-        const isAccepted = await userService.getCheckAccepted(userId, bookId);
+        const isAccepted = await requestService.getCheckAccepted(userId, bookId);
         console.log(isAccepted, "isRequested");
         return res.status(200).json({ isAccepted });
     } catch (error: any) {
@@ -35,7 +34,7 @@ const checkUserSent = async (req: Request, res: Response) => {
                 .json({ message: "User ID or Book ID not found in request" });
         }
 
-        const isRequested = await userService.getCheckRequest(userId, bookId);
+        const isRequested = await requestService.getCheckRequest(userId, bookId);
 
         return res.status(200).json({ isRequested });
     } catch (error: any) {
@@ -58,7 +57,7 @@ const saveRequest = async (req: Request, res: Response) => {
         const data:Requests | null  = { senderId,receiverId,bookId,types,totalDays,
             quantity,
             totalRentalPrice}
-      const request = await userService.getSaveRequest(data)
+      const request = await requestService.getSaveRequest(data)
      
       return res.status(200).json({request})
     } catch (error: any) {
@@ -81,13 +80,13 @@ const acceptRequest = async (req: Request, res: Response) => {
         if(!senderId || !bookId || !receiverId){
             return res.status(500).json({message:"id is missing"})
         }
-        const findRequest = await userService.getRequestById(requestId);
+        const findRequest = await requestService.getRequestById(requestId);
         console.log(findRequest,'findRequest')
         if(!findRequest){
             return res.status(500).json({message:"request is not found"})
         }
 
-      const request = await userService.getAcceptRequest(requestId,types)
+      const request = await requestService.getAcceptRequest(requestId,types)
      
       return res.status(200).json({request})
     } catch (error: any) {
@@ -109,6 +108,7 @@ const checkRequestAcceptOrNot = async (req: Request, res: Response) => {
             .json({ message: "Internal server error at checkUserSent" });
     }
 };
+
 
 export {
     checkUserSent,

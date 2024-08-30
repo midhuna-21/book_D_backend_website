@@ -13,9 +13,13 @@ import { UserService } from './services/userService';
 import { INotification } from './model/notificationModel';
 import { IUser } from './model/userModel';
 import { IBooks } from './model/bookModel'; 
+import { BookService } from './services/bookService';
+import { ChatService } from './services/chatService';
 // import morgan  from 'morgan'
 
 const userService = new UserService()
+const bookService = new BookService()
+const chatService = new ChatService()
 
 const app = express()
 
@@ -85,7 +89,7 @@ io.on('connection', (socket) => {
         const { senderId,receiverId, userId, bookId, content,type } = notification;
         const receiverSocketId = userSockets.get(receiverId);
         const user: IUser | null = await userService.getUserById(userId);
-        const book: IBooks | null = await userService.getBookById(bookId);
+        const book: IBooks | null = await bookService.getBookById(bookId);
         const receiver: IUser | null = await userService.getUserById(receiverId);
 
         // console.log(user,'user')
@@ -136,7 +140,7 @@ io.on('connection', (socket) => {
               createdAt: new Date()
           };
           console.log(message,'message')
-          const chatRoom = await userService.getChatRoom(senderId,receiverId);
+          const chatRoom = await chatService.getChatRoom(senderId,receiverId);
           if (!chatRoom) {
               console.error('Chat room not found');
               return;

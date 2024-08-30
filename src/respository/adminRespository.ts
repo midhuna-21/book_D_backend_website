@@ -1,107 +1,116 @@
-import { genres ,IGenre} from '../model/genresModel';
-import {user,IUser} from '../model/userModel';
-import {Genre} from '../interfaces/data';
-import {admin,IAdmin} from '../model/adminModel';
-import { books } from '../model/bookModel';
+import { genres, IGenre } from "../model/genresModel";
+import { user, IUser } from "../model/userModel";
+import { Genre } from "../interfaces/data";
+import { admin, IAdmin } from "../model/adminModel";
+import { books } from "../model/bookModel";
 
-
-export class AdminRepository{
-
-   async findAdminByEmail(email:string):Promise<IUser | null>{
-      try{
-          return await admin.findOne({email,isAdmin:true})
-      }catch(error){
-          console.log("Error findAdminByEmail:",error);
-          throw error
-      }
-  }
-   async findGenreByName(genreName:string):Promise<IGenre | null>{
-      try{
-         return await genres.findOne({genreName:genreName})
-      }catch(error){
-            console.log("Error findGenreByName:",error);
-            throw error
-      }
-   }
-   async createGenre(data:Partial<Genre>):Promise<IGenre | null>{
-      try{
-         return await new genres({genreName:data.genreName,image:data.image}).save()
-      }catch(error){
-         console.log("Error createGenre:",error);
-         throw error
-     }
-   }
-   // async createCustomGenre(genreName:Partial<Genre>):Promise<IGenre | null>{
-   //    try{
-   //       return await new genres({genreName:genreName}).save()
-   //    }catch(error){
-   //       console.log("Error createGenre:",error);
-   //       throw error
-   //   }
-   // }
-   async findAllUsers(){
-      try{
-         return await user.find()
-      }catch(error){
-         console.log("Error findAllUsers:",error);
-         throw error
-     }
-   }
-   async findAllTotalRentedBooks(){
-      try{
-         return await books.find({isRented:true})
-      }catch(error){
-         console.log("Error findAllTotalRentedBooks:",error);
-         throw error
-     }
-   }
-   async findAllTotalSoldBooks(){
-      try{
-         return await books.find({isSell:true})
-      }catch(error){
-         console.log("Error findAllTotalSoldBooks:",error);
-         throw error
-     }
-   }
-   async findAllTotalBooks(){
-      try{
-         return await books.find()
-      }catch(error){
-         console.log("Error findAllTotalBooks:",error);
-         throw error
-     }
-   }
-   async blockUser(_id:string):Promise<IUser | null>{
-      try{
-         return await user.findByIdAndUpdate(_id,{isBlocked: true},{new:true})
-      }catch(error){
-         console.log("Error blockUser:",error);
-         throw error
-     }
-   }
-   async unBlockUser(_id:string):Promise<IUser | null>{
-      try{
-         return await user.findByIdAndUpdate(_id,{isBlocked:false},{new:true})
-      }catch(error){
-         console.log("Error unBlockUser:",error);
-         throw error
-     }
-   }
-   async findAdminById(_id:string):Promise<IAdmin | null>{
-      try{
-          return await admin.findById(_id)
-      }catch(error){
-          console.log("Error findAdminById:",error);
-          throw error
-      }
-  }
+export class AdminRepository {
+    async findAdminByEmail(email: string): Promise<IUser | null> {
+        try {
+            return await admin.findOne({ email, isAdmin: true });
+        } catch (error) {
+            console.log("Error findAdminByEmail:", error);
+            throw error;
+        }
+    }
+    async findGenreByName(genreName: string): Promise<IGenre | null> {
+        try {
+            return await genres.findOne({ genreName: genreName });
+        } catch (error) {
+            console.log("Error findGenreByName:", error);
+            throw error;
+        }
+    }
+    async createGenre(data: Partial<Genre>): Promise<IGenre | null> {
+        try {
+            return await new genres({
+                genreName: data.genreName,
+                image: data.image,
+            }).save();
+        } catch (error) {
+            console.log("Error createGenre:", error);
+            throw error;
+        }
+    }
+    // async createCustomGenre(genreName:Partial<Genre>):Promise<IGenre | null>{
+    //    try{
+    //       return await new genres({genreName:genreName}).save()
+    //    }catch(error){
+    //       console.log("Error createGenre:",error);
+    //       throw error
+    //   }
+    // }
+    async findAllUsers() {
+        try {
+            return await user.find();
+        } catch (error) {
+            console.log("Error findAllUsers:", error);
+            throw error;
+        }
+    }
+    async findAllTotalRentedBooks() {
+        try {
+            return await books.find({ isRented: true });
+        } catch (error) {
+            console.log("Error findAllTotalRentedBooks:", error);
+            throw error;
+        }
+    }
+    async findAllTotalSoldBooks() {
+        try {
+            return await books.find({ isSell: true });
+        } catch (error) {
+            console.log("Error findAllTotalSoldBooks:", error);
+            throw error;
+        }
+    }
+    async findAllTotalBooks() {
+        try {
+            return await books.find();
+        } catch (error) {
+            console.log("Error findAllTotalBooks:", error);
+            throw error;
+        }
+    }
+    async blockUser(_id: string): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate(
+                _id,
+                { isBlocked: true },
+                { new: true }
+            );
+        } catch (error) {
+            console.log("Error blockUser:", error);
+            throw error;
+        }
+    }
+    async unBlockUser(_id: string): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate(
+                _id,
+                { isBlocked: false },
+                { new: true }
+            );
+        } catch (error) {
+            console.log("Error unBlockUser:", error);
+            throw error;
+        }
+    }
+    async findAdminById(_id: string): Promise<IAdmin | null> {
+        try {
+            return await admin.findById(_id);
+        } catch (error) {
+            console.log("Error findAdminById:", error);
+            throw error;
+        }
+    }
 }
 
 // const findUnBlockUser = async(_id:string)=>{
 //    try{
 //       const userToUnBlock = await user.findByIdAndUpdate(_id,{isBlocked:false},{new:true})
 //       return userToUnBlock
-//    }catch(error:any){ 
+//    }catch(error:any){
 //       console.log(error.message);
 //         throw new Error("Internal server error" );
 //    }
@@ -136,9 +145,7 @@ export class AdminRepository{
 // }
 // const findGenreName = async (genreName: string) => {
 //   console.log('find genrename');
-//   const genre = await genres.findOne({ genreName:genreName }); 
+//   const genre = await genres.findOne({ genreName:genreName });
 //   console.log(genre, 'genre kitti');
 //   return genre;
 // };
-
-
