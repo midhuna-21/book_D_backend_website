@@ -10,9 +10,13 @@ const sendNotification = async (req: Request, res: Response) => {
        
         const { senderId, notificationId, receiverId, bookId, type, content,requestId } =
             req.body;
+       
         if (type == "accepted") {
-            const notificationUpdate =
-                await notificationService.getUpdateNotificationType(notificationId);
+            const notification = await notificationService.getUpdateNotificationType(notificationId,type);
+                return res.status(200).json({notification})
+        }else if (type === "rejected") {
+           const notification= await notificationService.getUpdateNotificationType(notificationId,type);
+           return res.status(200).json({notification})
         }
         const data: Notification = {
             senderId,

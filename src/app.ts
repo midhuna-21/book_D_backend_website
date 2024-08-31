@@ -51,7 +51,8 @@ app.use(express.static('public/'))
 
 
 const userSockets = new Map<string, string>();
-const onlineUsers = new Map<string, string>(); 
+const onlineUsers = new Map<string, string>();
+
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id); 
   
@@ -60,6 +61,7 @@ io.on('connection', (socket) => {
         console.log(userId,'userId at socket ')
         userSockets.set(userId, socket.id);
         onlineUsers.set(userId, socket.id);
+        console.log(onlineUsers,'onlineUsers')
         io.emit('user-status', { userId, isOnline: true });
 
       }
@@ -67,13 +69,15 @@ io.on('connection', (socket) => {
   
     socket.on('disconnect', () => {
       for (const [userId, socketId] of onlineUsers.entries()) {
-        if (socketId === socket.id) {
-            onlineUsers.delete(userId);
-            io.emit('user-status', { userId, online: false }); 
-            break;
-        }
-    }
-    });
+          if (socketId === socket.id) {
+              onlineUsers.delete(userId);
+              io.emit('user-status', { userId, isOnline: false });
+              io.emit('user-offline', userId);
+              break;
+          }
+      }
+  });
+  
 
     socket.on('send-notification', (data) => {
       const receiverSocketId = userSockets.get(data.receiverId);
@@ -165,12 +169,14 @@ io.on('connection', (socket) => {
   // const isUserOnline = (userId: string): boolean => {
   //   return userOnlineStatus.get(userId) || false;
   // };
-  
-  // app.get('/api/user/:userId/online-status', (req, res) => {
-  //   const userId = req.params.userId;
-  //   const onlineStatus = isUserOnline(userId);
-  //   res.json({ online: onlineStatus });
-  // });
+
+  app.get('/api/user/:userId/online-status', (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    const isOnline = onlineUsers.has(userId);
+    console.log(isOnline,'Id oneli')
+    res.json({ isOnline });
+});
+
 
  app.use((req, res, next) => {
  

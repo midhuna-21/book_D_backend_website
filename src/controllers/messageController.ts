@@ -47,7 +47,7 @@ const userMessagesList = async (req: Request, res: Response) => {
 
         const conversations: IChatRoom[] | null =
             await chatService.getUserMessagesList(userId);
-
+   console.log(conversations,'conversions')
         return res.status(200).json({ conversations });
     } catch (error) {
         console.log("Error messsageCreation", error);
@@ -60,7 +60,7 @@ const chat = async (req: Request, res: Response) => {
         const { chatRoomId } = req.params;
 
         const chat = await chatService.getUserChat(chatRoomId);
-
+   console.log(chat,)
         return res.status(200).json({ chat });
     } catch (error) {
         console.log("Error messsageCreation", error);

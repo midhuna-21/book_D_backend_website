@@ -451,7 +451,7 @@ const randomImageName = (bytes = 32) =>
  const lendingProcess = async(req:Request,res:Response)=>{
      try{
          const {requestId} = req.params;
-         console.log(requestId,'lenderId');
+         console.log(requestId,'requestId backend')
          if(!requestId){
              return res.status(500).json({message:"requestId not found"});
          }
@@ -467,6 +467,7 @@ const randomImageName = (bytes = 32) =>
  
  const createCheckout = async (req:Request,res:Response) => {
      const { bookTitle, totalPrice, quantity,requestId, userId, lenderId, bookId, depositAmount } = req.body;
+     console.log(req.body,'bo check')
      try {
        const session = await stripe.checkout.sessions.create({
          payment_method_types: ["card"],
@@ -495,6 +496,9 @@ const randomImageName = (bytes = 32) =>
          quantity,
          depositAmount,
        };
+       console.log(session,'session')
+       console.log(sessionData,'sessionData')
+
        await bookService.getCreateOrderProcess(sessionData); 
        res.json({ id: session.id });
      } catch (error:any) {

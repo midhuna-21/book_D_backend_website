@@ -18,12 +18,12 @@ import {
 } from "@aws-sdk/client-s3";
 import config from "../config/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3Client } from "../utils/imageFunctions/store";
 import { IUser } from "../model/userModel";
 import { User} from "../interfaces/data";
 import { IGenre } from "../model/genresModel";
 import { Types } from "mongoose";
 import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
-import { s3Client } from "../utils/imageFunctions/store";
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
 
 const userService = new UserService();
@@ -31,7 +31,7 @@ const userService = new UserService();
 const signUp = async (req: Request, res: Response) => {
     try {
         const { name, email, phone, password } = req.body;
-        console.log(req.body);
+     
         let existUser = await userService.getUserByEmail(email);
         if (existUser) {
             return res.status(400).json({ message: "Email already exist" });

@@ -14,7 +14,7 @@ const checkAccept = async (req: Request, res: Response) => {
         }
 
         const isAccepted = await requestService.getCheckAccepted(userId, bookId);
-        console.log(isAccepted, "isRequested");
+        
         return res.status(200).json({ isAccepted });
     } catch (error: any) {
         console.log("Error checkUserSent:", error);
@@ -51,6 +51,7 @@ const saveRequest = async (req: Request, res: Response) => {
         const { senderId,receiverId,bookId,types, totalDays,
             quantity,
             totalRentalPrice} = req.body;
+        
         if(!senderId || !receiverId || !bookId){
             return res.status(500).json({message:"id is missing"})
         }
@@ -68,7 +69,7 @@ const saveRequest = async (req: Request, res: Response) => {
     }
 };
 
-const acceptRequest = async (req: Request, res: Response) => {
+const updateRequest = async (req: Request, res: Response) => {
     try {
         const {senderId,
             bookId,
@@ -76,18 +77,20 @@ const acceptRequest = async (req: Request, res: Response) => {
             types,
             requestId} = req.body;
 
-            console.log(req.body,'body')
+            const reqId = requestId._id;
+           
         if(!senderId || !bookId || !receiverId){
             return res.status(500).json({message:"id is missing"})
         }
-        const findRequest = await requestService.getRequestById(requestId);
-        console.log(findRequest,'findRequest')
+        const findRequest = await requestService.getRequestById(reqId);
+     
         if(!findRequest){
             return res.status(500).json({message:"request is not found"})
         }
 
-      const request = await requestService.getAcceptRequest(requestId,types)
-     
+
+      const request = await requestService.getAcceptRequest(reqId,types)
+     console.log(request)
       return res.status(200).json({request})
     } catch (error: any) {
         console.log("Error saveRequest:", error);
@@ -115,6 +118,6 @@ export {
     checkAccept,
     saveRequest,
     checkRequestAcceptOrNot,
-    acceptRequest,
+    updateRequest,
     
 };

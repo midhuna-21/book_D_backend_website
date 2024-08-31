@@ -29,7 +29,8 @@ export class NotificationRepository {
                 .populate("senderId")
                 .populate("receiverId")
                 .populate("bookId")
-                .populate("requestId");
+                .populate("requestId")
+                .sort({ createdAt: -1 })
 
             return notifications;
         } catch (error) {
@@ -38,14 +39,24 @@ export class NotificationRepository {
         }
     }
 
-    async updateNotificationType(notificationId: string) {
+    async updateNotificationType(notificationId: string,type:string) {
         try {
-            const update = await notification.findByIdAndUpdate(
-                notificationId,
-                { isAccepted: true },
-                { new: true }
-            );
-            return update;
+            if(type=="accepted"){
+
+                const update = await notification.findByIdAndUpdate(
+                    notificationId,
+                    { isAccepted: true,isRejected:false },
+                    { new: true }
+                );
+                return update;
+            }else{
+                const update = await notification.findByIdAndUpdate(
+                    notificationId,
+                    { isReject: true ,isAccepted:false},
+                    { new: true }
+                );
+                return update
+            }
         } catch (error) {
             console.log("Error updateNotificationType:", error);
             throw error;

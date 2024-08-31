@@ -28,6 +28,7 @@ export class ChatRepository {
                 })
                 .populate("receiverId", "name email image")
                 .populate("senderId", "name email image")
+                .populate('messageId')
                 .exec();
 
             return chatRooms;

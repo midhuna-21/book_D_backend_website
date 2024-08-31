@@ -1,27 +1,5 @@
 import { user, IUser } from "../model/userModel";
-import { admin } from "../model/adminModel";
-import { userData } from "../utils/ReuseFunctions/interface/data";
-import {User,ChatRoom, Requests, Order } from "../interfaces/data";
-import {orders,IOrder} from '../model/orderModel'
-import { Books } from "../interfaces/data";
-import { books, IBooks } from "../model/bookModel";
-import { genres } from "../model/genresModel";
-import { notification, INotification } from "../model/notificationModel";
-import { Notification } from "../interfaces/data";
-import mongoose from 'mongoose';
-import {
-    GetObjectCommand,
-    GetObjectCommandInput,
-
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import config from "../config/config";
-import { s3Client } from "../utils/imageFunctions/store";
-import {IMessage } from "../model/message";
-import {chatRoom,IChatRoom} from '../model/chatRoom'
-import {message} from "../model/message";
-import { requests,IRequests } from "../model/requests";
-import { TrustedAdvisor } from "aws-sdk";
+import {User } from "../interfaces/data";
 
 export class UserRepository {
     async findUserByEmail(email: string): Promise<IUser | null> {
@@ -138,13 +116,12 @@ export class UserRepository {
                     }
                 };
 
-                console.log(updateFields,'Update fileds')
                 const updatedUser = await user.findByIdAndUpdate(
                     userId,
                     updateFields,
                     { new: true }
                 );
-    console.log(updateFields,'updateddddd')
+  
                 if (!updatedUser) {
                     console.log("Error updating the user:");
                     return null;

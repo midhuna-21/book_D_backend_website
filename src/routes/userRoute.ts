@@ -8,7 +8,7 @@ import {verifyToken} from '../utils/middleware/authMiddleware';
 import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search } from '../controllers/bookController';
 import { notifications, sendNotification } from '../controllers/notificationController';
 import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList } from '../controllers/messageController';
-import { acceptRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
+import { updateRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
 
 const userRouter=express.Router()
 
@@ -86,7 +86,7 @@ userRouter.get('/google-distance',verifyToken,calculateDistance)
 
 userRouter.get('/user-details/:lenderId',verifyToken,userDetails)
 
-userRouter.put('/request-accept',verifyToken,acceptRequest)
+userRouter.put('/update-request',verifyToken,updateRequest)
 
 userRouter.get('/lending-details/:requestId',verifyToken,lendingProcess)
 

@@ -36,7 +36,6 @@ export class RequestService{
 
      async getRequestById(requestId:string){
         try{
-            console.log(requestId,'requestId')
             return await requestRepository.findRequestById(requestId)
         }catch(error){
             console.log("Error getRequestById:",error)

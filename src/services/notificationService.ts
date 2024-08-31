@@ -26,9 +26,9 @@ export class NotificationService{
         }
       }
 
-      async getUpdateNotificationType (notificationId:string){
+      async getUpdateNotificationType (notificationId:string,type:string){
          try{
-             return await notificationRepository.updateNotificationType(notificationId)
+             return await notificationRepository.updateNotificationType(notificationId,type)
          }catch(error){
              console.log(error)
              throw error;
