@@ -19,10 +19,10 @@ export const otpGenerate = async(email:string)=>{
     const info = await transporter.sendMail( {
       from: '"Book.D" <krishnamidhuna850@gmail.com>', 
       to: email, 
-      subject: "Your OTP for login", 
-      text: `Your OTP for login is ${otp}`, 
-      html: `<h2> OTP for login </h2>
-      <p>Your OTP for login in Book.D <strong>${otp}</strong></p>`, 
+      subject: "Your OTP for sign up", 
+      text: `Your OTP for sign up is ${otp}`, 
+      html: `<h2> OTP for sign up </h2>
+      <p>Your OTP for sign up Book.D <strong>${otp}</strong></p>`, 
     })
     
     return otp

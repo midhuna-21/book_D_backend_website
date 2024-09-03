@@ -20,6 +20,31 @@ export class ChatRepository {
         }
     }
 
+    async findChatRoomById(chatRoomId:string){
+        try {
+            const isChatRoom = await chatRoom.findById(chatRoomId);
+            console.log(isChatRoom, "chatRoomUpdated");
+            return isChatRoom;
+        } catch (error) {
+            console.log("Error findChatRoomById:", error);
+            throw error;
+        }
+    }
+
+    async findUpdateChatRoomRead(chatRoomId: string): Promise<IChatRoom | null> {
+        try {
+            return await chatRoom.findByIdAndUpdate(
+                { _id: chatRoomId },
+                { isRead: true },
+                { new: true } 
+            ).exec();
+        } catch (error) {
+            console.log("Error findUpdateChatRoomRead:", error);
+            throw error;
+        }
+    }
+    
+
     async MessagesList(userId: string): Promise<IChatRoom[] | null> {
         try {
             const chatRooms = await chatRoom
@@ -30,25 +55,72 @@ export class ChatRepository {
                 .populate("senderId", "name email image")
                 .populate('messageId')
                 .exec();
+                const filteredChatRooms = chatRooms.filter((chatRoom)=>{
+                    const senderId = chatRoom.senderId;
+                    const receiverId = chatRoom.receiverId;
 
-            return chatRooms;
+                    return (senderId && receiverId) !== null
+                })
+                return filteredChatRooms.length > 0 ?filteredChatRooms : null
         } catch (error) {
             console.log("Error MessagesList:", error);
             throw error;
         }
     }
+
     async findUserChat(chatRoomId: string) {
         try {
-            return await chatRoom
-                .findById({ _id: chatRoomId })
-                .populate("receiverId", "name image")
-                .populate("senderId", "name image")
+            const chatRoomData = await chatRoom
+                .findById(chatRoomId)
+                .populate({
+                    path: "receiverId",
+                    select: "name image",
+                    match: { _id: { $exists: true } } 
+                })
+                .populate({
+                    path: "senderId",
+                    select: "name image",
+                    match: { _id: { $exists: true } } 
+                })
                 .exec();
+    
+            if (!chatRoomData?.receiverId || !chatRoomData?.senderId) {
+                return null; 
+            }
+    
+            return chatRoomData;
         } catch (error) {
-            console.log("Error findUpdateMessagesList:", error);
+            console.log("Error in findUserChat:", error);
             throw error;
         }
     }
+    
+    // async findUserChat(chatRoomId: string) {
+    //     try {
+    //         const chatRoomData= await chatRoom
+    //             .findById({ _id: chatRoomId })
+    //             .populate({
+    //                 path: "receiverId",
+    //                 select: "name image",
+    //                 match: { _id: { $exists: true } } 
+    //             })
+    //             .populate({
+    //                 path: "senderId",
+    //                 select: "name image",
+    //                 match: { _id: { $exists: true } }
+    //             })
+    //             .exec();
+               
+
+    //             if (!chatRoomData || !chatRoomData.receiverId || !chatRoomData.senderId) {
+    //                 return null; 
+    //             }
+    //             return chatRoomData;
+    //     } catch (error) {
+    //         console.log("Error findUpdateMessagesList:", error);
+    //         throw error;
+    //     }
+    // }
     async createSendMessage(
         senderId: string,
         receiverId: string,

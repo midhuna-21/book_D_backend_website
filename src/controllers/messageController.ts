@@ -31,6 +31,26 @@ const createChatRoom = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+const updateChatRoomRead= async (req: Request, res: Response) => {
+    try {
+        const { chatRoomId } = req.params;
+        if (!chatRoomId) {
+            return res
+                .status(400)
+                .json({ message: "Missing chatRoomId" });
+        }
+        const isExistChatRoom = await chatService.getChatRoomById(chatRoomId);
+        if (!isExistChatRoom) {
+            return res.status(400).json({message:"chat is not found"});
+        }
+        const chatRoom: IChatRoom | null = await chatService.getUpdateChatRoomRead(chatRoomId);
+        const  isRead=chatRoom?.isRead;
+        return res.status(200).json({isRead});
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
 
 const messageCreation = async (req: Request, res: Response) => {
     try {
@@ -47,7 +67,14 @@ const userMessagesList = async (req: Request, res: Response) => {
 
         const conversations: IChatRoom[] | null =
             await chatService.getUserMessagesList(userId);
-   console.log(conversations,'conversions')
+         console.log(conversations,'conversions')
+
+         if(conversations){
+            conversations.map((conversation)=>{
+                console.log(conversation,'one by one conversation')
+            })
+         }
+   
         return res.status(200).json({ conversations });
     } catch (error) {
         console.log("Error messsageCreation", error);
@@ -135,6 +162,7 @@ const allMessages = async (req: Request, res: Response) => {
 export {
     messageCreation,
     createChatRoom,
+    updateChatRoomRead,
     userMessagesList,
     chat,
     sendMessage,

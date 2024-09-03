@@ -2,6 +2,17 @@ import { user, IUser } from "../model/userModel";
 import {User } from "../interfaces/data";
 
 export class UserRepository {
+    async findUserByPhone(phone: string): Promise<IUser | null> {
+        try {
+            const phoneNumber =  await user.findOne({ phone:phone });
+            console.log(phoneNumber,'phoneumber')
+            return phoneNumber
+        } catch (error) {
+            console.log("Error findUserByPhone:", error);
+            throw error;
+        }
+    }
+
     async findUserByEmail(email: string): Promise<IUser | null> {
         try {
             return await user.findOne({ email });
@@ -101,7 +112,7 @@ export class UserRepository {
                 console.log("Error finding the user to update:");
                 return null;
             }else{
-                
+                console.log(filteredUser,'filteredUser')
                 const updateFields: Partial<IUser> = {
                     name: filteredUser.name || userToUpdate.name,
                     email: filteredUser.email || userToUpdate.email,
@@ -121,7 +132,7 @@ export class UserRepository {
                     updateFields,
                     { new: true }
                 );
-  
+  console.log(updatedUser,'updatedUser')
                 if (!updatedUser) {
                     console.log("Error updating the user:");
                     return null;

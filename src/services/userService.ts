@@ -39,7 +39,15 @@ export class UserService{
         try{
             return await userRepository.findUserByEmail(email)
         }catch(error){
-            console.log("Error getByEmail:",error);
+            console.log("Error getUserByEmail:",error);
+            throw error
+        }
+    }
+    async getUserByPhone(phone:string):Promise<IUser | null>{
+        try{
+            return await userRepository.findUserByPhone(phone)
+        }catch(error){
+            console.log("Error getUserByPhone:",error);
             throw error
         }
     }
@@ -103,6 +111,7 @@ export class UserService{
   
     async getUpdateUser(userId:string,filteredUser:User):Promise<IUser | null>{
         try{
+            console.log(filteredUser,'filterd user at service ')
             return await userRepository.updateUser(userId,filteredUser)
         }catch(error){
             console.log("Error getUpdateUser:",error);

@@ -4,18 +4,13 @@ import {
     hashPassword,
 } from "../utils/ReuseFunctions/passwordValidation";
 import { UserService } from "../services/userService";
-import { AdminService } from "../services/adminService";
 import { otpGenerate } from "../utils/ReuseFunctions/otpGenerate";
 import { generateTokens } from "../utils/jwt/generateToken";
 import crypto from "crypto";
 import axios from "axios";
 import sharp from "sharp";
-import {
-    GetObjectCommand,
-    GetObjectCommandInput,
-    PutObjectCommand,
-    DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand,PutObjectCommandInput,
+    DeleteObjectCommand,ObjectCannedACL } from '@aws-sdk/client-s3';
 import config from "../config/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "../utils/imageFunctions/store";
@@ -23,10 +18,60 @@ import { IUser } from "../model/userModel";
 import { User} from "../interfaces/data";
 import { IGenre } from "../model/genresModel";
 import { Types } from "mongoose";
-import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
+import {getSignedImageUrl} from '../utils/imageFunctions/getImageFromS3'
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
+import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
+import {Twilio} from 'twilio';
+import upload from '../utils/imageFunctions/store';
+
+
+
+  
+const uploadImageToS3 = async (imageBuffer: Buffer, fileName: string): Promise<string> => {
+    const uploadParams: PutObjectCommandInput = {
+      Bucket: config.BUCKET_NAME,
+      Key: fileName,
+      Body: imageBuffer,
+      ContentType: 'image/jpeg',
+     
+    };
+  
+    const command = new PutObjectCommand(uploadParams);
+    await s3Client.send(command);
+  
+    return `https://${config.BUCKET_NAME}.s3.${config.BUCKET_REGION}.amazonaws.com/${fileName}`;
+  };
+  
+
+const twilioClient=new Twilio(config.TWILIO_ACCOUNT_SID,config.TWILIO_AUTH_TOKEN)
+
+interface CustomFile extends Express.Multer.File {
+    location?: string;  
+  }
 
 const userService = new UserService();
+
+const sendOTP = async (req:Request,res:Response) => {
+    try {
+        const {phone} = req.body
+        console.log(phone,'phone')
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+        console.log(otp,'otp')
+        const message = await twilioClient.messages.create({
+            body: `Your verification code is ${otp} for our Book.D website`,
+            from: '+13146280298',
+            to: phone 
+        });
+
+        res.cookie("otp", otp, { maxAge: 60000 });
+        return res
+            .status(200)
+            .json({ message: "OTP generated and sent successfully" });
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        throw error;
+    }
+};
 
 const signUp = async (req: Request, res: Response) => {
     try {
@@ -50,7 +95,6 @@ const signUp = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-
 const randomImageName = (bytes = 32) =>
     crypto.randomBytes(bytes).toString("hex");
 
@@ -76,6 +120,7 @@ const verifyOtp = async (req: Request, res: Response) => {
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
         }
+
         const otpFromCookie = req.cookies.otp;
         if (!otpFromCookie) {
             return res.status(400).json({ message: "please click Resend OTP" });
@@ -103,7 +148,7 @@ const verifyOtp = async (req: Request, res: Response) => {
                     .json({ user, accessToken, refreshToken, origin });
             }
         } else {
-            let user: IUser | null = await userService.getUserByEmail(email);
+            let user: IUser | null = await userService.getUserByPhone(phone);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -141,21 +186,13 @@ const loginUser = async (req: Request, res: Response) => {
             userId,
             userRole: "user",
         });
-        const imageUrl = user.image
-        if (imageUrl) {
-            const signedUrl = await getSignedUrl(
-                s3Client, 
-                new GetObjectCommand({
-                    Bucket: "bookstore-web-app",
-                    Key: imageUrl
-                }), 
-                { expiresIn: 604800 } 
-            );
-
-            return res.status(200).json({ user: { ...user.toObject(), image: signedUrl , accessToken, refreshToken} });
-        }
+        // const imageUrl = user.image
+        // if (imageUrl) {
+        //     const image = await getSignedImageUrl(imageUrl)
+        //     return res.status(200).json({ user: { ...user.toObject(), image , accessToken, refreshToken} });
+        // }
         
-        // return res.status(200).json({ user, accessToken, refreshToken });
+        return res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
         console.error(error.message);
         return res.status(500).json({ message: "Internal server error" });
@@ -166,109 +203,68 @@ const loginByGoogle = async (req: Request, res: Response) => {
     try {
         const { name, email, image } = req.body;
 
-        let user = await userService.getUserByEmail(email);
+        let existUser = await userService.getUserByEmail(email);
 
-        if (user?.isBlocked == true) {
+        if (existUser?.isBlocked == true) {
             return res.status(401).json({ message: "User is Blocked" });
         }
-        if (user?.isGoogle == true) {
+        if (existUser?.isGoogle == true) {
+            const userId = existUser._id.toString();
+            const { accessToken, refreshToken } = generateTokens(res, {
+                userId,
+                userRole: "user",
+            });
+            
+                return res.status(200).json({ user: { ...existUser.toObject(),accessToken, refreshToken } });
+
+        } else if (existUser?.isGoogle == false) {
+            return res
+                .status(400) 
+                .json({
+                    message:
+                        "Your email is not linked with google.",
+                });
+        } else {
+            let imageUrl: string | undefined;
+
+        
+if (image) {
+    try {
+      console.log(image, 'imageee google');
+      
+      const response = await axios.get(image, { responseType: 'arraybuffer' });
+      const imageBuffer = Buffer.from(response.data, 'binary');
+  
+      const fileName = `${Date.now()}-${name.replace(/\s+/g, '_')}-google-profile.jpg`;
+  
+             imageUrl = await uploadImageToS3(imageBuffer, fileName);
+                    // imageUrl = await upload(image);
+                } catch (uploadError) {
+                    console.error("Error uploading image:", uploadError);
+                    return res.status(500).json({ error: "Failed to upload image." });
+                }
+            }   
+    
+            const newUser = { name, email, image: imageUrl, isGoogle: true };
+            const user = await userService.getCreateUserByGoogle(newUser);
+    
+          if(!user){
+            return res.status(400).json({message:"user is not created"})
+          }else{
             const userId = user._id.toString();
             const { accessToken, refreshToken } = generateTokens(res, {
                 userId,
                 userRole: "user",
             });
-             const imageUrl = user.image
-                if (imageUrl) {
-                    const signedUrl = await getSignedUrl(
-                        s3Client, 
-                        new GetObjectCommand({
-                            Bucket: "bookstore-web-app",
-                            Key: imageUrl
-                        }), 
-                        { expiresIn: 604800 } 
-                    );
     
-                    return res.status(200).json({ user: { ...user.toObject(), image: signedUrl,accessToken, refreshToken } });
-                }
-
-        } else if (user?.isGoogle == false) {
-            return res
-                .status(400) 
-                .json({
-                    message:
-                        "Your email is not linked with google.Enter your email and password.",
-                });
-        } else {
-            let imageUrl: string | undefined;
-            if (image) {
-                try {
-                    const imageResponse = await axios.get(image, {
-                        responseType: "arraybuffer",
-                    });
-                    const buffer = await sharp(imageResponse.data)
-                        .resize({ height: 1920, width: 1080, fit: "contain" })
-                        .toBuffer();
-                   const imageKey = randomImageName();
-                    const params = {
-                        Bucket: "bookstore-web-app",
-                        Key: imageKey,
-                        Body: buffer,
-                        ContentType: "image/jpeg",
-                    };
-                    const command = new PutObjectCommand(params);
-                    await s3Client.send(command);
-                    imageUrl = imageKey;
-                } catch (error: any) {
-                    console.error("Error uploading image:", error);
-                    return res
-                        .status(500)
-                        .json({ message: "Failed to upload image" });
-                }
-            }
-
-            // if (imageKey) {
-            //     const getObjectParams: GetObjectCommandInput = {
-            //         Bucket: config.BUCKET_NAME,
-            //         Key: imageKey,
-            //     };
-            //     const command = new GetObjectCommand(getObjectParams);
-            //     imageUrl =
-            //         (await getSignedUrl(s3Client, command, {
-            //             expiresIn: 3600,
-            //         })) || undefined;
-            // }
-
-            const data = { name, email, image: imageUrl };
-            user = await userService.getCreateUserByGoogle(data);
-
-            if (user) {
-                const userId = user._id.toString();
-                const { accessToken, refreshToken } = generateTokens(res, {
-                    userId,
-                    userRole: "user",
-                });
-                const imagee = user.image
-                if (imagee) {
-                    const signedUrl = await getSignedUrl(
-                        s3Client, 
-                        new GetObjectCommand({
-                            Bucket: "bookstore-web-app",
-                            Key: imagee
-                        }), 
-                        { expiresIn: 604800 } 
-                    );
-    
-                    return res.status(200).json({ user: { ...user.toObject(), image: signedUrl ,accessToken, refreshToken } });
-                }
-    
-                // return res
-                //     .status(200)
-                //     .json({ user, accessToken, refreshToken });
-            } else {
-                return res
-                    .status(500)
-                    .json({ message: "Failed to create user" });
-            }
+            return res.status(200).json({ 
+                user: { 
+                    ...user.toObject(), 
+                    accessToken, 
+                    refreshToken 
+                } 
+            });
+          }
         }
     } catch (error: any) {
         console.error("Error in loginByGoogle:", error);
@@ -291,6 +287,7 @@ const linkGoogleAccount = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "password is incorrect" });
         }
         const user = await userService.getUpdateIsGoogleTrue(email);
+    
         return res.status(200).json({ user });
     } catch (error: any) {
         console.log("Error linkGoogleAccount:", error);
@@ -324,7 +321,8 @@ const googleLog = async (req: Request, res: Response) => {
 const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { formData } = req.body;
-        const { name, email, phone,street, city, district, state,pincode } = formData;
+        const { name, email, phone,address } = formData;
+        const {street, city, district, state,pincode} = address
         const userId = req.userId!;
 
         const userExist: IUser | null = await userService.getUserById(userId);
@@ -337,11 +335,11 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
             email,
             phone,
             address:{
-            street,
-            city,
-            district,
-            state,
-            pincode
+            street:street,
+            city:city,
+            district:district,
+            state:state,
+            pincode:pincode
             }
         };
         // const filteredUser = Object.fromEntries(
@@ -350,6 +348,7 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
         //     )
         //   );
           
+        console.log(user,'user deila ')
         const updatedUser = await userService.getUpdateUser(
             userId,
             user
@@ -361,6 +360,7 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
 const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.userId!;
@@ -368,51 +368,18 @@ const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
         if (!userExist) {
             return res.status(404).json({ message: "User not found" });
         }
-        let imageUrl: string = "";
-        if (req.file) {
-            const buffer = await sharp(req.file.buffer)
-                .resize({ height: 1920, width: 1080, fit: "contain" })
-                .toBuffer();
 
-           const imageKey = randomImageName();
-            const params = {
-                Bucket: "bookstore-web-app",
-                Key: imageKey,
-                Body: buffer,
-                ContentType: req.file.mimetype,
-            };
-
-            const command = new PutObjectCommand(params);
-            try {
-                await s3Client.send(command);
-                imageUrl=imageKey
-                console.log(imageUrl,'imageurl is saved')
-            } catch (error: any) {
-                console.error("Error uploading image:", error);
-                return res
-                    .status(500)
-                    .json({ message: "Failed to upload image" });
-            }
-        }
+        const file = req.file as CustomFile;
+        if (!file || !file.location) {
+            return res.status(400).json({ message: "No file uploaded" });
+          }
+      
+        let imageUrl: string = file.location;
+        console.log(req.file,'file')
+      
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
-        if (user) {
-            if (imageUrl) {
-                const signedUrl = await getSignedUrl(
-                    s3Client, 
-                    new GetObjectCommand({
-                        Bucket: "bookstore-web-app",
-                        Key: imageUrl
-                    }), 
-                    { expiresIn: 604800 } 
-                );
-
-                return res.status(200).json({ user: { ...user.toObject(), image: signedUrl } });
-            }
-
-            // return res.status(200).json({ user });
-        } else {
-            return res.status(404).json({ message: "User not found after updating profile image" });
-        }
+       console.log(user,'userrrr updateddd profile image')
+        return res.status(200).json({ user });
       
     } catch (error: any) {
         console.error("Error updating user:", error.message);
@@ -445,7 +412,8 @@ const deleteUserImage = async (req: AuthenticatedRequest, res: Response) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-const verifyEmail = async (req: Request, res: Response) => {
+
+const verifyEmail= async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
         let isValidEmail: IUser | null = await userService.getUserByEmail(
@@ -454,7 +422,24 @@ const verifyEmail = async (req: Request, res: Response) => {
         if (isValidEmail) {
             return res.status(200).json({ isValidEmail });
         } else {
-            return res.status(401).json({ message: "Invalid email" });
+            return res.status(401).json({ message: "Invalid email id" });
+        }
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const verifyPhoneNumber = async (req: Request, res: Response) => {
+    try {
+        const { phone } = req.body;
+        let isValidPhone: IUser | null = await userService.getUserByPhone(
+            phone
+        );
+        if (isValidPhone) {
+            return res.status(200).json({ isValidPhone });
+        } else {
+            return res.status(401).json({ message: "Invalid Phone number" });
         }
     } catch (error: any) {
         console.log(error.message);
@@ -484,7 +469,11 @@ const updatePassword = async (req: Request, res: Response) => {
             resetTokenExpiration,
         };
         const user: IUser | null = await userService.getUpdatePassword(data);
-        console.log(user, "user password update");
+       
+        if(user?.image){
+            
+             user.image = await getSignedImageUrl(user.image)
+        }
         return res.status(200).json({ user });
     } catch (error: any) {
         console.log(error.message);
@@ -526,13 +515,13 @@ const sendUnlinkEmail = async (req: AuthenticatedRequest, res: Response) => {
             resetToken,
             resetTokenExpiration
         );
+      
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error(error.message);
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-
 
 const getUser = async (req: Request, res: Response) => {
     try {
@@ -546,6 +535,9 @@ const getUser = async (req: Request, res: Response) => {
         const receiver = await userService.getUserById(receiverId);
         if (!receiver) {
             return res.status(404).json({ message: "User not found" });
+        }
+        if(receiver?.image){
+            receiver.image = await getSignedImageUrl(receiver?.image)
         }
         return res.status(200).json({ receiver });
     } catch (error: any) {
@@ -581,7 +573,6 @@ const calculateDistance = async(req:Request,res:Response)=>{
                 console.error('Error in Google Maps API response:', data.error_message);
                 return null;
             }
-            console.log(data,'data google distance')
         } catch (error) {
             console.error('Error fetching road distance:', error);
             return null;
@@ -602,6 +593,9 @@ const userDetails = async(req:Request,res:Response)=>{
             return res.status(500).json({message:"Lender id not found"});
         }
         const lender = await userService.getUserById(lenderId)
+        if(lender?.image){
+            lender.image=await getSignedImageUrl(lender.image)
+        }
         return res.status(200).json({lender})
     }catch(error:any){
         console.log("Error userDetails:",error);
@@ -614,7 +608,7 @@ export {
     generateOtp,
     loginUser,
     loginByGoogle,
-    verifyEmail,
+    verifyPhoneNumber,
     verifyOtp,
     updatePassword,
     logoutUser,
@@ -627,4 +621,6 @@ export {
     linkGoogleAccount,
     calculateDistance,
     userDetails,
+    sendOTP,
+    verifyEmail
 };

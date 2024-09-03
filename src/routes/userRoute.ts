@@ -1,13 +1,13 @@
-import { signUp ,generateOtp, loginUser, verifyEmail, verifyOtp,updatePassword,logoutUser,loginByGoogle,updateUser,
-updateProfileImage,deleteUserImage,getUser,sendUnlinkEmail,googleLog,linkGoogleAccount,userDetails,
-calculateDistance,
+import { signUp ,generateOtp, loginUser, verifyPhoneNumber, verifyOtp,updatePassword,logoutUser,loginByGoogle,updateUser,
+updateProfileImage,deleteUserImage,getUser,sendUnlinkEmail,googleLog,linkGoogleAccount,userDetails,sendOTP,
+calculateDistance,verifyEmail,
 } from '../controllers/userController';
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
 import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search } from '../controllers/bookController';
 import { notifications, sendNotification } from '../controllers/notificationController';
-import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList } from '../controllers/messageController';
+import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead} from '../controllers/messageController';
 import { updateRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
 
 const userRouter=express.Router()
@@ -21,9 +21,13 @@ userRouter.post('/login',loginUser)
 userRouter.post('/google-login',loginByGoogle)
 
 userRouter.post('/check-email',verifyEmail)
+
+userRouter.post('/check-phone',verifyPhoneNumber)
+
 userRouter.post('/link-google-account',linkGoogleAccount)
 
 userRouter.post('/google',googleLog)
+
 userRouter.post('/verify-otp',verifyOtp)  
 
 userRouter.post('/update-password',updatePassword) 
@@ -97,6 +101,8 @@ userRouter.post('/create-order',verifyToken,createOrder)
 userRouter.get('/orders/:userId',verifyToken,orders)
 
 userRouter.get('/search/:searchQuery',verifyToken,search)
+
+userRouter.post('/chatRoom-update/:chatRoomId',verifyToken,updateChatRoomRead)
 
 export default userRouter 
 

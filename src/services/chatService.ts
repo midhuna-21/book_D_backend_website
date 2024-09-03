@@ -17,6 +17,25 @@ export class ChatService{
         }
     }
 
+    async getChatRoomById(chatRoomId:string){
+        try{
+            return await chatRepository.findChatRoomById(chatRoomId)
+        }catch(error){
+            console.log("Error getChatRoomById:",error)
+            throw error
+        }
+    }
+
+   
+
+    async getUpdateChatRoomRead(chatRoomId:string):Promise<IChatRoom | null>{
+        try{
+            return await chatRepository.findUpdateChatRoomRead(chatRoomId)
+        }catch(error){
+            console.log("Error getUpdateChatRoomRead:",error)
+            throw error
+        }
+    }
     async getUserChat(chatRoomId:string){
         try{
             return await chatRepository.findUserChat(chatRoomId)

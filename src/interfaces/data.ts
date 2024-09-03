@@ -78,7 +78,8 @@ export type Notification = {
 export type ChatRoom = {
    senderId?:ObjectId;
    receiverId?: string;
-
+   isRead?:boolean
+   
 }
 
 export type Requests = {

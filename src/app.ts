@@ -77,14 +77,13 @@ io.on('connection', (socket) => {
           }
       }
   });
-  
 
     socket.on('send-notification', (data) => {
       const receiverSocketId = userSockets.get(data.receiverId);
       if (receiverSocketId) {
           io.to(receiverSocketId).emit('notification', data.notification);
           console.log(`reply notification sent to ${data.receiverId}`);
-      }
+      } 
   });
   
     socket.on('requestBook', async (notification) => {

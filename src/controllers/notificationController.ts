@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Notification } from "../interfaces/data";
 import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
 import { NotificationService } from "../services/notificationService";
+import { getSignedImageUrl } from "../utils/imageFunctions/getImageFromS3";
 
 const notificationService = new NotificationService();
 
@@ -46,7 +47,27 @@ const notifications = async (req: AuthenticatedRequest, res: Response) => {
         const notifications = await notificationService.getNotificationsByUserId(
             userId
         );
+        // if(notifications && notifications.length >0){
+        //     const updatedNotifications = await Promise.all(
 
+        //         notifications.map(async(notification)=>{
+        //         const senderImage = notifications?.senderId?.image
+        //         const receiverImage = notifications?.receiverId?.image
+        //        if(senderImage){
+        //         await getSignedImageUrl(senderImage)
+        //        }
+        //        if(receiverImage){
+
+        //            await getSignedImageUrl(receiverImage)
+        //        }
+
+        //        return notification;
+        //     })
+        //     )
+        //     return res.status(200).json({notifications:updatedNotifications})
+        // }else{
+        //     return res.status(500).json({notifications:[]})
+        // }
         return res.status(200).json({ notifications });
     } catch (error: any) {
         console.log(error.message);
