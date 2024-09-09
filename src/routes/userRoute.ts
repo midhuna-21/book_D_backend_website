@@ -5,7 +5,7 @@ calculateDistance,verifyEmail,
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
-import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search } from '../controllers/bookController';
+import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, rentBookUpdate } from '../controllers/bookController';
 import { notifications, sendNotification } from '../controllers/notificationController';
 import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead} from '../controllers/messageController';
 import { updateRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
@@ -103,6 +103,9 @@ userRouter.get('/orders/:userId',verifyToken,orders)
 userRouter.get('/search/:searchQuery',verifyToken,search)
 
 userRouter.post('/chatRoom-update/:chatRoomId',verifyToken,updateChatRoomRead)
+
+// userRouter.put('/rent-book-update/:bookId',verifyToken,upload.array('images', 10),rentBookUpdate)
+userRouter.put('/rent-book-update/:bookId', verifyToken, upload.array('images', 10),rentBookUpdate);
 
 export default userRouter 
 

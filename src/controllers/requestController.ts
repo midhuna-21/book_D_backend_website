@@ -27,7 +27,6 @@ const checkAccept = async (req: Request, res: Response) => {
 const checkUserSent = async (req: Request, res: Response) => {
     try {
         const { userId, bookId } = req.params;
-        // console.log(bookId,'controller')
         if (!userId || !bookId) {
             return res
                 .status(400)

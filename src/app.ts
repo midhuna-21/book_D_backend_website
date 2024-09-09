@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
         console.log(userId,'userId at socket ')
         userSockets.set(userId, socket.id);
         onlineUsers.set(userId, socket.id);
-        console.log(onlineUsers,'onlineUsers')
+        // console.log(onlineUsers,'onlineUsers')
         io.emit('user-status', { userId, isOnline: true });
 
       }
@@ -94,10 +94,6 @@ io.on('connection', (socket) => {
         const user: IUser | null = await userService.getUserById(userId);
         const book: IBooks | null = await bookService.getBookById(bookId);
         const receiver: IUser | null = await userService.getUserById(receiverId);
-
-        // console.log(user,'user')
-        // console.log(book,'book')
-        // console.log(receiver,'receiver')
 
         if (!user || !book || !receiver) {
           console.error('User, book, or receiver not found');

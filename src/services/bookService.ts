@@ -1,13 +1,6 @@
 import { BookRepository } from "../respository/bookRepository";
-import {Books,User,Requests, Order} from '../interfaces/data'
-import {IUser, user} from '../model/userModel'
+import {Books, Order} from '../interfaces/data'
 import {IBooks} from '../model/bookModel'
-import {INotification} from '../model/notificationModel'
-import {Notification} from '../interfaces/data'
-import { Types } from "mongoose";
-import { IMessage } from "../model/message";
-import { chatRoom, IChatRoom } from "../model/chatRoom";
-import { IRequests } from "../model/requests";
 
 
 const bookRepository =new BookRepository()
@@ -16,9 +9,19 @@ export class BookService{
  
     async getAddToBookRent(bookRentData:Books):Promise<IBooks | null>{
         try{
+            console.log(bookRentData,'servise')
             return await bookRepository.addToBookRent(bookRentData)
         }catch(error){
             console.log("Error getAddToBookRent:",error);
+            throw error
+        }
+    }
+
+    async getUpdateBookRent(bookRentData:Books,bookId:string):Promise<IBooks | null>{
+        try{
+            return await bookRepository.updateBookRent(bookRentData,bookId)
+        }catch(error){
+            console.log("Error geUpdateBookRent:",error);
             throw error
         }
     }
@@ -43,7 +46,9 @@ export class BookService{
 
     async getAllBooks(){
         try{
-            return await bookRepository.findAllBooks()
+            const books =  await bookRepository.findAllBooks()
+            console.log(books,'books')
+            return books
         }catch(error){
             console.log("Error getAllBooks:",error);
             throw error

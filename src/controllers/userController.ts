@@ -230,7 +230,6 @@ const loginByGoogle = async (req: Request, res: Response) => {
         
 if (image) {
     try {
-      console.log(image, 'imageee google');
       
       const response = await axios.get(image, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data, 'binary');

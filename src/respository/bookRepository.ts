@@ -3,14 +3,11 @@ import { books, IBooks } from "../model/bookModel";
 import { genres } from "../model/genresModel";
 import { Order } from "../interfaces/data";
 import { orders } from "../model/orderModel";
-import { GetObjectCommand, GetObjectCommandInput } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import config from "../config/config";
-import { s3Client } from "../utils/imageFunctions/store";
 
 export class BookRepository {
     async addToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
+      
             return new books({
                 bookTitle: bookRentData.bookTitle,
                 description: bookRentData.description,
@@ -43,10 +40,52 @@ export class BookRepository {
         }
     }
 
+    async updateBookRent(bookRentData: Books,bookId:string): Promise<IBooks | null> {
+        try {
+            const rentBookToUpdate: IBooks | null = await books.findById({_id:bookId})
+            if (!rentBookToUpdate) {
+                console.log("Error finding the renting book to update:");
+                return null;
+            }
+            else{
+            return books.findByIdAndUpdate({_id:bookId},{
+                bookTitle: bookRentData.bookTitle || rentBookToUpdate.bookTitle,
+                description: bookRentData.description|| rentBookToUpdate.description,
+                author: bookRentData.author || rentBookToUpdate.author,
+                publisher: bookRentData.publisher || rentBookToUpdate.publisher,
+                publishedYear: bookRentData.publishedYear || rentBookToUpdate.publishedYear,
+                genre: bookRentData.genre || rentBookToUpdate.genre,
+                images: bookRentData.images || rentBookToUpdate.images,
+                rentalFee: bookRentData.rentalFee || rentBookToUpdate.rentalFee,
+                extraFee: bookRentData.extraFee || rentBookToUpdate.extraFee,
+                address: {
+                    street: bookRentData.address?.street || rentBookToUpdate.address?.street,
+                    city: bookRentData.address?.city || rentBookToUpdate.address?.city,
+                    district: bookRentData.address?.district || rentBookToUpdate.address?.district,
+                    state: bookRentData.address?.state || rentBookToUpdate.address?.state,
+                    pincode: bookRentData.address?.pincode || rentBookToUpdate.address?.pincode,
+                },
+                isRented: true,
+                quantity: bookRentData.quantity || rentBookToUpdate.quantity,
+                maxDistance: bookRentData.maxDistance || rentBookToUpdate.maxDistance,
+                maxDays: bookRentData.maxDays || rentBookToUpdate.maxDays,
+                minDays: bookRentData.minDays || rentBookToUpdate.minDays,
+                lenderId: bookRentData.lenderId || rentBookToUpdate.lenderId,
+                latitude: bookRentData.latitude || rentBookToUpdate.latitude,
+                longitude: bookRentData.longitude || rentBookToUpdate.longitude,
+            },{new:true}).exec()
+        }
+        } catch (error) {
+            console.log("Error updateBookRent:", error);
+            throw error;
+        }
+    }
+
     async findAllBooks() {
         try {
-            return await books.find();
-        } catch (error) {
+            const bookies=  await books.find();
+            return bookies
+        } catch (error) {   
             console.log("Error findAllGenres:", error);
             throw error;
         }
@@ -91,30 +130,10 @@ export class BookRepository {
     }
     async findBook(bookId: string): Promise<IBooks | null> {
         try {
-            const book: IBooks | null = await books.findById(bookId);
+            const book: IBooks | null = await books.findById({_id:bookId});
             if (!book) {
-                console.log(`Book with ID ${bookId} not found.`);
                 return null;
             }
-
-            if (book.images && Array.isArray(book.images)) {
-                const imageUrls = await Promise.all(
-                    book.images.map(async (imageKey: string) => {
-                        const getObjectParams: GetObjectCommandInput = {
-                            Bucket: config.BUCKET_NAME,
-                            Key: imageKey,
-                        };
-                        const command = new GetObjectCommand(getObjectParams);
-                        return await getSignedUrl(s3Client, command, {
-                            expiresIn: 3600,
-                        });
-                    })
-                );
-                book.images = imageUrls;
-            } else {
-                book.images = [];
-            }
-
             return book;
         } catch (error: any) {
             console.log("Error findBook:", error);
@@ -170,7 +189,6 @@ export class BookRepository {
                 .populate("bookId")
                 .populate("userId")
                 .populate("lenderId");
-            console.log(order, "o");
             return order;
         } catch (error) {
             console.log("Error findOrders:", error);

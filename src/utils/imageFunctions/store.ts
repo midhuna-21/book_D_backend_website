@@ -52,8 +52,7 @@
 
 import multer, { FileFilterCallback } from 'multer';
 import multerS3 from 'multer-s3';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import axios from 'axios';
+import { S3Client } from '@aws-sdk/client-s3';
 import config from '../../config/config';
 import path from 'path';
 
@@ -89,13 +88,13 @@ function sanitizeFile(file: Express.Multer.File, cb: FileFilterCallback) {
   }
 }
 
-export const upload = multer({
+export const  upload = multer({
   storage: s3Storage,
   fileFilter: (req, file, callback: FileFilterCallback) => {
     sanitizeFile(file, callback);
   },
   limits: {
-    fileSize: 1024 * 1024 * 2, 
+    fileSize: 1024 * 1024 * 5, 
   },
 });
 

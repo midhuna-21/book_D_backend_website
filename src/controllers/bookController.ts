@@ -24,6 +24,11 @@ const bookService = new BookService();
 const requestService = new RequestService()
 const userService = new UserService()
 
+interface CustomMulterFile extends Express.Multer.File {
+    location: string;  
+}
+
+
 const genresOfBooks = async (req: Request, res: Response) => {
     try {
         const genres: IGenre[] = await bookService.getAllGenres();
@@ -50,54 +55,6 @@ const genresOfBooks = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-
-const exploreBooks = async (
-    req: AuthenticatedRequest,
-    res: Response
-): Promise<Response> => {
-    try {
-        const userId = req.userId;
-
-        const allBooks: IBooks[] = await bookService.getAllBooks();
-        const booksToShow: IBooks[] = [];
-
-        for (const book of allBooks) {
-            if (book.lenderId !== userId) {
-                const isLenderExist = await userService.getUserById(
-                    book.lenderId
-                );
-                if (isLenderExist && !isLenderExist.isBlocked) {
-                    if (book.images && Array.isArray(book.images)) {
-                        const imageUrls = await Promise.all(
-                            book.images.map(async (imageKey: string) => {
-                                const getObjectParams: GetObjectCommandInput = {
-                                    Bucket: config.BUCKET_NAME,
-                                    Key: imageKey,
-                                };
-                                const command = new GetObjectCommand(
-                                    getObjectParams
-                                );
-                                return await getSignedUrl(s3Client, command, {
-                                    expiresIn: 3600,
-                                });
-                            })
-                        );
-                        book.images = imageUrls;
-                    } else {
-                        book.images = [];
-                    }
-                }
-                booksToShow.push(book);
-            }
-        }
-
-        return res.status(200).json(booksToShow);
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-
 const genres = async (req: Request, res: Response): Promise<Response> => {
     try {
         const genres: IGenre[] = await bookService.getAllGenres();
@@ -124,7 +81,35 @@ const genres = async (req: Request, res: Response): Promise<Response> => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
- 
+
+const exploreBooks = async (
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<Response> => {
+    try {
+        const userId = req.userId;
+
+        const allBooks: IBooks[] = await bookService.getAllBooks();
+        const booksToShow: IBooks[] = [];
+
+        for (const book of allBooks) {
+            if (book.lenderId !== userId) {
+                const isLenderExist = await userService.getUserById(
+                    book.lenderId
+                );
+                
+                if (isLenderExist && !isLenderExist.isBlocked) {
+                    booksToShow.push(book);
+                }
+            }
+        }
+        return res.status(200).json(booksToShow);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 const bookDetail = async (req: Request, res: Response) => {
     try {
         const bookId = req.params.Id as string;
@@ -135,7 +120,6 @@ const bookDetail = async (req: Request, res: Response) => {
         }
         const lenderId: string = book.lenderId;
         const lender = await userService.getUserById(lenderId);
-
         return res.status(200).json({ book, lender });
     } catch (error: any) {
         console.log(error.message);
@@ -177,43 +161,15 @@ const randomImageName = (bytes = 32) =>
          }
          const userId = req.userId;
  
-         const files = req.files as Express.Multer.File[];
- 
+         const files = req.files as CustomMulterFile[]; 
          if (!files || files.length === 0) {
-             return res
-                 .status(404)
-                 .json({ message: "Please provide book images" });
+             return res.status(404).json({ message: "Please provide book images" });
          }
  
-         const imageUrls: string[] = [];
- 
-         for (let i = 0; i < files.length; i++) {
-             const buffer = await sharp(files[i].buffer)
-                 .resize({ height: 1920, width: 1080, fit: "contain" })
-                 .toBuffer();
- 
-             const imageKey = randomImageName();
- 
-             const params = {
-                 Bucket: "bookstore-web-app",
-                 Key: imageKey,
-                 Body: buffer,
-                 ContentType: files[i].mimetype,
-             };
-   
-             const command = new PutObjectCommand(params);
- 
-             try {
-                 await s3Client.send(command);
-                 imageUrls.push(imageKey);
-             } catch (error: any) {
-                 console.error(error);
-                 return res
-                     .status(500)
-                     .json({ message: `Failed to upload image ${i}` });
-             }
-            
-         }
+         const images = files.map(file => {
+             return file.location; 
+         });
+       
          const bookRentData: Books = {
              bookTitle,
              description,
@@ -221,7 +177,7 @@ const randomImageName = (bytes = 32) =>
              publisher,
              publishedYear,
              genre,
-             images: imageUrls,
+             images,
              rentalFee,
              extraFee,
              quantity,
@@ -246,6 +202,7 @@ const randomImageName = (bytes = 32) =>
              return res.status(400).json({ message: validationError });
          }
  
+
          const bookAdded = await bookService.getAddToBookRent(bookRentData);
          return res
              .status(200)
@@ -256,6 +213,100 @@ const randomImageName = (bytes = 32) =>
      }
  };
  
+
+ const rentBookUpdate = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const {
+            bookTitle,
+            description,
+            author,
+            publisher,
+            publishedYear,
+            genre,
+            rentalFee,
+            extraFee,
+            quantity,
+            street,
+            city,
+            district,
+            state,
+            pincode,
+            maxDistance,
+            maxDays,
+            minDays,
+            latitude,
+            longitude
+
+        } = req.body;
+        const {bookId} = req.params
+  
+        if (!req.userId) {
+            return res
+                .status(403)
+                .json({ message: "User ID not found in request" });
+        }
+        const userId = req.userId;
+        let { images } = req.body; 
+        if (typeof images === 'string') {
+            images = [images];
+        }
+        images = images || [];
+        console.log(images, 'existing images from body');
+
+        let finalImages: string[] = [...images]; 
+
+        const files = req.files as CustomMulterFile[]; 
+        if (files && files.length > 0) {
+            const newImages = files.map(file => file.location);
+            finalImages = [...finalImages, ...newImages]; 
+        }
+
+        console.log(finalImages,'finalImages after')
+  
+        const bookRentData: Books = {
+            bookTitle,
+            description,
+            author,
+            publisher,
+            publishedYear,
+            genre,
+            images:finalImages,
+            rentalFee,
+            extraFee,
+            quantity,
+            address:{
+                street,
+                city,
+                district,
+                state,
+                pincode
+               },
+            isRented: true,
+            lenderId: userId,
+            maxDistance,
+            maxDays,
+            minDays,
+            latitude,
+            longitude
+        };
+
+        // console.log(bookRentData,'bookRentData')
+
+        const validationError = rentBookValidation(bookRentData);
+        if (validationError) {
+            return res.status(400).json({ message: validationError });
+        }
+
+        const bookAdded = await bookService.getUpdateBookRent(bookRentData,bookId);
+        return res
+            .status(200)
+            .json({ message: "Book rented successfully", bookAdded });
+    } catch (error: any) {
+        console.error("Error renting book:", error.message);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
  const sellBook = async (req: AuthenticatedRequest, res: Response) => {
      try {
          const {
@@ -358,30 +409,13 @@ const randomImageName = (bytes = 32) =>
          const userId = req.userId;
          const allBooks: IBooks[] = await bookService.getAllBooks();
          const booksToShow: IBooks[] = [];
- 
+         
          for (const book of allBooks) {
              if (book.lenderId == userId && book.isRented) {
                  // const isLenderExist = await bookService.getUserById(book.lenderId);
                  // if(isLenderExist && !isLenderExist.isBlocked ){
-                 if (book.images && Array.isArray(book.images)) {
-                     const imageUrls = await Promise.all(
-                         book.images.map(async (imageKey: string) => {
-                             const getObjectParams: GetObjectCommandInput = {
-                                 Bucket: config.BUCKET_NAME,
-                                 Key: imageKey,
-                             };
-                             const command = new GetObjectCommand(
-                                 getObjectParams
-                             );
-                             return await getSignedUrl(s3Client, command, {
-                                 expiresIn: 3600,
-                             });
-                         })
-                     );
-                     book.images = imageUrls;
-                 } else {
-                     book.images = [];
-                 }
+                    
+                    
                  booksToShow.push(book);
              }
              // }
@@ -422,8 +456,6 @@ const randomImageName = (bytes = 32) =>
                  booksToShow.push(book);
              }
          }
-         console.log(booksToShow);
- 
          return res.status(200).json(booksToShow);
      } catch (error: any) {
          console.log("Error rentedBooks:", error);
@@ -451,7 +483,6 @@ const randomImageName = (bytes = 32) =>
  const lendingProcess = async(req:Request,res:Response)=>{
      try{
          const {requestId} = req.params;
-         console.log(requestId,'requestId backend')
          if(!requestId){
              return res.status(500).json({message:"requestId not found"});
          }
@@ -467,7 +498,7 @@ const randomImageName = (bytes = 32) =>
  
  const createCheckout = async (req:Request,res:Response) => {
      const { bookTitle, totalPrice, quantity,requestId, userId, lenderId, bookId, depositAmount } = req.body;
-     console.log(req.body,'bo check')
+     (req.body,'bo check')
      try {
        const session = await stripe.checkout.sessions.create({
          payment_method_types: ["card"],
@@ -496,8 +527,6 @@ const randomImageName = (bytes = 32) =>
          quantity,
          depositAmount,
        };
-       console.log(session,'session')
-       console.log(sessionData,'sessionData')
 
        await bookService.getCreateOrderProcess(sessionData); 
        res.json({ id: session.id });
@@ -509,7 +538,6 @@ const randomImageName = (bytes = 32) =>
  
  const createOrder =  async (req: Request, res: Response) => {
      try {
-         console.log(req.body,'f')
          const {userId,bookId,requestId} = req.body;
          
          if(!userId || !bookId){
@@ -588,6 +616,7 @@ export {
     genres,
     bookDetail,
     rentBook,
+    rentBookUpdate,
     sellBook,
     rentedBooks,
     soldBooks,
