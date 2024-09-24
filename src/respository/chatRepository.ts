@@ -31,13 +31,20 @@ export class ChatRepository {
         }
     }
 
-    async findUpdateChatRoomRead(chatRoomId: string): Promise<IChatRoom | null> {
+    async findUpdateChatRoomRead(chatRoomId: string) {
         try {
-            return await chatRoom.findByIdAndUpdate(
+           const messageUpdate = await  message.updateMany(
+                { chatRoomId: chatRoomId },
+                { isRead: true },
+                { new: true } 
+            ).exec();
+
+            const chatUpdate = await  chatRoom.findByIdAndUpdate(
                 { _id: chatRoomId },
                 { isRead: true },
                 { new: true } 
             ).exec();
+            return {message:messageUpdate,chat:chatUpdate}
         } catch (error) {
             console.log("Error findUpdateChatRoomRead:", error);
             throw error;
@@ -193,6 +200,16 @@ export class ChatRepository {
             });
         } catch (error) {
             console.log("Error finding chat room:", error);
+            throw error;
+        }
+    }
+
+    async findUnReadMessages(userId: string) {
+        try {
+            const messages= await message.countDocuments({receiverId:userId,isRead:false})
+            return messages
+        } catch (error) {
+            console.log("Error finding all messages:", error);
             throw error;
         }
     }

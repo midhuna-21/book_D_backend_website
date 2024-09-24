@@ -1,6 +1,6 @@
 import { UserRepository } from "../respository/userRepository";
 import { userData } from "../utils/ReuseFunctions/interface/data";
-import {Books, ChatRoom, User,Requests, Order} from '../interfaces/data'
+import {Books, ChatRoom, User,Cart, Order} from '../interfaces/data'
 import {IUser, user} from '../model/userModel'
 import {IBooks} from '../model/bookModel'
 import {INotification} from '../model/notificationModel'
@@ -8,7 +8,7 @@ import {Notification} from '../interfaces/data'
 import { Types } from "mongoose";
 import { IMessage } from "../model/message";
 import { chatRoom, IChatRoom } from "../model/chatRoom";
-import { IRequests } from "../model/requests";
+import { ICart } from "../model/cartModel";
 
 
 const userRepository =new UserRepository()

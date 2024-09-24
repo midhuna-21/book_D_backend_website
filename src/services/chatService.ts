@@ -28,7 +28,7 @@ export class ChatService{
 
    
 
-    async getUpdateChatRoomRead(chatRoomId:string):Promise<IChatRoom | null>{
+    async getUpdateChatRoomRead(chatRoomId:string){
         try{
             return await chatRepository.findUpdateChatRoomRead(chatRoomId)
         }catch(error){
@@ -100,6 +100,15 @@ export class ChatService{
             return await chatRepository.createSendMessage(senderId,receiverId,content,chatRoomId)
         }catch(error){
             console.log("Error getSendMessage:",error)
+            throw error
+        }
+     }
+
+     async getUnReadMessages(userId:string){
+        try{
+            return await chatRepository.findUnReadMessages(userId)
+        }catch(error){
+            console.log("Error getUnReadMessages:",error)
             throw error
         }
      }

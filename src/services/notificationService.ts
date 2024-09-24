@@ -8,9 +8,11 @@ const notificationRepository =new NotificationRepository()
 
 export class NotificationService{
    
-    async getCreateNotification(data:Partial<Notification>):Promise<INotification | null>{
-        try{
-            return await notificationRepository.createNotification(data)
+    async getCreateNotification(notificationId:string,
+        data: Partial<Notification>
+    ): Promise<INotification | null> {
+        try {
+            return await notificationRepository.createNotification(notificationId,data)
         }catch(error){
             console.log("Error getCreateNotification:",error);
             throw error

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { addGenre, adminLogin,getUsersList ,blockUser,unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks} from '../controllers/adminController';
+import { addGenre, adminLogin,getUsersList ,blockUser,unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks,allOrders,orderDetail,walletTransactions} from '../controllers/adminController';
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
 
@@ -23,6 +23,10 @@ adminRouter.get('/total-rented-books',verifyToken,totalRentedBooks)
 adminRouter.get('/total-sold-books',verifyToken,totalSoldBooks)
 
 adminRouter.get('/total-books',verifyToken,totalBooks)
+
+adminRouter.get('/get-rental-orders',verifyToken,allOrders)
+adminRouter.get('/order-detail/:orderId',verifyToken,orderDetail)
+adminRouter.get('/get-wallet-transactions',verifyToken,walletTransactions)
 
 export default adminRouter 
 

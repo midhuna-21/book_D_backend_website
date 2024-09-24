@@ -48,6 +48,16 @@ export class AdminService{
          throw error
    }
    }
+
+   async getWalletTransactions(){
+      try{
+         return await adminRepository.findWalletTransactions()
+      }catch(error){
+         console.log("Error getWalletTransactions:",error);
+         throw error
+   }
+   }
+
    async getAllTotalRentedBooks(){
       try{
          return await adminRepository.findAllTotalRentedBooks()
@@ -95,6 +105,22 @@ export class AdminService{
           console.log("Error getAdminById:",error);
           throw error
       }
+  }
+  async getAllOrders(){
+   try{
+      return await adminRepository.findAllOrders()
+   }catch(error){
+      console.log("Error getAllOrders:",error);
+      throw error
+}
+  }
+  async getOrderDetail(orderId:string){
+   try{
+      return await adminRepository.findOrderDetail(orderId)
+   }catch(error){
+      console.log("Error getOrderDetail:",error);
+      throw error
+}
   }
 }
 

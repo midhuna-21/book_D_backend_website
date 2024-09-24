@@ -9,25 +9,17 @@ const notificationService = new NotificationService();
 const sendNotification = async (req: Request, res: Response) => {
     try {
        
-        const { senderId, notificationId, receiverId, bookId, type, content,requestId } =
+        const { userId, ownerId, cartId,notificationId,bookId, status } =
             req.body;
-       
-        if (type == "accepted") {
-            const notification = await notificationService.getUpdateNotificationType(notificationId,type);
-                return res.status(200).json({notification})
-        }else if (type === "rejected") {
-           const notification= await notificationService.getUpdateNotificationType(notificationId,type);
-           return res.status(200).json({notification})
-        }
         const data: Notification = {
-            senderId,
-            receiverId,
+            userId,
+            ownerId,
             bookId,
-            type,
-            content,
-            requestId
+            cartId,
+            status,
+          
         };
-        const notification = await notificationService.getCreateNotification(data);
+        const notification = await notificationService.getCreateNotification(notificationId,data);
         return res.status(200).json({ notification });
     } catch (error: any) {
         console.log(error.message);
@@ -47,27 +39,7 @@ const notifications = async (req: AuthenticatedRequest, res: Response) => {
         const notifications = await notificationService.getNotificationsByUserId(
             userId
         );
-        // if(notifications && notifications.length >0){
-        //     const updatedNotifications = await Promise.all(
-
-        //         notifications.map(async(notification)=>{
-        //         const senderImage = notifications?.senderId?.image
-        //         const receiverImage = notifications?.receiverId?.image
-        //        if(senderImage){
-        //         await getSignedImageUrl(senderImage)
-        //        }
-        //        if(receiverImage){
-
-        //            await getSignedImageUrl(receiverImage)
-        //        }
-
-        //        return notification;
-        //     })
-        //     )
-        //     return res.status(200).json({notifications:updatedNotifications})
-        // }else{
-        //     return res.status(500).json({notifications:[]})
-        // }
+   
         return res.status(200).json({ notifications });
     } catch (error: any) {
         console.log(error.message);

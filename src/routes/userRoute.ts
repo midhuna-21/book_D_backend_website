@@ -5,10 +5,10 @@ calculateDistance,verifyEmail,
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
-import { bookDetail, exploreBooks, genresOfBooks,createCheckout, createOrder, lenderDetails, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, rentBookUpdate } from '../controllers/bookController';
+import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout, lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, rentBookUpdate ,updateOrderStatus} from '../controllers/bookController';
 import { notifications, sendNotification } from '../controllers/notificationController';
-import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead} from '../controllers/messageController';
-import { updateRequest, checkAccept, checkRequestAcceptOrNot, checkUserSent, saveRequest } from '../controllers/requestController';
+import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead,unReadMessages} from '../controllers/messageController';
+import { updateCart, checkAccept, checkUserSentRequest, saveCart } from '../controllers/cartController';
 
 const userRouter=express.Router()
 
@@ -58,10 +58,6 @@ userRouter.get('/sold-books',verifyToken,soldBooks)
 
 userRouter.post('/create-message',verifyToken,messageCreation)
 
-userRouter.post('/save-request',verifyToken,saveRequest);
-
-userRouter.get('/check-requestss',verifyToken,checkRequestAcceptOrNot)
-
 userRouter.get('/users-messages-list/:userId',verifyToken,userMessagesList)
 
 userRouter.post('/create-chatRoom',verifyToken,createChatRoom)
@@ -72,15 +68,17 @@ userRouter.post('/send-message',verifyToken,sendMessage)
 
 userRouter.get('/messages/:chatRoomId',verifyToken,allMessages)
 
+userRouter.get('/unread-messages/:userId',verifyToken,unReadMessages)
+
 userRouter.get('/user/:receiverId',verifyToken,getUser)
 
 userRouter.post('/send-email',verifyToken,sendUnlinkEmail)
 
-userRouter.get('/check-request/:userId/:bookId', verifyToken, checkUserSent);
+userRouter.get('/check-request/:userId/:bookId', verifyToken, checkUserSentRequest);
 
 userRouter.get('/check-accept/:userId/:bookId', verifyToken, checkAccept);
 
-userRouter.post('/request-send',verifyToken,saveRequest)
+// userRouter.post('/request-send',verifyToken,saveRequest)
 
 userRouter.post('/logout',logoutUser) 
 
@@ -90,13 +88,12 @@ userRouter.get('/google-distance',verifyToken,calculateDistance)
 
 userRouter.get('/user-details/:lenderId',verifyToken,userDetails)
 
-userRouter.put('/update-request',verifyToken,updateRequest)
-
-userRouter.get('/lending-details/:requestId',verifyToken,lendingProcess)
+userRouter.get('/lending-details/:cartId',verifyToken,lendingProcess)
 
 userRouter.post('/create-checkout',verifyToken,createCheckout)
 
 userRouter.post('/create-order',verifyToken,createOrder)
+userRouter.get('/get-order-to-showSuccess',verifyToken,OrderToShowSuccess)
 
 userRouter.get('/orders/:userId',verifyToken,orders)
 
@@ -106,6 +103,12 @@ userRouter.post('/chatRoom-update/:chatRoomId',verifyToken,updateChatRoomRead)
 
 // userRouter.put('/rent-book-update/:bookId',verifyToken,upload.array('images', 10),rentBookUpdate)
 userRouter.put('/rent-book-update/:bookId', verifyToken, upload.array('images', 10),rentBookUpdate);
+
+userRouter.post('/create-cart-item',verifyToken,saveCart);
+
+userRouter.put('/cart-item-update/:cartId',verifyToken,updateCart)
+userRouter.put('/update-order-status/:selectedOrderId',verifyToken,updateOrderStatus)
+
 
 export default userRouter 
 

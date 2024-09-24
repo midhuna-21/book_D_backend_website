@@ -1,30 +1,25 @@
 import mongoose, { Document, Schema,Types } from 'mongoose';
+import {ICart} from './cartModel'
 
 interface IOrder extends Document {
-    sessionId:string;
+    cartId:ICart | string;
     bookId: string;
     userId: string;
-    totalPrice: number;
     lenderId: string;
-    quantity: number;
-    depositAmount: number;
-    isReturned: boolean;
-    bookStatus:"reached_at_user" | "reached_at_lender";
-    isMoneyTransactionStatus: 'sent_to_website' | 'sent_to_lender' | 'completed';
-    isTransaction: ('pending' | 'completed')[];
-    isSuccessfull:boolean;
-   
+    isPaid?: boolean;
+    bookStatus:string
+    isMoneyTransactionStatus?: 'sent_to_website' | 'sent_to_lender' | 'completed';
+    isTransaction?: ('pending' | 'completed')[];
+    isSuccessfull?:boolean;
+    reachedAtUserDate?: Date;
 }
 
 const orderSchema = new Schema<IOrder>({
-    sessionId: { type: String},
+    cartId:{type:String,ref:'cart'},
     bookId: { type: String, ref: 'books' },
     userId: { type: String, ref: 'user' }, 
-    totalPrice: { type: Number },
     lenderId: { type: String, ref: 'user' }, 
-    quantity: { type: Number },
-    depositAmount: { type: Number },
-    isReturned: { type: Boolean},
+    isPaid: { type: Boolean,default:false},
     isSuccessfull:{
         type:Boolean,
         default:false
@@ -41,8 +36,11 @@ const orderSchema = new Schema<IOrder>({
     },
     bookStatus: {
         type: String,
-        enum: ['reached_at_user', 'reached_at_lender'], 
+        enum: ['not_reached', 'not_returned', 'completed','cancelled','overdue'],
+        default: 'not_reached',
       },
+      reachedAtUserDate: { type: Date } ,
+
 }, { timestamps: true });
 
 const orders = mongoose.model<IOrder>('orders', orderSchema);

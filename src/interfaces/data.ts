@@ -65,14 +65,11 @@ export interface Genre{
 }
 
 export type Notification = {
-   senderId?: string;
-   receiverId?: string;
+   userId?: string;
+   ownerId?: string;
    bookId?:string;
-   type:string;
-   content?: string;
-   isReject?:boolean;
-   isAccepted?:boolean;
-   requestId?:string
+   cartId?:string;
+   status:string;
 }
 
 export type ChatRoom = {
@@ -82,24 +79,23 @@ export type ChatRoom = {
    
 }
 
-export type Requests = {
-   senderId:string;
-   receiverId:string;
+export type Cart = {
+   userId:string;
+   ownerId:string;
    bookId:string;
    types:string;
    totalDays?:number;
+   totalAmount?:number;
+   total_deposit_amount?:number
    totalRentalPrice?:number;
    quantity?:number;
 }
 
 export type Order = {
-   sessionId:string;
+   cartId:string;
    bookId: string;
    userId: string;
-   totalPrice?: number;
    lenderId: string;
-   quantity?: number;
-   depositAmount?: number;
    isReturned?: boolean;
    isMoneyTransactionStatus?:string;
    isTransaction?: string;

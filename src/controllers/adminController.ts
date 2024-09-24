@@ -102,6 +102,17 @@ const getUsersList = async (req: Request, res: Response) => {
     }
 };
 
+const walletTransactions= async (req: Request, res: Response) => {
+    try {
+        const wallet = await adminService.getWalletTransactions();
+        return res.status(200).json(wallet);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 const totalRentedBooks = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllTotalRentedBooks();
@@ -149,6 +160,30 @@ const unBlockUser = async (req: Request, res: Response) => {
         console.log(error.message);
         return res.status(400).json({ message: "Internal server error" });
     }
+
+};
+const allOrders = async (req: Request, res: Response) => {
+    try {
+        const orders = await adminService.getAllOrders();
+        return res.status(200).json(orders);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 };
 
-export { adminLogin, addGenre, getUsersList, blockUser, unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks};
+const orderDetail = async (req: Request, res: Response) => {
+    try {
+        const {orderId} = req.params;
+        if(!orderId){
+        return res.status(500).json({ message: "orderId is not found" });
+        }
+        const order = await adminService.getOrderDetail(orderId);
+        return res.status(200).json(order);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export { adminLogin, addGenre, getUsersList, blockUser,walletTransactions, unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks,allOrders,orderDetail};

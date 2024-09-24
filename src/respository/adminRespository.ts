@@ -3,6 +3,8 @@ import { user, IUser } from "../model/userModel";
 import { Genre } from "../interfaces/data";
 import { admin, IAdmin } from "../model/adminModel";
 import { books } from "../model/bookModel";
+import {orders} from '../model/orderModel';
+import { bookDWallet } from "../model/bookDWallet";
 
 export class AdminRepository {
     async findAdminByEmail(email: string): Promise<IUser | null> {
@@ -48,6 +50,32 @@ export class AdminRepository {
             throw error;
         }
     }
+
+    async findWalletTransactions() {
+        try {
+            return await bookDWallet.findOne()
+                .populate({
+                    path: 'transactions.userId',
+                    model: 'user',
+                })
+                .populate({
+                    path: 'transactions.lenderId',
+                    model: 'user',
+                });
+        } catch (error) {
+            console.log("Error findWalletTransactions:", error);
+            throw error;
+        }
+    }    
+
+    // async findWalletTransactions(){
+    //     try {
+    //         return await bookDWallet.find().populate('userId').populate('lenderId')
+    //     } catch (error) {
+    //         console.log("Error findWalletTransactions:", error);
+    //         throw error;
+    //     }
+    // }
     async findAllTotalRentedBooks() {
         try {
             return await books.find({ isRented: true });
@@ -104,48 +132,30 @@ export class AdminRepository {
             throw error;
         }
     }
+
+    async findAllOrders() {
+        try {
+            return await orders.find()
+            .populate("bookId")
+            .populate("lenderId")
+            .populate("userId")
+            .populate("cartId")
+        } catch (error) {
+            console.log("Error findAllOrders:", error);
+            throw error;
+        }
+    }
+
+    async findOrderDetail(orderId:string) {
+        try {
+            return await orders.findById({_id:orderId})
+            .populate("bookId")
+            .populate("lenderId")
+            .populate("userId")
+            .populate("cartId")
+        } catch (error) {
+            console.log("Error findOrderDetail:", error);
+            throw error;
+        }
+    }
 }
-
-// const findUnBlockUser = async(_id:string)=>{
-//    try{
-//       const userToUnBlock = await user.findByIdAndUpdate(_id,{isBlocked:false},{new:true})
-//       return userToUnBlock
-//    }catch(error:any){
-//       console.log(error.message);
-//         throw new Error("Internal server error" );
-//    }
-// }
-
-// const findBlockUser = async(_id:string)=>{
-//    try{
-//       const userToBlock = await user.findByIdAndUpdate(_id, { isBlocked: true }, { new: true });
-//       return userToBlock
-//    }catch(error:any){
-//       console.log(error.message);
-//         throw new Error("Internal server error" );
-//    }
-// }
-
-// const findAllUsers = async()=>{
-//    try{
-//       const users = await user.find()
-//       return users
-//    }catch(error:any){
-//       console.log(error.message);
-//         throw new Error("Internal server error" );
-//    }
-// }
-
-// const addGenre = async( genreName:string,image:string)=>{
-//    const newGenre = new genres ({
-//       genreName,
-//       image
-//    })
-//    return await newGenre.save()
-// }
-// const findGenreName = async (genreName: string) => {
-//   console.log('find genrename');
-//   const genre = await genres.findOne({ genreName:genreName });
-//   console.log(genre, 'genre kitti');
-//   return genre;
-// };

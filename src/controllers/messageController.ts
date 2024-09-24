@@ -43,8 +43,9 @@ const updateChatRoomRead= async (req: Request, res: Response) => {
         if (!isExistChatRoom) {
             return res.status(400).json({message:"chat is not found"});
         }
-        const chatRoom: IChatRoom | null = await chatService.getUpdateChatRoomRead(chatRoomId);
-        const  isRead=chatRoom?.isRead;
+        const {message,chat} = await chatService.getUpdateChatRoomRead(chatRoomId);
+        console.log(chat?.isRead,'ok cana chat')
+        const  isRead=chat?.isRead;
         return res.status(200).json({isRead});
     } catch (error: any) {
         console.log(error.message);
@@ -67,11 +68,10 @@ const userMessagesList = async (req: Request, res: Response) => {
 
         const conversations: IChatRoom[] | null =
             await chatService.getUserMessagesList(userId);
-         console.log(conversations,'conversions')
 
          if(conversations){
             conversations.map((conversation)=>{
-                console.log(conversation,'one by one conversation')
+                // console.log(conversation,'one by one conversation')
             })
          }
    
@@ -157,6 +157,22 @@ const allMessages = async (req: Request, res: Response) => {
     }
 };
 
+const unReadMessages= async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({ message: "User Id not found" });
+        }
+
+        const messages = await chatService.getUnReadMessages(userId);
+        return res.status(200).json({ count:messages });
+    } catch (error: any) {
+        console.log("Error checkUserSent:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkUserSent" });
+    }
+};
 
 export {
     messageCreation,
@@ -166,5 +182,6 @@ export {
     chat,
     sendMessage,
     allMessages,
+    unReadMessages
  
 };

@@ -1,24 +1,26 @@
 import mongoose, { Document, Types } from "mongoose";
 
-interface IRequests extends Document {
-  senderId: string;
-  receiverId: string;
+interface ICart extends Document {
+  userId: string;
+  ownerId: string;
   bookId: string;
-  types: "requested" | "rejected" | "approved"[];
+  types: string;
+  totalAmount:number;
   totalRentalPrice: number; 
   quantity: number; 
   totalDays: number; 
   timeStamp: Date; 
+  total_deposit_amount:number;
   isPaid:boolean;
 }
-const requestsSchema = new mongoose.Schema(
+const cartSchema = new mongoose.Schema(
   {
-    senderId: {
+    userId: {
       type: String,
       ref: "user",
       required: true,
     },
-    receiverId: {
+    ownerId: {
       type: String,
       ref: "user",
       required: true,
@@ -29,13 +31,21 @@ const requestsSchema = new mongoose.Schema(
       required: true,
     },
     types: {
-      type: [String],
-      enum: ["requested", "rejected", "approved"],
+      type: String,
+      enum: ["requested", "rejected", "accepted"],
       required: true,
+    },
+    totalAmount:{
+      type:Number,
+      required:true
     },
     totalRentalPrice: {
       type: Number,
       required: true, 
+    },
+    total_deposit_amount:{
+      type:Number,
+      required:true
     },
     quantity: {
       type: Number,
@@ -57,6 +67,6 @@ const requestsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const requests = mongoose.model<IRequests>("requests", requestsSchema);
+const cart = mongoose.model<ICart>("cart", cartSchema);
 
-export { requests, IRequests };
+export { cart, ICart };

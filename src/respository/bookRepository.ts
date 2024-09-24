@@ -2,7 +2,8 @@ import { Books } from "../interfaces/data";
 import { books, IBooks } from "../model/bookModel";
 import { genres } from "../model/genresModel";
 import { Order } from "../interfaces/data";
-import { orders } from "../model/orderModel";
+import { orders,IOrder } from "../model/orderModel";
+import { wallet } from "../model/walletModel";
 
 export class BookRepository {
     async addToBookRent(bookRentData: Books): Promise<IBooks | null> {
@@ -141,26 +142,44 @@ export class BookRepository {
         }
     }
 
-    async findCreateOrderProcess(data: Order) {
+    async findCreateOrder(data: Order) {
         try {
             const order = await new orders({
-                sessionId: data.sessionId,
+                cartId:data.cartId,
                 bookId: data.bookId,
                 userId: data.userId,
-                totalPrice: data.totalPrice,
                 lenderId: data.lenderId,
-                quantity: data.quantity,
-                depsoitAmount: data.depositAmount,
-            }).save();
+                isPaid:true
+            }).save()
 
-            return order;
+            const populatedOrder = await orders.findById(order._id)
+            .populate('cartId') 
+            .populate('bookId') 
+            .populate('userId') 
+            .populate('lenderId') 
+            .exec();
+
+        return populatedOrder;
         } catch (error) {
             console.log("Error findCreateOrderProcess:", error);
             throw error;
         }
     }
-    async findCreateOrder(userId: string, bookId: string) {
+
+    async findUpdateOrder(userId: string, bookId: string) {
         try {
+
+            const existingOrder = await orders.findOne({
+                userId: userId,
+                bookId: bookId,
+                isSuccessfull: false 
+            });
+    
+            if (!existingOrder) {
+                console.log('Order is already successful or does not exist.');
+                return null
+            }
+    
             const order = await orders
                 .findOneAndUpdate(
                     { userId: userId, bookId: bookId },
@@ -182,14 +201,33 @@ export class BookRepository {
         }
     }
 
+    async findOrderToShowSuccess(userId: string, bookId: string) {
+        try {
+            const order = await orders
+                .findOne(
+                    { userId: userId, bookId: bookId ,isPaid:true})
+                .populate("bookId")
+                .populate("userId")
+                .populate("lenderId");
+
+            return order;
+        } catch (error) {
+            console.log("Error findOrderToShowSuccess:", error);
+            throw error;
+        }
+    }
+
     async findOrders(userId: string) {
         try {
             const order = await orders
                 .find({ userId: userId })
                 .populate("bookId")
                 .populate("userId")
-                .populate("lenderId");
+                .populate("cartId")
+                .populate("lenderId")
+                .sort({ createdAt: -1 });
             return order;
+
         } catch (error) {
             console.log("Error findOrders:", error);
             throw error;
@@ -207,6 +245,44 @@ export class BookRepository {
             return result;
         } catch (error) {
             console.log("Error findSearchResult:", error);
+            throw error;
+        }
+    }
+
+    async findUpdateOrderStatus(selectedOrderId: string,bookStatus:string) {
+        try {
+            const orderDetails: IOrder | null = await orders.findById({_id:selectedOrderId}).populate('orderId').populate('userId').populate('lenderId').populate({path:'cartId',select:'totalRentalPrice  '})
+            if(bookStatus=="not_returned"){
+               return await orders.findByIdAndUpdate(
+                    {_id:selectedOrderId},
+                    {
+                        $set: {
+                            bookStatus: `${bookStatus}`,
+                            reachedAtUserDate: new Date(), 
+                        }
+                    },
+                    { new: true } 
+                );
+            }
+            const order = await orders.findByIdAndUpdate({_id:selectedOrderId},{bookStatus:bookStatus},{new:true});
+
+            // const userId = orderDetails.userId;
+            // const lenderId = orderDetails.lenderId;
+            // const orderId = orderDetails._id;
+    
+            // if (orderDetails && typeof orderDetails.cartId !== 'string') {
+            //     const createWallet = await new wallet({
+            //         userId:userId,
+            //         lenderId:lenderId,
+            //         orderId:orderId,
+            //         creditAmount: orderDetails.cartId.totalRentalPrice 
+            //     });
+            // } else {
+            //     throw new Error("cartId is not populated properly or is a string.");
+            // }
+            return order;
+        } catch (error) {
+            console.log("Error findUpdateOrderStatus:", error);
             throw error;
         }
     }

@@ -54,7 +54,6 @@ const userService = new UserService();
 const sendOTP = async (req:Request,res:Response) => {
     try {
         const {phone} = req.body
-        console.log(phone,'phone')
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
         console.log(otp,'otp')
         const message = await twilioClient.messages.create({
@@ -449,8 +448,6 @@ const verifyPhoneNumber = async (req: Request, res: Response) => {
 const updatePassword = async (req: Request, res: Response) => {
     try {
         const { resetToken, resetTokenExpiration, password, email } = req.body;
-
-        console.log(email, password);
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email!;
         if (isGmail) {
@@ -601,6 +598,7 @@ const userDetails = async(req:Request,res:Response)=>{
         return res.status(500).json({message: "Internal server error at userDetails"})
     }
 }
+
 
 export {
     signUp,

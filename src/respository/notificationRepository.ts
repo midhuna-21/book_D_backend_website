@@ -4,18 +4,47 @@ import mongoose from "mongoose";
 
 export class NotificationRepository {
     async createNotification(
+        notificationId: string,
         data: Partial<Notification>
     ): Promise<INotification | null> {
         try {
-            console.log(data.bookId);
-            return new notification({
-                senderId: data.senderId,
-                receiverId: data.receiverId,
-                bookId: data.bookId,
-                type: data.type,
-                content: data.content,
-                requestId: data.requestId,
-            }).save();
+            if (notificationId) {
+                
+                const existnotification = await notification.findById({
+                    _id: notificationId,
+                });
+                const id = existnotification?._id;
+                return await notification
+                    .findByIdAndUpdate(
+                        { _id: id },
+                        { status: data.status },
+                        { new: true }
+                    )
+                    .populate('userId')
+                    .populate('ownerId')
+                    .populate('bookId')
+                    .populate("cartId")
+                    .exec();
+            }else {
+                const newNotification = new notification({
+                    userId: data.userId,
+                    ownerId: data.ownerId,
+                    bookId: data.bookId,
+                    cartId:data.cartId,
+                    status: data.status,
+                  });
+            
+                  const savedNotification = await newNotification.save();
+
+                  const value = await notification
+                    .findById(savedNotification._id)
+                    .populate('userId')
+                    .populate('ownerId')
+                    .populate('bookId')
+                    .populate("cartId")
+                    .exec();
+                    return value;
+                }
         } catch (error) {
             console.log("Error createUser:", error);
             throw error;
@@ -24,13 +53,18 @@ export class NotificationRepository {
 
     async notificationsByUserId(userId: string): Promise<INotification[]> {
         try {
-            const notifications = await notification
-                .find({ receiverId: new mongoose.Types.ObjectId(userId) })
-                .populate("senderId")
-                .populate("receiverId")
+            const notifications = await notification  
+            .find({
+                $or: [
+                    { userId: new mongoose.Types.ObjectId(userId) },
+                    { ownerId: new mongoose.Types.ObjectId(userId) } 
+                ]
+            })
+                .populate("userId")
+                .populate("ownerId")
                 .populate("bookId")
-                .populate("requestId")
-                .sort({ createdAt: -1 })
+                .populate("cartId")
+                .sort({ createdAt: -1 });
 
             return notifications;
         } catch (error) {
@@ -39,29 +73,26 @@ export class NotificationRepository {
         }
     }
 
-    async updateNotificationType(notificationId: string,type:string) {
+    async updateNotificationType(notificationId: string, type: string) {
         try {
-            if(type=="accepted"){
-
+            if (type == "accepted") {
                 const update = await notification.findByIdAndUpdate(
                     notificationId,
-                    { isAccepted: true,isRejected:false },
+                    { isAccepted: true, isRejected: false },
                     { new: true }
                 );
                 return update;
-            }else{
+            } else {
                 const update = await notification.findByIdAndUpdate(
                     notificationId,
-                    { isReject: true ,isAccepted:false},
+                    { isReject: true, isAccepted: false },
                     { new: true }
                 );
-                return update
+                return update;
             }
         } catch (error) {
             console.log("Error updateNotificationType:", error);
             throw error;
         }
     }
-
-    
 }

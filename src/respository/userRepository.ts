@@ -5,7 +5,7 @@ export class UserRepository {
     async findUserByPhone(phone: string): Promise<IUser | null> {
         try {
             const phoneNumber =  await user.findOne({ phone:phone });
-            console.log(phoneNumber,'phoneumber')
+           
             return phoneNumber
         } catch (error) {
             console.log("Error findUserByPhone:", error);
@@ -112,7 +112,6 @@ export class UserRepository {
                 console.log("Error finding the user to update:");
                 return null;
             }else{
-                console.log(filteredUser,'filteredUser')
                 const updateFields: Partial<IUser> = {
                     name: filteredUser.name || userToUpdate.name,
                     email: filteredUser.email || userToUpdate.email,
