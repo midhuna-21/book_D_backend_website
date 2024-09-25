@@ -4,19 +4,15 @@ import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import { Request, Response } from "express";
 import cors from "cors";
-import dbConnect from "./config/db";
-import userRouter from "./routes/userRoute";
-import adminRouter from "./routes/adminRoute";
-import config from "./config/config";
-import { refreshTokenController } from "./controllers/refreshToken";
-import { UserService } from "./services/userService";
-import { INotification } from "./model/notificationModel";
-import { IUser } from "./model/userModel";
-import { IBooks } from "./model/bookModel";
-import { BookService } from "./services/bookService";
-import { ChatService } from "./services/chatService";
-import './utils/ReuseFunctions/cronJob';
-// import morgan  from 'morgan'
+import dbConnect from "./src/config/db";
+import userRouter from "./src/routes/userRoute";
+import adminRouter from "./src/routes/adminRoute";
+import config from "./src/config/config";
+import { refreshTokenController } from "./src/controllers/refreshToken";
+import { UserService } from "./src/services/userService";
+import { BookService } from "./src/services/bookService";
+import { ChatService } from "./src/services/chatService";
+import './src/utils/ReuseFunctions/cronJob';
 
 const userService = new UserService();
 const bookService = new BookService();
