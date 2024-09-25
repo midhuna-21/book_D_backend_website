@@ -12,6 +12,7 @@ import { UserService } from "./services/userService";
 import { BookService } from "./services/bookService";
 import { ChatService } from "./services/chatService";
 import './utils/ReuseFunctions/cronJob';
+import { Notification } from "./interfaces/data";
 
 const userService = new UserService();
 const bookService = new BookService();
@@ -51,9 +52,8 @@ const onlineUsers = new Map<string, string>();
 io.on("connection", (socket:Socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("register", (userId) => {
+    socket.on("register", (userId:string) => {
         if (userId) {
-            console.log(userId, "userId at socket ");
             userSockets.set(userId, socket.id);
             onlineUsers.set(userId, socket.id);
             // console.log(onlineUsers,'onlineUsers')
@@ -72,7 +72,7 @@ io.on("connection", (socket:Socket) => {
         }
     });
 
-    socket.on("send-notification", (data:{receiverId:string,notification:any}) => {
+    socket.on("send-notification", (data:{receiverId:string,notification:Notification}) => {
         const receiverSocketId = userSockets.get(data.receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("notification", data.notification);
@@ -82,39 +82,6 @@ io.on("connection", (socket:Socket) => {
         }
     });
 
-    //     const receiverSocketId = userSockets.get(data.receiverId);
-    //     if (receiverSocketId) {
-    //         io.to(receiverSocketId).emit('notification', data.notification);
-    //         console.log(`reply notification sent to ${data.receiverId}`);
-    //     }
-    // });
-
-    // socket.on('requestBook', async (data) => {
-    //   try {
-
-    //     console.log(data)
-    //     const { userId,ownerId, bookId,status} = data;
-    //     const receiverSocketId = userSockets.get(ownerId);
-    //     const user: IUser | null = await userService.getUserById(userId);
-    //     const book: IBooks | null = await bookService.getBookById(bookId);
-    //     const receiver: IUser | null = await userService.getUserById(ownerId);
-
-    //     if (!user || !book || !receiver) {
-    //       console.error('User, book, or receiver not found');
-    //       return;
-    //     }
-
-    //     if (receiverSocketId) {
-    //       io.to(receiverSocketId).emit('notification', data);
-    //       console.log(`request notification is sent to  ${ownerId}`);
-
-    //     } else {
-    //       console.log(`No active socket found for user ${ownerId}`);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error handling requestBook event:', error);
-    //   }
-    // });
     socket.on("send-message", async (data: { senderId: string; receiverId: string; content: string; chatRoomId: string }) => {
         try {
             const { senderId, receiverId, content, chatRoomId } = data;
@@ -159,7 +126,7 @@ app.get("/api/user/:userId/online-status", (req: Request, res: Response) => {
     res.json({ isOnline });
 });
 
-app.use((req, res, next:NextFunction) => {
+app.use((req:Request, res:Response, next:NextFunction) => {
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
     res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
     next();
