@@ -1,8 +1,7 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import http from "http";
-import { Server } from "socket.io";
+import { Server ,Socket} from "socket.io";
 import cookieParser from "cookie-parser";
-import { Request, Response } from "express";
 import cors from "cors";
 import dbConnect from "./config/db";
 import userRouter from "./routes/userRoute";
@@ -49,7 +48,7 @@ app.use(express.static("public/"));
 const userSockets = new Map<string, string>();
 const onlineUsers = new Map<string, string>();
 
-io.on("connection", (socket) => {
+io.on("connection", (socket:Socket) => {
     console.log("A user connected:", socket.id);
 
     socket.on("register", (userId) => {
@@ -73,7 +72,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("send-notification", (data) => {
+    socket.on("send-notification", (data:{receiverId:string,notification:any}) => {
         const receiverSocketId = userSockets.get(data.receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("notification", data.notification);
@@ -116,7 +115,7 @@ io.on("connection", (socket) => {
     //     console.error('Error handling requestBook event:', error);
     //   }
     // });
-    socket.on("send-message", async (data) => {
+    socket.on("send-message", async (data: { senderId: string; receiverId: string; content: string; chatRoomId: string }) => {
         try {
             const { senderId, receiverId, content, chatRoomId } = data;
             if (!content.trim()) {
@@ -160,7 +159,7 @@ app.get("/api/user/:userId/online-status", (req: Request, res: Response) => {
     res.json({ isOnline });
 });
 
-app.use((req, res, next) => {
+app.use((req, res, next:NextFunction) => {
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
     res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
     next();
