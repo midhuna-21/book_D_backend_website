@@ -1,9 +1,8 @@
 {
   "name": "media_backend",
   "version": "1.0.0",
-  "type": "commonjs",
   "description": "",
-  "main": "app.ts",
+  "main": "src/app.ts",
   "scripts": {
     "start": "nodemon --exec npx ts-node src/app.ts"
   },
