@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose,{Document} from 'mongoose';
 
 interface IWalletTransaction extends Document {
    source:string,
