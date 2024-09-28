@@ -20,17 +20,18 @@ const chatService = new ChatService();
 
 const app = express();
 
+console.log(config.API,'bucket region ')
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: config.API,
     credentials: true,
 };
-
+console.log(config.API,'p')
 app.use(cors(corsOptions));
 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: config.API,
         methods: ["GET", "POST", "PUT"],
         credentials: true,
     },

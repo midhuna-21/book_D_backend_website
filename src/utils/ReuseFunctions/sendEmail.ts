@@ -22,7 +22,7 @@ export const sendEmail = async(userId:string,email:string,resetToken:string,rese
 
     const logoUrl = 'D:\Book.D\backend\src\public\siteLogo.png'
    
-    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
+    const resetLink = `https://book-d-frontend-website.vercel.app/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
 
     const info = await transporter.sendMail({
       from: '"Book.D" <krishnamidhuna850@gmail.com>', 

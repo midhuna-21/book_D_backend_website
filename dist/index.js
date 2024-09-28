@@ -21,15 +21,17 @@ const userService = new userService_1.UserService();
 const bookService = new bookService_1.BookService();
 const chatService = new chatService_1.ChatService();
 const app = (0, express_1.default)();
+console.log(config_1.default.API, 'bucket region ');
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: config_1.default.API,
     credentials: true,
 };
+console.log(config_1.default.API, 'p');
 app.use((0, cors_1.default)(corsOptions));
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: config_1.default.API,
         methods: ["GET", "POST", "PUT"],
         credentials: true,
     },

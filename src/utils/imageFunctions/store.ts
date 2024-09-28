@@ -10,7 +10,7 @@ const s3Client = new S3Client({
     accessKeyId: config.ACCESS_KEY || "",
     secretAccessKey: config.SECRET_ACCESS_KEY || "",
   },
-  region: config.BUCKET_REGION || 'us-east-1',
+  region: config.BUCKET_REGION || "",
 });
 
 const s3Storage = multerS3({

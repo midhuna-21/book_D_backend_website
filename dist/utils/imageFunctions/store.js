@@ -14,7 +14,7 @@ const s3Client = new client_s3_1.S3Client({
         accessKeyId: config_1.default.ACCESS_KEY || "",
         secretAccessKey: config_1.default.SECRET_ACCESS_KEY || "",
     },
-    region: config_1.default.BUCKET_REGION || 'us-east-1' || ""
+    region: config_1.default.BUCKET_REGION || "",
 });
 exports.s3Client = s3Client;
 const s3Storage = (0, multer_s3_1.default)({
