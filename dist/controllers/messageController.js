@@ -37,7 +37,6 @@ const updateChatRoomRead = async (req, res) => {
             return res.status(400).json({ message: "chat is not found" });
         }
         const { message, chat } = await chatService.getUpdateChatRoomRead(chatRoomId);
-        console.log(chat?.isRead, 'ok cana chat');
         const isRead = chat?.isRead;
         return res.status(200).json({ isRead });
     }

@@ -23,7 +23,6 @@ export class ChatRepository {
     async findChatRoomById(chatRoomId:string){
         try {
             const isChatRoom = await chatRoom.findById(chatRoomId);
-            console.log(isChatRoom, "chatRoomUpdated");
             return isChatRoom;
         } catch (error) {
             console.log("Error findChatRoomById:", error);

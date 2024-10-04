@@ -7,7 +7,6 @@ import { BookDWallet } from "../utils/ReuseFunctions/interface/data";
    export class WalletRepository {
       
       async createWalletForWebsite(cartId:string) {
-         console.log('hi')
          try {
             const cartData = await cart.findById({_id:cartId})
              let existWallet = await bookDWallet.findOne()

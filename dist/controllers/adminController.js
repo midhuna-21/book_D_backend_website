@@ -3,16 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalSoldBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.getUsersList = exports.addGenre = exports.adminLogin = void 0;
+exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalSoldBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const adminService_1 = require("../services/adminService");
 // import generateToken from "../utils/generateToken";
 const crypto_1 = __importDefault(require("crypto"));
-const sharp_1 = __importDefault(require("sharp"));
 const generateToken_1 = require("../utils/jwt/generateToken");
-const client_s3_1 = require("@aws-sdk/client-s3");
-const config_1 = __importDefault(require("../config/config"));
-const store_1 = require("../utils/imageFunctions/store");
 const adminService = new adminService_1.AdminService();
 const randomImageName = (bytes = 32) => crypto_1.default.randomBytes(bytes).toString("hex");
 const addGenre = async (req, res) => {
@@ -22,32 +18,16 @@ const addGenre = async (req, res) => {
         if (existGenre) {
             return res.status(400).json({ message: "Genre is already exist" });
         }
-        const buffer = await (0, sharp_1.default)(req.file?.buffer)
-            .resize({ height: 1920, width: 1080, fit: "contain" })
-            .toBuffer();
         if (!genreName) {
             return res
                 .status(400)
                 .json({ message: "Please provide a genre name" });
         }
-        if (!req.file) {
+        const file = req.file;
+        if (!file) {
             return res.status(400).json({ message: "Please provide image" });
         }
-        const image = randomImageName();
-        const params = {
-            Bucket: config_1.default.BUCKET_NAME,
-            Key: image,
-            Body: buffer,
-            ContentType: req.file.mimetype,
-        };
-        const command = new client_s3_1.PutObjectCommand(params);
-        try {
-            await store_1.s3Client.send(command);
-        }
-        catch (error) {
-            console.error(error);
-            return res.status(500).json({ message: "Failed to upload image" });
-        }
+        const image = file.location;
         const data = { genreName, image };
         const genre = await adminService.getCreateGenre(data);
         return res.status(200).json({ genre });
@@ -191,4 +171,55 @@ const orderDetail = async (req, res) => {
     }
 };
 exports.orderDetail = orderDetail;
+const genresList = async (req, res) => {
+    try {
+        const genres = await adminService.getAllGenres();
+        return res.status(200).json(genres);
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+exports.genresList = genresList;
+const genre = async (req, res) => {
+    try {
+        const genreId = req.params.genreId;
+        const genre = await adminService.getGenre(genreId);
+        return res.status(200).json(genre);
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+exports.genre = genre;
+const updateGenre = async (req, res) => {
+    try {
+        const genreId = req.params.genreId;
+        const { genreName, exisitingImage } = req.body;
+        let image;
+        if (req.file) {
+            const file = req.file;
+            image = file.location;
+        }
+        else if (exisitingImage) {
+            image = exisitingImage;
+        }
+        else {
+            return res.status(400).json({ message: "Please provide image" });
+        }
+        const data = {
+            genreName,
+            image
+        };
+        const genre = await adminService.getUpdateGenre(data, genreId);
+        return res.status(200).json(genre);
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(400).json({ message: "Internal server error" });
+    }
+};
+exports.updateGenre = updateGenre;
 //# sourceMappingURL=adminController.js.map

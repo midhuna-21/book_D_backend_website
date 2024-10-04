@@ -20,12 +20,10 @@ const chatService = new ChatService();
 
 const app = express();
 
-console.log(config.API,'bucket region ')
 const corsOptions = {
     origin: config.API,
     credentials: true,
 };
-console.log(config.API,'p')
 app.use(cors(corsOptions));
 
 const server = http.createServer(app);
@@ -57,6 +55,7 @@ io.on("connection", (socket:Socket) => {
         if (userId) {
             userSockets.set(userId, socket.id);
             onlineUsers.set(userId, socket.id);
+            console.log(userSockets,'user sockets')
             // console.log(onlineUsers,'onlineUsers')
             io.emit("user-status", { userId, isOnline: true });
         }

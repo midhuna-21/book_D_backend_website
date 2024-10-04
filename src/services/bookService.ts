@@ -7,7 +7,6 @@ const bookRepository = new BookRepository();
 export class BookService {
     async getAddToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
-            console.log(bookRentData, "servise");
             return await bookRepository.addToBookRent(bookRentData);
         } catch (error) {
             console.log("Error getAddToBookRent:", error);
@@ -27,6 +26,16 @@ export class BookService {
             throw error;
         }
     }
+    async getGenreMatchedBooks(
+        genreName: string
+    ): Promise<IBooks[] | null> {
+        try {
+            return await bookRepository.genreMatchedBooks(genreName);
+        } catch (error) {
+            console.log("Error geUpdateBookRent:", error);
+            throw error;
+        }
+    }
     
     async getAddToBookSell(bookSelldata: Books): Promise<IBooks | null> {
         try {
@@ -37,9 +46,18 @@ export class BookService {
         }
     }
     
-    async getAllGenres() {
+    async getGenres() {
         try {
-            return await bookRepository.findAllGenres();
+            return await bookRepository.findGenres();
+        } catch (error) {
+            console.log("Error getGenres:", error);
+            throw error;
+        }
+    }
+
+    async getAllGenres(userId:string) {
+        try {
+            return await bookRepository.findAllGenres(userId);
         } catch (error) {
             console.log("Error getAllGenres:", error);
             throw error;
@@ -49,7 +67,6 @@ export class BookService {
     async getAllBooks() {
         try {
             const books = await bookRepository.findAllBooks();
-            console.log(books, "books");
             return books;
         } catch (error) {
             console.log("Error getAllBooks:", error);

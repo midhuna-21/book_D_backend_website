@@ -90,9 +90,22 @@ class BookRepository {
             throw error;
         }
     }
-    async findAllGenres() {
+    async findGenres() {
         try {
-            return await genresModel_1.genres.find();
+            const allGenres = await genresModel_1.genres.find();
+            return allGenres;
+        }
+        catch (error) {
+            console.log("Error findAllGenres:", error);
+            throw error;
+        }
+    }
+    async findAllGenres(userId) {
+        try {
+            const allBooks = await bookModel_1.books.find({ lenderId: { $ne: userId } });
+            const allGenres = await genresModel_1.genres.find();
+            const genresWithBooks = allGenres.filter(genre => allBooks.some(book => book.genre === genre.genreName));
+            return genresWithBooks;
         }
         catch (error) {
             console.log("Error findAllGenres:", error);
@@ -190,6 +203,17 @@ class BookRepository {
             throw error;
         }
     }
+    async genreMatchedBooks(genreName) {
+        try {
+            const allBooks = await bookModel_1.books
+                .find({ genre: genreName });
+            return allBooks;
+        }
+        catch (error) {
+            console.log("Error findOrderToShowSuccess:", error);
+            throw error;
+        }
+    }
     async findOrderToShowSuccess(userId, bookId) {
         try {
             const order = await orderModel_1.orders
@@ -251,7 +275,7 @@ class BookRepository {
             // const lenderId = orderDetails.lenderId;
             // const orderId = orderDetails._id;
             // if (orderDetails && typeof orderDetails.cartId !== 'string') {
-            //     const createWallet = await new wallet({
+            //     const createWallet `= await new wallet({
             //         userId:userId,
             //         lenderId:lenderId,
             //         orderId:orderId,

@@ -21,12 +21,10 @@ const userService = new userService_1.UserService();
 const bookService = new bookService_1.BookService();
 const chatService = new chatService_1.ChatService();
 const app = (0, express_1.default)();
-console.log(config_1.default.API, 'bucket region ');
 const corsOptions = {
     origin: config_1.default.API,
     credentials: true,
 };
-console.log(config_1.default.API, 'p');
 app.use((0, cors_1.default)(corsOptions));
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
@@ -51,6 +49,7 @@ io.on("connection", (socket) => {
         if (userId) {
             userSockets.set(userId, socket.id);
             onlineUsers.set(userId, socket.id);
+            console.log(userSockets, 'user sockets');
             // console.log(onlineUsers,'onlineUsers')
             io.emit("user-status", { userId, isOnline: true });
         }

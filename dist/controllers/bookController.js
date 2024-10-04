@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.OrderToShowSuccess = exports.search = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.lenderDetails = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
+exports.genreMatchedBooks = exports.updateOrderStatus = exports.OrderToShowSuccess = exports.search = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.lenderDetails = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const sharp_1 = __importDefault(require("sharp"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -23,23 +23,7 @@ const userService = new userService_1.UserService();
 const walletService = new walletService_1.WalletService();
 const genresOfBooks = async (req, res) => {
     try {
-        const genres = await bookService.getAllGenres();
-        for (const genre of genres) {
-            if (genre.image) {
-                const getObjectParams = {
-                    Bucket: config_1.default.BUCKET_NAME,
-                    Key: genre.image,
-                };
-                const command = new client_s3_1.GetObjectCommand(getObjectParams);
-                const url = await (0, s3_request_presigner_1.getSignedUrl)(store_1.s3Client, command, {
-                    expiresIn: 3600,
-                });
-                genre.image = url;
-            }
-            else {
-                genre.image = " ";
-            }
-        }
+        const genres = await bookService.getGenres();
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -50,23 +34,8 @@ const genresOfBooks = async (req, res) => {
 exports.genresOfBooks = genresOfBooks;
 const genres = async (req, res) => {
     try {
-        const genres = await bookService.getAllGenres();
-        for (const genre of genres) {
-            if (genre.image && typeof genre.image === "string") {
-                const getObjectParams = {
-                    Bucket: config_1.default.BUCKET_NAME,
-                    Key: genre.image,
-                };
-                const command = new client_s3_1.GetObjectCommand(getObjectParams);
-                const imageUrl = await (0, s3_request_presigner_1.getSignedUrl)(store_1.s3Client, command, {
-                    expiresIn: 3600,
-                });
-                genre.image = imageUrl;
-            }
-            else {
-                genre.image = "";
-            }
-        }
+        const userId = req.userId;
+        const genres = await bookService.getAllGenres(userId);
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -96,6 +65,31 @@ const exploreBooks = async (req, res) => {
     }
 };
 exports.exploreBooks = exploreBooks;
+const genreMatchedBooks = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const genreName = req.params.genreName?.toString();
+        const allBooks = await bookService.getGenreMatchedBooks(genreName);
+        const booksToShow = [];
+        if (!allBooks) {
+            return res.status(200).json([]);
+        }
+        for (const book of allBooks) {
+            if (book.lenderId !== userId) {
+                const isLenderExist = await userService.getUserById(book.lenderId);
+                if (isLenderExist && !isLenderExist.isBlocked) {
+                    booksToShow.push(book);
+                }
+            }
+        }
+        return res.status(200).json(booksToShow);
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+exports.genreMatchedBooks = genreMatchedBooks;
 const bookDetail = async (req, res) => {
     try {
         const bookId = req.params.Id;
@@ -194,7 +188,6 @@ const rentBookUpdate = async (req, res) => {
             const newImages = files.map((file) => file.location);
             finalImages = [...finalImages, ...newImages];
         }
-        console.log(finalImages, "finalImages after");
         const bookRentData = {
             bookTitle,
             description,
@@ -422,32 +415,6 @@ const createCheckout = async (req, res) => {
             cancel_url: `${config_1.default.API}/payment-cancel`,
         });
         res.json({ id: session.id });
-        //    const sessionData = {
-        //     cartId,
-        //      sessionId:session.id,
-        //      userId,
-        //      lenderId,
-        //      bookId,
-        //      totalPrice,
-        //      quantity,
-        //      depositAmount,
-        //      totalRentalPrice,
-        //    };
-        //    const order = await bookService.getCreateOrder(sessionData);
-        //    console.log(order,'orderee')
-        //    const cart = await cartService.getUpdateIsPaid(cartId)
-        //    console.log(cart,'carttt')
-        //    const wallet = await walletService.getCreateWalletForWebsite(cartId)
-        //    console.log(wallet,'walllettt')
-        //    const cart = await cartService.getUpdateIsPaid(cartId)
-        //    const dataWallet ={
-        //     userId,
-        //     lenderId,
-        //     total_amount:totalPrice,
-        //     rental_amount:totalRentalPrice,
-        //     deposit_amount:depositAmount,
-        //    }
-        //    const wallet = await walletService.getCreateWalletForWebsite(dataWallet)
     }
     catch (error) {
         console.error("Error createCheckout :", error);
@@ -484,7 +451,7 @@ exports.createCheckout = createCheckout;
 const createOrder = async (req, res) => {
     try {
         const { userId, bookId, cartId } = req.body;
-        console.log(userId, 'userid', bookId, 'bookdi', cartId, 'cartid');
+        console.log(userId, "userid", bookId, "bookdi", cartId, "cartid");
         if (!userId || !bookId) {
             return res
                 .status(400)
@@ -508,17 +475,6 @@ const createOrder = async (req, res) => {
             const wallet = await walletService.getCreateWalletForWebsite(cartId);
             res.status(200).json({ order });
         }
-        //    console.log(order,'orderee')
-        //  const order = await bookService.getUpdateOrder(userId,bookId)
-        //  const cart = await cartService.getUpdateIsPaid(cartId)
-        //    const dataWallet ={
-        //     cartId,
-        //     total_amount:totalPrice,
-        //     rental_amount:totalRentalPrice,
-        //     deposit_amount:depositAmount,
-        //    }
-        //    const wallet = await walletService.getCreateWalletForWebsite(cartId)
-        //  res.status(200).json({order});
     }
     catch (error) {
         console.error("Error createOrder:", error);
@@ -605,7 +561,6 @@ exports.updateOrderStatus = updateOrderStatus;
 const OrderToShowSuccess = async (req, res) => {
     try {
         const { userId, bookId } = req.query;
-        console.log(userId, "userId", bookId, "bokid");
         if (!userId || !bookId) {
             return res
                 .status(400)

@@ -6,7 +6,7 @@ import {IAdmin} from '../model/adminModel'
 
 const adminRepository = new AdminRepository()
 
-export class AdminService{
+export class AdminService {
 
    async getAdminByEmail(email:string):Promise<IUser | null>{
       try{
@@ -29,6 +29,14 @@ export class AdminService{
          return await adminRepository.createGenre(data)
       }catch(error){
          console.log("Error getGenreName:",error);
+         throw error
+   }
+   }
+   async getGenre(genreId:string){
+      try{
+         return await adminRepository.findGenre(genreId)
+      }catch(error){
+         console.log("Error getGenre:",error);
          throw error
    }
    }
@@ -122,8 +130,25 @@ export class AdminService{
       throw error
 }
   }
+
+  async getAllGenres(){
+   try{
+      return await adminRepository.findAllGenres()
+   }catch(error){
+      console.log("Error getAllGenres:",error);
+      throw error
+}
 }
 
+async getUpdateGenre(data:Genre,genreId:string){
+   try{
+      return await adminRepository.findUpdateGenre(data,genreId)
+   }catch(error){
+      console.log("Error getUpdateGenre:",error);
+      throw error
+}
+}
+}
 // const getUnBlockUser =async(_id:string)=>{
 //    return await adminRepository.findUnBlockUser(_id)
 // }
@@ -144,6 +169,4 @@ export class AdminService{
 // const getGenreName = async(genreName:string)=>{
 //    return await adminRepository.findGenreName(genreName)
 // }
-
-
 

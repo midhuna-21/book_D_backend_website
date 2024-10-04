@@ -5,7 +5,6 @@ const bookDWallet_1 = require("../model/bookDWallet");
 const cartModel_1 = require("../model/cartModel");
 class WalletRepository {
     async createWalletForWebsite(cartId) {
-        console.log('hi');
         try {
             const cartData = await cartModel_1.cart.findById({ _id: cartId });
             let existWallet = await bookDWallet_1.bookDWallet.findOne();

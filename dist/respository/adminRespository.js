@@ -160,6 +160,39 @@ class AdminRepository {
             throw error;
         }
     }
+    async findAllGenres() {
+        try {
+            return await genresModel_1.genres.find();
+        }
+        catch (error) {
+            console.log("Error findAllOrders:", error);
+            throw error;
+        }
+    }
+    async findGenre(genreId) {
+        try {
+            return await genresModel_1.genres.findById({ _id: genreId });
+        }
+        catch (error) {
+            console.log("Error findGenre:", error);
+            throw error;
+        }
+    }
+    async findUpdateGenre(data, genreId) {
+        try {
+            const genre = await genresModel_1.genres.findById({ _id: genreId });
+            if (!genre) {
+                console.log("Error finding the genre:");
+                return null;
+            }
+            const updatedGenre = await genresModel_1.genres.findByIdAndUpdate({ _id: genreId }, { genreName: data.genreName || genre.genreName, image: data.image || genre.image }, { new: true });
+            return updatedGenre;
+        }
+        catch (error) {
+            console.log("Error findUpdateGenre:", error);
+            throw error;
+        }
+    }
 }
 exports.AdminRepository = AdminRepository;
 //# sourceMappingURL=adminRespository.js.map

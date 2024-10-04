@@ -21,7 +21,6 @@ class ChatRepository {
     async findChatRoomById(chatRoomId) {
         try {
             const isChatRoom = await chatRoom_1.chatRoom.findById(chatRoomId);
-            console.log(isChatRoom, "chatRoomUpdated");
             return isChatRoom;
         }
         catch (error) {

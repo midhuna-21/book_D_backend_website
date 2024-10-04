@@ -6,7 +6,6 @@ const bookRepository = new bookRepository_1.BookRepository();
 class BookService {
     async getAddToBookRent(bookRentData) {
         try {
-            console.log(bookRentData, "servise");
             return await bookRepository.addToBookRent(bookRentData);
         }
         catch (error) {
@@ -23,6 +22,15 @@ class BookService {
             throw error;
         }
     }
+    async getGenreMatchedBooks(genreName) {
+        try {
+            return await bookRepository.genreMatchedBooks(genreName);
+        }
+        catch (error) {
+            console.log("Error geUpdateBookRent:", error);
+            throw error;
+        }
+    }
     async getAddToBookSell(bookSelldata) {
         try {
             return await bookRepository.addToBookSell(bookSelldata);
@@ -32,9 +40,18 @@ class BookService {
             throw error;
         }
     }
-    async getAllGenres() {
+    async getGenres() {
         try {
-            return await bookRepository.findAllGenres();
+            return await bookRepository.findGenres();
+        }
+        catch (error) {
+            console.log("Error getGenres:", error);
+            throw error;
+        }
+    }
+    async getAllGenres(userId) {
+        try {
+            return await bookRepository.findAllGenres(userId);
         }
         catch (error) {
             console.log("Error getAllGenres:", error);
@@ -44,7 +61,6 @@ class BookService {
     async getAllBooks() {
         try {
             const books = await bookRepository.findAllBooks();
-            console.log(books, "books");
             return books;
         }
         catch (error) {

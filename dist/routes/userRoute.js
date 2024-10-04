@@ -25,6 +25,7 @@ userRouter.post('/update-password', userController_1.updatePassword);
 userRouter.post('/rent-book', authMiddleware_1.verifyToken, store_1.default.array('images', 10), bookController_1.rentBook);
 userRouter.post('/sell-book', authMiddleware_1.verifyToken, store_1.default.array('images', 10), bookController_1.sellBook);
 userRouter.get('/genres', authMiddleware_1.verifyToken, bookController_1.genresOfBooks);
+userRouter.get('/genre', authMiddleware_1.verifyToken, bookController_1.genres);
 userRouter.get('/books', authMiddleware_1.verifyToken, bookController_1.exploreBooks);
 userRouter.get('/book/:Id', authMiddleware_1.verifyToken, bookController_1.bookDetail);
 userRouter.get('/lender-details/:lenderId/:bookId', authMiddleware_1.verifyToken, bookController_1.lenderDetails);
@@ -56,6 +57,8 @@ userRouter.post('/create-order', authMiddleware_1.verifyToken, bookController_1.
 userRouter.get('/get-order-to-showSuccess', authMiddleware_1.verifyToken, bookController_1.OrderToShowSuccess);
 userRouter.get('/orders/:userId', authMiddleware_1.verifyToken, bookController_1.orders);
 userRouter.get('/search/:searchQuery', authMiddleware_1.verifyToken, bookController_1.search);
+userRouter.get('/genre-books/:genreName', authMiddleware_1.verifyToken, bookController_1.genreMatchedBooks);
+// userRouter.get('/search/:searchQuery',verifyToken,search)
 userRouter.post('/chatRoom-update/:chatRoomId', authMiddleware_1.verifyToken, messageController_1.updateChatRoomRead);
 // userRouter.put('/rent-book-update/:bookId',verifyToken,upload.array('images', 10),rentBookUpdate)
 userRouter.put('/rent-book-update/:bookId', authMiddleware_1.verifyToken, store_1.default.array('images', 10), bookController_1.rentBookUpdate);

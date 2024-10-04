@@ -373,10 +373,8 @@ const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
           }
       
         let imageUrl: string = file.location;
-        console.log(req.file,'file')
       
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
-       console.log(user,'userrrr updateddd profile image')
         return res.status(200).json({ user });
       
     } catch (error: any) {
@@ -402,7 +400,6 @@ const deleteUserImage = async (req: AuthenticatedRequest, res: Response) => {
 
         const command = new DeleteObjectCommand(deleteParams);
         await s3Client.send(command);
-        console.log(imageToRemove, "image to remove delte function controller");
         const user = await userService.getDeleteUserImage(userId);
         return res.status(200).json({ user });
     } catch (error) {
@@ -561,7 +558,6 @@ const calculateDistance = async(req:Request,res:Response)=>{
             // console.log(data,'data')
             if (data.status === "OK") {
                 const distance = data.rows[0].elements[0].distance.value; 
-                console.log(distance / 1000, 'distance km');
                 const distanceResponse = distance/1000;
                 return res.status(200).json({distanceResponse})
 

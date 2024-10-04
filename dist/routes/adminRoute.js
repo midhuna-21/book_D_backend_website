@@ -11,6 +11,9 @@ const adminRouter = express_1.default.Router();
 adminRouter.post('/admin-login', adminController_1.adminLogin);
 // add genre
 adminRouter.post('/add-genre', authMiddleware_1.verifyToken, store_1.default.single('file'), adminController_1.addGenre);
+adminRouter.get('/genres', authMiddleware_1.verifyToken, adminController_1.genresList);
+adminRouter.get('/genre/:genreId', authMiddleware_1.verifyToken, adminController_1.genre);
+adminRouter.post('/genre-update/:genreId', authMiddleware_1.verifyToken, store_1.default.single('file'), adminController_1.updateGenre);
 // get-users
 adminRouter.get('/get-users', authMiddleware_1.verifyToken, adminController_1.getUsersList);
 // block-user

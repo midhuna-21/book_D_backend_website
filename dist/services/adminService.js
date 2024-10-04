@@ -31,6 +31,15 @@ class AdminService {
             throw error;
         }
     }
+    async getGenre(genreId) {
+        try {
+            return await adminRepository.findGenre(genreId);
+        }
+        catch (error) {
+            console.log("Error getGenre:", error);
+            throw error;
+        }
+    }
     // async getCreateCustomGenre(genreName:Partial<Genre>):Promise<IGenre | null>{
     //    try{
     //       return await adminRepository.createCustomGenre(genreName)
@@ -126,6 +135,24 @@ class AdminService {
         }
         catch (error) {
             console.log("Error getOrderDetail:", error);
+            throw error;
+        }
+    }
+    async getAllGenres() {
+        try {
+            return await adminRepository.findAllGenres();
+        }
+        catch (error) {
+            console.log("Error getAllGenres:", error);
+            throw error;
+        }
+    }
+    async getUpdateGenre(data, genreId) {
+        try {
+            return await adminRepository.findUpdateGenre(data, genreId);
+        }
+        catch (error) {
+            console.log("Error getUpdateGenre:", error);
             throw error;
         }
     }

@@ -3,7 +3,6 @@ import { books, IBooks } from "../model/bookModel";
 import { genres } from "../model/genresModel";
 import { Order } from "../interfaces/data";
 import { orders,IOrder } from "../model/orderModel";
-import { wallet } from "../model/walletModel";
 
 export class BookRepository {
     async addToBookRent(bookRentData: Books): Promise<IBooks | null> {
@@ -92,9 +91,25 @@ export class BookRepository {
         }
     }
 
-    async findAllGenres() {
+    async findGenres() {
         try {
-            return await genres.find();
+            const allGenres = await genres.find()
+            return allGenres
+        } catch (error) {
+            console.log("Error findAllGenres:", error);
+            throw error;
+        }
+    }
+
+    async findAllGenres(userId:string) {
+        try {
+           
+            const allBooks = await books.find({lenderId:{$ne:userId}})
+            const allGenres = await genres.find()
+            const genresWithBooks = allGenres.filter(genre => 
+                allBooks.some(book => book.genre === genre.genreName)
+            );
+            return genresWithBooks
         } catch (error) {
             console.log("Error findAllGenres:", error);
             throw error;
@@ -201,6 +216,19 @@ export class BookRepository {
         }
     }
 
+    async genreMatchedBooks(genreName:string):Promise<IBooks[] | null> {
+        try {
+            const allBooks = await books
+                .find(
+                    { genre: genreName})
+        
+            return allBooks;
+        } catch (error) {
+            console.log("Error findOrderToShowSuccess:", error);
+            throw error;
+        }
+    }
+
     async findOrderToShowSuccess(userId: string, bookId: string) {
         try {
             const order = await orders
@@ -271,7 +299,7 @@ export class BookRepository {
             // const orderId = orderDetails._id;
     
             // if (orderDetails && typeof orderDetails.cartId !== 'string') {
-            //     const createWallet = await new wallet({
+            //     const createWallet `= await new wallet({
             //         userId:userId,
             //         lenderId:lenderId,
             //         orderId:orderId,

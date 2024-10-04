@@ -5,7 +5,7 @@ calculateDistance,verifyEmail,
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
-import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout, lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, rentBookUpdate ,updateOrderStatus} from '../controllers/bookController';
+import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout,genres ,lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, genreMatchedBooks,rentBookUpdate ,updateOrderStatus} from '../controllers/bookController';
 import { notifications, sendNotification } from '../controllers/notificationController';
 import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead,unReadMessages} from '../controllers/messageController';
 import { updateCart, checkAccept, checkUserSentRequest, saveCart } from '../controllers/cartController';
@@ -37,6 +37,8 @@ userRouter.post('/rent-book',verifyToken,upload.array('images', 10),rentBook)
 userRouter.post('/sell-book',verifyToken,upload.array('images', 10),sellBook)
 
 userRouter.get('/genres',verifyToken,genresOfBooks)
+
+userRouter.get('/genre',verifyToken,genres)
 
 userRouter.get('/books',verifyToken,exploreBooks)
 
@@ -98,6 +100,8 @@ userRouter.get('/get-order-to-showSuccess',verifyToken,OrderToShowSuccess)
 userRouter.get('/orders/:userId',verifyToken,orders)
 
 userRouter.get('/search/:searchQuery',verifyToken,search)
+userRouter.get('/genre-books/:genreName',verifyToken,genreMatchedBooks)
+// userRouter.get('/search/:searchQuery',verifyToken,search)
 
 userRouter.post('/chatRoom-update/:chatRoomId',verifyToken,updateChatRoomRead)
 

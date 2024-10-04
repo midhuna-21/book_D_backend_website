@@ -30,52 +30,19 @@ interface CustomMulterFile extends Express.Multer.File {
     location: string;
 }
 
-const genresOfBooks = async (req: Request, res: Response) => {
+const genresOfBooks = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const genres: IGenre[] = await bookService.getAllGenres();
-        for (const genre of genres) {
-            if (genre.image) {
-                const getObjectParams = {
-                    Bucket: config.BUCKET_NAME,
-                    Key: genre.image,
-                };
-
-                const command = new GetObjectCommand(getObjectParams);
-                const url = await getSignedUrl(s3Client, command, {
-                    expiresIn: 3600,
-                });
-                genre.image = url;
-            } else {
-                genre.image = " ";
-            }
-        }
-
+        const genres: IGenre[] = await bookService.getGenres();
         return res.status(200).json(genres);
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const genres = async (req: Request, res: Response): Promise<Response> => {
+const genres = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
     try {
-        const genres: IGenre[] = await bookService.getAllGenres();
-
-        for (const genre of genres) {
-            if (genre.image && typeof genre.image === "string") {
-                const getObjectParams: GetObjectCommandInput = {
-                    Bucket: config.BUCKET_NAME,
-                    Key: genre.image,
-                };
-                const command = new GetObjectCommand(getObjectParams);
-                const imageUrl = await getSignedUrl(s3Client, command, {
-                    expiresIn: 3600,
-                });
-                genre.image = imageUrl;
-            } else {
-                genre.image = "";
-            }
-        }
-
+        const userId = req.userId!
+        const genres: IGenre[] = await bookService.getAllGenres(userId);
         return res.status(200).json(genres);
     } catch (error: any) {
         console.log(error.message);
@@ -93,6 +60,37 @@ const exploreBooks = async (
         const allBooks: IBooks[] = await bookService.getAllBooks();
         const booksToShow: IBooks[] = [];
 
+        for (const book of allBooks) {
+            if (book.lenderId !== userId) {
+                const isLenderExist = await userService.getUserById(
+                    book.lenderId
+                );
+
+                if (isLenderExist && !isLenderExist.isBlocked) {
+                    booksToShow.push(book);
+                }
+            }
+        }
+        return res.status(200).json(booksToShow);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const genreMatchedBooks = async (
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<Response> => {
+    try {
+        const userId = req.userId;
+        const genreName = req.params.genreName?.toString();
+        const allBooks: IBooks[] | null =
+            await bookService.getGenreMatchedBooks(genreName);
+        const booksToShow: IBooks[] = [];
+        if (!allBooks) {
+            return res.status(200).json([]);
+        }
         for (const book of allBooks) {
             if (book.lenderId !== userId) {
                 const isLenderExist = await userService.getUserById(
@@ -258,8 +256,6 @@ const rentBookUpdate = async (req: AuthenticatedRequest, res: Response) => {
             const newImages = files.map((file) => file.location);
             finalImages = [...finalImages, ...newImages];
         }
-
-        console.log(finalImages, "finalImages after");
 
         const bookRentData: Books = {
             bookTitle,
@@ -526,39 +522,10 @@ const createCheckout = async (req: Request, res: Response) => {
             mode: "payment",
             success_url: `${config.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}`,
             cancel_url: `${config.API}/payment-cancel`,
-            
         });
-        
-        res.json({ id: session.id  });
 
-        //    const sessionData = {
-        //     cartId,
-        //      sessionId:session.id,
-        //      userId,
-        //      lenderId,
-        //      bookId,
-        //      totalPrice,
-        //      quantity,
-        //      depositAmount,
-        //      totalRentalPrice,
-        //    };
+        res.json({ id: session.id });
 
-        //    const order = await bookService.getCreateOrder(sessionData);
-        //    console.log(order,'orderee')
-        //    const cart = await cartService.getUpdateIsPaid(cartId)
-        //    console.log(cart,'carttt')
-        //    const wallet = await walletService.getCreateWalletForWebsite(cartId)
-        //    console.log(wallet,'walllettt')
-        //    const cart = await cartService.getUpdateIsPaid(cartId)
-
-        //    const dataWallet ={
-        //     userId,
-        //     lenderId,
-        //     total_amount:totalPrice,
-        //     rental_amount:totalRentalPrice,
-        //     deposit_amount:depositAmount,
-        //    }
-        //    const wallet = await walletService.getCreateWalletForWebsite(dataWallet)
     } catch (error: any) {
         console.error("Error createCheckout :", error);
 
@@ -597,7 +564,7 @@ const createCheckout = async (req: Request, res: Response) => {
 const createOrder = async (req: Request, res: Response) => {
     try {
         const { userId, bookId, cartId } = req.body;
-console.log(userId,'userid',bookId,'bookdi',cartId,'cartid')
+        console.log(userId, "userid", bookId, "bookdi", cartId, "cartid");
         if (!userId || !bookId) {
             return res
                 .status(400)
@@ -622,23 +589,13 @@ console.log(userId,'userid',bookId,'bookdi',cartId,'cartid')
 
             const order = await bookService.getCreateOrder(orderData);
             const cart = await cartService.getUpdateIsPaid(cartId);
-            const wallet = await walletService.getCreateWalletForWebsite(cartId)
+            const wallet = await walletService.getCreateWalletForWebsite(
+                cartId
+            );
             res.status(200).json({ order });
         }
 
-        //    console.log(order,'orderee')
-
-        //  const order = await bookService.getUpdateOrder(userId,bookId)
-        //  const cart = await cartService.getUpdateIsPaid(cartId)
-
-        //    const dataWallet ={
-        //     cartId,
-        //     total_amount:totalPrice,
-        //     rental_amount:totalRentalPrice,
-        //     deposit_amount:depositAmount,
-        //    }
-        //    const wallet = await walletService.getCreateWalletForWebsite(cartId)
-        //  res.status(200).json({order});
+      
     } catch (error) {
         console.error("Error createOrder:", error);
         res.status(500).json({
@@ -728,7 +685,6 @@ const updateOrderStatus = async (req: Request, res: Response) => {
 const OrderToShowSuccess = async (req: Request, res: Response) => {
     try {
         const { userId, bookId } = req.query;
-        console.log(userId, "userId", bookId, "bokid");
         if (!userId || !bookId) {
             return res
                 .status(400)
@@ -747,25 +703,6 @@ const OrderToShowSuccess = async (req: Request, res: Response) => {
         });
     }
 };
-//   const updateOrderStatus =  async (req: Request, res: Response) => {
-//     try {
-
-//         const {selectedOrderId} = req.params;
-//         const {isBookHandover}=req.body
-//         console.log(selectedOrderId,'selectedOrderId')
-//         if(!selectedOrderId){
-//             return res.status(400).json({message:"order id is missing"})
-//         }
-//     if(isBookHandover=="yes"){
-//         const bookStatus = "reached_at_user"
-//     }
-//     const order = await bookService.getUpdateOrderStatus(selectedOrderId,bookStatus)
-//         res.status(200).json({order});
-//     } catch (error) {
-//         console.error('Error createOrder:', error);
-//         res.status(500).json({ error: 'An error occurred getting Orders.' });
-//     }
-// };
 export {
     genresOfBooks,
     exploreBooks,
@@ -784,4 +721,5 @@ export {
     search,
     OrderToShowSuccess,
     updateOrderStatus,
+    genreMatchedBooks,
 };

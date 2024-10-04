@@ -18,6 +18,11 @@ import {s3Client} from '../utils/imageFunctions/store'
 
 const adminService = new AdminService();
 
+
+interface CustomMulterFile extends Express.Multer.File {
+    location: string;
+}
+
 const randomImageName = (bytes = 32) =>
     crypto.randomBytes(bytes).toString("hex");
 
@@ -28,33 +33,21 @@ const addGenre = async (req: Request, res: Response) => {
         if(existGenre){
             return res.status(400).json({ message: "Genre is already exist" });
         }
-        const buffer = await sharp(req.file?.buffer)
-            .resize({ height: 1920, width: 1080, fit: "contain" })
-            .toBuffer();
+  
         if (!genreName) {
             return res
                 .status(400)
                 .json({ message: "Please provide a genre name" });
         }
-        if (!req.file) {
+        
+        const file = req.file as CustomMulterFile;
+        if (!file) {
             return res.status(400).json({ message: "Please provide image" });
         }
-        const image = randomImageName();
-        const params = {
-            Bucket: config.BUCKET_NAME,
-            Key: image,
-            Body: buffer,
-            ContentType: req.file.mimetype,
-            
-        };
-        const command = new PutObjectCommand(params);
 
-        try {
-            await s3Client.send(command);
-        } catch (error: any) {
-            console.error(error);
-            return res.status(500).json({ message: "Failed to upload image" });
-        }
+        const image = file.location;
+    
+
         const data: Partial<IGenre> = { genreName, image };
         const genre:IGenre | null= await adminService.getCreateGenre(data);
         return res.status(200).json({ genre });
@@ -186,4 +179,49 @@ const orderDetail = async (req: Request, res: Response) => {
     }
 };
 
-export { adminLogin, addGenre, getUsersList, blockUser,walletTransactions, unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks,allOrders,orderDetail};
+const genresList = async (req: Request, res: Response) => {
+    try {
+        const genres = await adminService.getAllGenres();
+        return res.status(200).json(genres);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+const genre = async (req: Request, res: Response) => {
+    try {
+        const genreId = req.params.genreId
+        const genre = await adminService.getGenre(genreId);
+        return res.status(200).json(genre);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const updateGenre= async (req: Request, res: Response) => {
+    try {
+        const genreId = req.params.genreId
+        const {genreName,exisitingImage} = req.body
+        let image;
+        if(req.file){
+           const file = req.file as CustomMulterFile;
+           image = file.location;
+
+       }else if(exisitingImage){
+        image = exisitingImage;
+       }else{
+            return res.status(400).json({ message: "Please provide image" });
+        }
+        const data ={
+            genreName,
+            image
+    }
+        const genre = await adminService.getUpdateGenre(data,genreId);
+        return res.status(200).json(genre);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(400).json({ message: "Internal server error" });
+    }
+};
+export { adminLogin, addGenre,genre, getUsersList,genresList,updateGenre, blockUser,walletTransactions, unBlockUser,totalRentedBooks,totalSoldBooks,totalBooks,allOrders,orderDetail};
