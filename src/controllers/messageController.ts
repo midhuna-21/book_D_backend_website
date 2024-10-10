@@ -68,12 +68,6 @@ const userMessagesList = async (req: Request, res: Response) => {
 
         const conversations: IChatRoom[] | null =
             await chatService.getUserMessagesList(userId);
-
-         if(conversations){
-            conversations.map((conversation)=>{
-                // console.log(conversation,'one by one conversation')
-            })
-         }
    
         return res.status(200).json({ conversations });
     } catch (error) {

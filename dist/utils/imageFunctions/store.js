@@ -45,7 +45,7 @@ exports.upload = (0, multer_1.default)({
         sanitizeFile(file, callback);
     },
     limits: {
-        fileSize: 1024 * 1024 * 7,
+        fileSize: 1024 * 1024 * 5,
     },
 });
 exports.default = exports.upload;

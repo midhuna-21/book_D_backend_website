@@ -10,7 +10,7 @@ const notificationSchema = new mongoose_1.default.Schema({
         type: String,
         ref: "user",
     },
-    ownerId: {
+    receiverId: {
         type: String,
         ref: "user",
     },

@@ -6,7 +6,7 @@ import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
 import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout,genres ,lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, genreMatchedBooks,rentBookUpdate ,updateOrderStatus} from '../controllers/bookController';
-import { notifications, sendNotification } from '../controllers/notificationController';
+import { notifications, sendNotification ,unReadNotifications,updateNotification} from '../controllers/notificationController';
 import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead,unReadMessages} from '../controllers/messageController';
 import { updateCart, checkAccept, checkUserSentRequest, saveCart } from '../controllers/cartController';
 
@@ -54,6 +54,8 @@ userRouter.post('/notification',verifyToken,sendNotification)
 
 userRouter.get('/notifications',verifyToken,notifications)
 
+userRouter.post('/update-notification-status',verifyToken,updateNotification)
+
 userRouter.get('/rented-books',verifyToken,rentedBooks)
 
 userRouter.get('/sold-books',verifyToken,soldBooks)
@@ -71,6 +73,8 @@ userRouter.post('/send-message',verifyToken,sendMessage)
 userRouter.get('/messages/:chatRoomId',verifyToken,allMessages)
 
 userRouter.get('/unread-messages/:userId',verifyToken,unReadMessages)
+
+userRouter.get('/unread-notifications/:userId',verifyToken,unReadNotifications)
 
 userRouter.get('/user/:receiverId',verifyToken,getUser)
 

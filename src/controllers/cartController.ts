@@ -32,6 +32,7 @@ const saveCart = async (req: Request, res: Response) => {
             totalRentalPrice,
         };
         const cart = await cartService.getCreateCart(data);
+        console.log(cart,'cartt created')
         return res.status(200).json({ cart });
     } catch (error: any) {
         console.log("Error saveRequest:", error);
@@ -85,7 +86,6 @@ const updateCart= async (req: Request, res: Response) => {
     try {
         const { cartId } = req.params;
         const { types } = req.body;
-
         if (!cartId) {
             return res.status(500).json({ message: "cartId is missing" });
         }

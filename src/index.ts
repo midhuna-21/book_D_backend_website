@@ -74,6 +74,7 @@ io.on("connection", (socket:Socket) => {
 
     socket.on("send-notification", (data:{receiverId:string,notification:Notification}) => {
         const receiverSocketId = userSockets.get(data.receiverId);
+        console.log(receiverSocketId,'receiverSocketId')
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("notification", data.notification);
             console.log(`Notification sent to ${data.receiverId}`);

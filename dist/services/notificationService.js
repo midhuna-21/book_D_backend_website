@@ -31,6 +31,24 @@ class NotificationService {
             throw error;
         }
     }
+    async getUnReadNotifications(userId) {
+        try {
+            return await notificationRepository.findUnReadNotifications(userId);
+        }
+        catch (error) {
+            console.log("Error getUnReadNotifications:", error);
+            throw error;
+        }
+    }
+    async getUpdateNotifications(userId) {
+        try {
+            return await notificationRepository.findUpdateNotifications(userId);
+        }
+        catch (error) {
+            console.log("Error getUpdateNotifications:", error);
+            throw error;
+        }
+    }
 }
 exports.NotificationService = NotificationService;
 //# sourceMappingURL=notificationService.js.map

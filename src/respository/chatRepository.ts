@@ -67,7 +67,7 @@ export class ChatRepository {
 
                     return (senderId && receiverId) !== null
                 })
-                return filteredChatRooms.length > 0 ?filteredChatRooms : null
+                return filteredChatRooms
         } catch (error) {
             console.log("Error MessagesList:", error);
             throw error;

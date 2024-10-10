@@ -10,22 +10,20 @@ class NotificationRepository {
     async createNotification(notificationId, data) {
         try {
             if (notificationId) {
-                const existnotification = await notificationModel_1.notification.findById({
+                const existNotification = await notificationModel_1.notification.findById({
                     _id: notificationId,
                 });
-                const id = existnotification?._id;
-                return await notificationModel_1.notification
+                const id = existNotification?._id;
+                const existNotificationUpdate = await notificationModel_1.notification
                     .findByIdAndUpdate({ _id: id }, { status: data.status }, { new: true })
                     .populate('userId')
-                    .populate('ownerId')
+                    .populate('receiverId')
                     .populate('bookId')
                     .populate("cartId")
                     .exec();
-            }
-            else {
                 const newNotification = new notificationModel_1.notification({
                     userId: data.userId,
-                    ownerId: data.ownerId,
+                    receiverId: data.receiverId,
                     bookId: data.bookId,
                     cartId: data.cartId,
                     status: data.status,
@@ -34,7 +32,25 @@ class NotificationRepository {
                 const value = await notificationModel_1.notification
                     .findById(savedNotification._id)
                     .populate('userId')
-                    .populate('ownerId')
+                    .populate('receiverId')
+                    .populate('bookId')
+                    .populate("cartId")
+                    .exec();
+                return value;
+            }
+            else {
+                const newNotification = new notificationModel_1.notification({
+                    userId: data.userId,
+                    receiverId: data.receiverId,
+                    bookId: data.bookId,
+                    cartId: data.cartId,
+                    status: data.status,
+                });
+                const savedNotification = await newNotification.save();
+                const value = await notificationModel_1.notification
+                    .findById(savedNotification._id)
+                    .populate('userId')
+                    .populate('receiverId')
                     .populate('bookId')
                     .populate("cartId")
                     .exec();
@@ -49,14 +65,9 @@ class NotificationRepository {
     async notificationsByUserId(userId) {
         try {
             const notifications = await notificationModel_1.notification
-                .find({
-                $or: [
-                    { userId: new mongoose_1.default.Types.ObjectId(userId) },
-                    { ownerId: new mongoose_1.default.Types.ObjectId(userId) }
-                ]
-            })
+                .find({ receiverId: new mongoose_1.default.Types.ObjectId(userId) })
                 .populate("userId")
-                .populate("ownerId")
+                .populate("receiverId")
                 .populate("bookId")
                 .populate("cartId")
                 .sort({ createdAt: -1 });
@@ -80,6 +91,26 @@ class NotificationRepository {
         }
         catch (error) {
             console.log("Error updateNotificationType:", error);
+            throw error;
+        }
+    }
+    async findUnReadNotifications(userId) {
+        try {
+            const notifications = await notificationModel_1.notification.countDocuments({ receiverId: userId, isRead: false });
+            return notifications;
+        }
+        catch (error) {
+            console.log("Error findUnReadNotifications:", error);
+            throw error;
+        }
+    }
+    async findUpdateNotifications(userId) {
+        try {
+            const notifications = await notificationModel_1.notification.updateMany({ receiverId: userId }, { isRead: true }, { new: true });
+            return notifications;
+        }
+        catch (error) {
+            console.log("Error findUpdateNotifications:", error);
             throw error;
         }
     }

@@ -66,7 +66,7 @@ export interface Genre{
 
 export type Notification = {
    userId?: string;
-   ownerId?: string;
+   receiverId?: string;
    bookId?:string;
    cartId?:string;
    status:string;

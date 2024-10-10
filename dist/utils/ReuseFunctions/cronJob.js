@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_cron_1 = __importDefault(require("node-cron"));
 const orderModel_1 = require("../../model/orderModel");
+const notificationModel_1 = require("../../model/notificationModel");
 node_cron_1.default.schedule('* * * * *', async () => {
     try {
         const tenDaysAgo = new Date();
@@ -38,9 +39,17 @@ node_cron_1.default.schedule('* * * * *', async () => {
                 console.log(`Order ${order._id} has been cancelled due to user not picking up within 5 days.`);
             }
         }
-        // else {
-        //   console.log('No orders to cancel today.');
-        // }
+        const notificationsToReject = await notificationModel_1.notification.find({
+            status: 'requested',
+            createdAt: { $lte: fiveDaysAgo },
+        });
+        if (notificationsToReject.length > 0) {
+            for (const notif of notificationsToReject) {
+                await notificationModel_1.notification.findByIdAndUpdate(notif._id, {
+                    $set: { status: 'rejected' },
+                });
+            }
+        }
     }
     catch (error) {
         console.log('Error in cancelling orders:', error);

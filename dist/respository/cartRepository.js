@@ -62,8 +62,8 @@ class CartRepository {
     }
     async findUpdateCart(cartId, types) {
         try {
-            const request = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { types: types }, { new: true });
-            return request;
+            const updateCart = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { types: types }, { new: true });
+            return updateCart;
         }
         catch (error) {
             console.log("Error UpdateCart:", error);
@@ -72,6 +72,7 @@ class CartRepository {
     }
     async findCartDetails(cartId) {
         try {
+            console.log(cartId, 'cartid');
             const details = await cartModel_1.cart
                 .findById({ _id: cartId })
                 .populate("bookId")

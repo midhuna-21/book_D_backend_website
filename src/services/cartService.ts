@@ -56,7 +56,7 @@ export class CartService{
         try{
             return await cartRepository.findCartDetails(cartId)
         }catch(error){
-            console.log("Error getRequestDetails:",error)
+            console.log("Error getCartDetails:",error)
             throw error
         }
     }

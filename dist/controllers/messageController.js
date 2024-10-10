@@ -60,11 +60,6 @@ const userMessagesList = async (req, res) => {
     try {
         const { userId } = req.params;
         const conversations = await chatService.getUserMessagesList(userId);
-        if (conversations) {
-            conversations.map((conversation) => {
-                // console.log(conversation,'one by one conversation')
-            });
-        }
         return res.status(200).json({ conversations });
     }
     catch (error) {

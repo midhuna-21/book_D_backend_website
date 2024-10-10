@@ -19,7 +19,7 @@ export class NotificationService{
         }
     }
 
-    async   getNotificationsByUserId(userId: string): Promise<INotification[]> {
+    async  getNotificationsByUserId(userId: string): Promise<INotification[]> {
         try{
             return await notificationRepository.notificationsByUserId(userId)
         }catch(error){
@@ -36,4 +36,22 @@ export class NotificationService{
              throw error;
          }
       }
+
+      async getUnReadNotifications(userId:string){
+        try{
+            return await notificationRepository.findUnReadNotifications(userId)
+        }catch(error){
+            console.log("Error getUnReadNotifications:",error)
+            throw error
+        }
+     }
+
+     async getUpdateNotifications(userId:string){
+        try{
+            return await notificationRepository.findUpdateNotifications(userId)
+        }catch(error){
+            console.log("Error getUpdateNotifications:",error)
+            throw error
+        }
+     }
 }

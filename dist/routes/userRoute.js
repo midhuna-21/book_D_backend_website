@@ -33,6 +33,7 @@ userRouter.put('/update-profile', authMiddleware_1.verifyToken, userController_1
 userRouter.put('/update-profile-image', authMiddleware_1.verifyToken, store_1.default.single('selectedImage'), userController_1.updateProfileImage);
 userRouter.post('/notification', authMiddleware_1.verifyToken, notificationController_1.sendNotification);
 userRouter.get('/notifications', authMiddleware_1.verifyToken, notificationController_1.notifications);
+userRouter.post('/update-notification-status', authMiddleware_1.verifyToken, notificationController_1.updateNotification);
 userRouter.get('/rented-books', authMiddleware_1.verifyToken, bookController_1.rentedBooks);
 userRouter.get('/sold-books', authMiddleware_1.verifyToken, bookController_1.soldBooks);
 userRouter.post('/create-message', authMiddleware_1.verifyToken, messageController_1.messageCreation);
@@ -42,6 +43,7 @@ userRouter.get('/chat-room/:chatRoomId', authMiddleware_1.verifyToken, messageCo
 userRouter.post('/send-message', authMiddleware_1.verifyToken, messageController_1.sendMessage);
 userRouter.get('/messages/:chatRoomId', authMiddleware_1.verifyToken, messageController_1.allMessages);
 userRouter.get('/unread-messages/:userId', authMiddleware_1.verifyToken, messageController_1.unReadMessages);
+userRouter.get('/unread-notifications/:userId', authMiddleware_1.verifyToken, notificationController_1.unReadNotifications);
 userRouter.get('/user/:receiverId', authMiddleware_1.verifyToken, userController_1.getUser);
 userRouter.post('/send-email', authMiddleware_1.verifyToken, userController_1.sendUnlinkEmail);
 userRouter.get('/check-request/:userId/:bookId', authMiddleware_1.verifyToken, cartController_1.checkUserSentRequest);

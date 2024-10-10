@@ -3,7 +3,7 @@ import mongoose, { Document, Types } from "mongoose";
 
 interface INotification extends Document {
     userId?: ObjectId;
-    ownerId?: ObjectId;
+    receiverId?: ObjectId;
     bookId?: ObjectId;
     cartId?:ObjectId;
     status?: string;
@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema(
             type: String,
             ref: "user",
         },
-        ownerId: {
+        receiverId: {
             type: String,
             ref: "user",
         },
