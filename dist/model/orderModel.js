@@ -31,24 +31,18 @@ const orderSchema = new mongoose_1.Schema({
     userId: { type: String, ref: 'user' },
     lenderId: { type: String, ref: 'user' },
     isPaid: { type: Boolean, default: false },
-    isSuccessfull: {
-        type: Boolean,
-        default: false
-    },
-    isMoneyTransactionStatus: {
-        type: String,
-        enum: ['sent_to_website', 'sent_to_lender', 'completed'],
-    },
-    isTransaction: {
-        type: [String],
-        enum: ['pending', 'completed'],
-    },
-    bookStatus: {
+    bookStatusFromLender: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
         default: 'not_reached',
     },
-    reachedAtUserDate: { type: Date },
+    bookStatusFromRenter: {
+        type: String,
+        enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
+        default: 'not_reached',
+    },
+    statusUpdateLenderDate: { type: Date },
+    statusUpdateRenterDate: { type: mongoose_1.Schema.Types.Date },
 }, { timestamps: true });
 const orders = mongoose_1.default.model('orders', orderSchema);
 exports.orders = orders;

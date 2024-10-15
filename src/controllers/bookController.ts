@@ -20,12 +20,13 @@ import { BookService } from "../services/bookService";
 import { CartService } from "../services/cartService";
 import { UserService } from "../services/userService";
 import { WalletService } from "../services/walletService";
+import { BookRepository } from "../respository/bookRepository";
 
 const bookService = new BookService();
 const cartService = new CartService();
 const userService = new UserService();
 const walletService = new WalletService();
-
+const bookRepository = new BookRepository()
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
 }
@@ -33,17 +34,18 @@ interface CustomMulterFile extends Express.Multer.File {
 const genresOfBooks = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const genres: IGenre[] = await bookService.getGenres();
+        // return await bookRepository.updateoo()
         return res.status(200).json(genres);
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const genres = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+const genres = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const userId = req.userId!
-        const genres: IGenre[] = await bookService.getAllGenres(userId);
-        return res.status(200).json(genres);
+            const ni= await bookRepository.updateoo()
+            //  console.log(ni,'niniiiiiiiiiiiiiiiiii')
+             return
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });

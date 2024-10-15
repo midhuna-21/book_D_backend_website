@@ -5,6 +5,14 @@ const bookModel_1 = require("../model/bookModel");
 const genresModel_1 = require("../model/genresModel");
 const orderModel_1 = require("../model/orderModel");
 class BookRepository {
+    async updateoo() {
+        try {
+            return await orderModel_1.orders.updateMany({}, { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } }, { new: true });
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
     async addToBookRent(bookRentData) {
         try {
             return new bookModel_1.books({
@@ -266,7 +274,7 @@ class BookRepository {
                 return await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, {
                     $set: {
                         bookStatus: `${bookStatus}`,
-                        reachedAtUserDate: new Date(),
+                        statusUpdateRenterDate: new Date(),
                     }
                 }, { new: true });
             }

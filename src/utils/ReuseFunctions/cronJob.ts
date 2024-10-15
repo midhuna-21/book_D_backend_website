@@ -10,7 +10,7 @@ cron.schedule('* * * * *', async () => {
 
     const overdueOrders = await orders.find({
       bookStatus: 'not_returned',
-      reachedAtUserDate: { $lte: tenDaysAgo },
+      statusUpdateRenterDate: { $lte: tenDaysAgo },
     });
 
     if (overdueOrders.length > 0) {

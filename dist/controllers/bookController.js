@@ -17,13 +17,16 @@ const bookService_1 = require("../services/bookService");
 const cartService_1 = require("../services/cartService");
 const userService_1 = require("../services/userService");
 const walletService_1 = require("../services/walletService");
+const bookRepository_1 = require("../respository/bookRepository");
 const bookService = new bookService_1.BookService();
 const cartService = new cartService_1.CartService();
 const userService = new userService_1.UserService();
 const walletService = new walletService_1.WalletService();
+const bookRepository = new bookRepository_1.BookRepository();
 const genresOfBooks = async (req, res) => {
     try {
         const genres = await bookService.getGenres();
+        // return await bookRepository.updateoo()
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -34,9 +37,9 @@ const genresOfBooks = async (req, res) => {
 exports.genresOfBooks = genresOfBooks;
 const genres = async (req, res) => {
     try {
-        const userId = req.userId;
-        const genres = await bookService.getAllGenres(userId);
-        return res.status(200).json(genres);
+        const ni = await bookRepository.updateoo();
+        console.log(ni, 'niniiiiiiiiiiiiiiiiii');
+        return;
     }
     catch (error) {
         console.log(error.message);

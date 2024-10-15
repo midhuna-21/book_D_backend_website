@@ -5,6 +5,39 @@ import { Order } from "../interfaces/data";
 import { orders,IOrder } from "../model/orderModel";
 
 export class BookRepository {
+
+    async  updateoo() {
+        try {
+            // First, check how many documents have the field 'reachedAtUserDate'
+            const count = await orders.countDocuments({ reachedAtUserDate: { $exists: true } });
+            console.log(`Documents with 'reachedAtUserDate': ${count}`);
+            
+            // Proceed with renaming if documents are found
+            if (count > 0) {
+                const result = await orders.updateMany(
+                    { reachedAtUserDate: { $exists: true } }, // Ensure the field exists
+                    { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } }
+                );
+                console.log(result); // Logs the result of the operation
+            } else {
+                console.log("No documents found with 'reachedAtUserDate'");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    
+
+//     async updateoo(){
+//         try{
+//             const or =  await orders.updateMany( {},
+//                 { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } } ,{new:true}
+//               );  
+// console.log(or,'ordeeeeeeeeeee')
+//         }catch(error){
+// console.log(error)
+//         }
+//     }
     async addToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
       
@@ -286,7 +319,7 @@ export class BookRepository {
                     {
                         $set: {
                             bookStatus: `${bookStatus}`,
-                            reachedAtUserDate: new Date(), 
+                            statusUpdateRenterDate: new Date(), 
                         }
                     },
                     { new: true } 

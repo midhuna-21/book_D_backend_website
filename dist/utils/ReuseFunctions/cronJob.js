@@ -12,7 +12,7 @@ node_cron_1.default.schedule('* * * * *', async () => {
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         const overdueOrders = await orderModel_1.orders.find({
             bookStatus: 'not_returned',
-            reachedAtUserDate: { $lte: tenDaysAgo },
+            statusUpdateRenterDate: { $lte: tenDaysAgo },
         });
         if (overdueOrders.length > 0) {
             for (const order of overdueOrders) {

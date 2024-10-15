@@ -7,11 +7,10 @@ interface IOrder extends Document {
     userId: string;
     lenderId: string;
     isPaid?: boolean;
-    bookStatus:string
-    isMoneyTransactionStatus?: 'sent_to_website' | 'sent_to_lender' | 'completed';
-    isTransaction?: ('pending' | 'completed')[];
-    isSuccessfull?:boolean;
-    reachedAtUserDate?: Date;
+    bookStatusFromRenter:string;
+    bookStatusFromLender:string;
+    statusUpdateLenderDate?: Date;
+    statusUpdateRenterDate?: Date;
 }
 
 const orderSchema = new Schema<IOrder>({
@@ -20,26 +19,20 @@ const orderSchema = new Schema<IOrder>({
     userId: { type: String, ref: 'user' }, 
     lenderId: { type: String, ref: 'user' }, 
     isPaid: { type: Boolean,default:false},
-    isSuccessfull:{
-        type:Boolean,
-        default:false
-    },
-    isMoneyTransactionStatus: {
-        type: String,
-        enum: ['sent_to_website', 'sent_to_lender', 'completed'],
-        
-    },
-    isTransaction: {
-        type: [String],
-        enum: ['pending', 'completed'],
-       
-    },
-    bookStatus: {
+    bookStatusFromLender: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed','cancelled','overdue'],
         default: 'not_reached',
       },
-      reachedAtUserDate: { type: Date } ,
+      
+
+    bookStatusFromRenter: {
+        type: String,
+        enum: ['not_reached', 'not_returned', 'completed','cancelled','overdue'],
+        default: 'not_reached',
+      },
+      statusUpdateLenderDate: { type: Date } ,
+      statusUpdateRenterDate: { type:Schema.Types.Date } ,
 
 }, { timestamps: true });
 
