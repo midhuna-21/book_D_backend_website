@@ -21,7 +21,7 @@ const uploadImageToS3 = async (imageBuffer, fileName) => {
         Bucket: config_1.default.BUCKET_NAME,
         Key: fileName,
         Body: imageBuffer,
-        ContentType: 'image/jpeg',
+        ContentType: "image/jpeg",
     };
     const command = new client_s3_1.PutObjectCommand(uploadParams);
     await store_1.s3Client.send(command);
@@ -33,11 +33,11 @@ const sendOTP = async (req, res) => {
     try {
         const { phone } = req.body;
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log(otp, 'otp');
+        console.log(otp, "otp");
         const message = await twilioClient.messages.create({
             body: `Your verification code is ${otp} for our Book.D website`,
-            from: '+13146280298',
-            to: phone
+            from: "+13146280298",
+            to: phone,
         });
         res.cookie("otp", otp, { maxAge: 60000 });
         return res
@@ -45,7 +45,7 @@ const sendOTP = async (req, res) => {
             .json({ message: "OTP generated and sent successfully" });
     }
     catch (error) {
-        console.error('Error sending OTP:', error);
+        console.error("Error sending OTP:", error);
         throw error;
     }
 };
@@ -178,9 +178,7 @@ exports.loginUser = loginUser;
 const loginByGoogle = async (req, res) => {
     try {
         const { name, email, image } = req.body;
-        console.log(req.body, 'req.body');
         let existUser = await userService.getUserByEmail(email);
-        console.log(existUser, 'existUser');
         if (existUser?.isBlocked == true) {
             return res.status(401).json({ message: "User is Blocked" });
         }
@@ -190,14 +188,12 @@ const loginByGoogle = async (req, res) => {
                 userId,
                 userRole: "user",
             });
-            console.log(accessToken, 'accessToken');
-            console.log(refreshToken, 'refreshToken');
-            return res.status(200).json({ user: { ...existUser.toObject(), accessToken, refreshToken } });
+            return res
+                .status(200)
+                .json({ user: existUser, accessToken, refreshToken });
         }
         else if (existUser?.isGoogle == false) {
-            return res
-                .status(400)
-                .json({
+            return res.status(400).json({
                 message: "Your email is not linked with google.",
             });
         }
@@ -205,15 +201,18 @@ const loginByGoogle = async (req, res) => {
             let imageUrl;
             if (image) {
                 try {
-                    const response = await axios_1.default.get(image, { responseType: 'arraybuffer' });
-                    const imageBuffer = Buffer.from(response.data, 'binary');
-                    const fileName = `${Date.now()}-${name.replace(/\s+/g, '_')}-google-profile.jpg`;
+                    const response = await axios_1.default.get(image, {
+                        responseType: "arraybuffer",
+                    });
+                    const imageBuffer = Buffer.from(response.data, "binary");
+                    const fileName = `${Date.now()}-${name.replace(/\s+/g, "_")}-google-profile.jpg`;
                     imageUrl = await uploadImageToS3(imageBuffer, fileName);
-                    // imageUrl = await upload(image);
                 }
                 catch (uploadError) {
                     console.error("Error uploading image:", uploadError);
-                    return res.status(500).json({ error: "Failed to upload image." });
+                    return res
+                        .status(500)
+                        .json({ error: "Failed to upload image." });
                 }
             }
             const newUser = { name, email, image: imageUrl, isGoogle: true };
@@ -231,8 +230,8 @@ const loginByGoogle = async (req, res) => {
                     user: {
                         ...user.toObject(),
                         accessToken,
-                        refreshToken
-                    }
+                        refreshToken,
+                    },
                 });
             }
         }
@@ -301,15 +300,15 @@ const updateUser = async (req, res) => {
                 city: city,
                 district: district,
                 state: state,
-                pincode: pincode
-            }
+                pincode: pincode,
+            },
         };
         // const filteredUser = Object.fromEntries(
         //     Object.entries(user).filter(
         //       ([_, value]) => typeof value === 'string' && value.trim() !== ""
         //     )
         //   );
-        console.log(user, 'user deila ');
+        console.log(user, "user deila ");
         const updatedUser = await userService.getUpdateUser(userId, user);
         return res.status(200).json({ user: updatedUser });
     }
@@ -487,10 +486,14 @@ const getUser = async (req, res) => {
 exports.getUser = getUser;
 const calculateDistance = async (req, res) => {
     try {
-        const key = 'AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q';
+        const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
         const { lat1, lng1, lat2, lng2 } = req.query;
         if (!lat1 || !lat2 || !lng1 || !lng2) {
-            return res.status(500).json({ message: "Error while getting while calculating distance" });
+            return res
+                .status(500)
+                .json({
+                message: "Error while getting while calculating distance",
+            });
         }
         // console.log(lat1,'lat1',lat2,'lat2',lng1,'lng1',lng2,'lng2')
         const origin = `${lat1},${lng1}`;
@@ -506,12 +509,12 @@ const calculateDistance = async (req, res) => {
                 return res.status(200).json({ distanceResponse });
             }
             else {
-                console.error('Error in Google Maps API response:', data.error_message);
+                console.error("Error in Google Maps API response:", data.error_message);
                 return null;
             }
         }
         catch (error) {
-            console.error('Error fetching road distance:', error);
+            console.error("Error fetching road distance:", error);
             return null;
         }
     }
@@ -537,7 +540,9 @@ const userDetails = async (req, res) => {
     }
     catch (error) {
         console.log("Error userDetails:", error);
-        return res.status(500).json({ message: "Internal server error at userDetails" });
+        return res
+            .status(500)
+            .json({ message: "Internal server error at userDetails" });
     }
 };
 exports.userDetails = userDetails;
