@@ -9,57 +9,63 @@ import { generateTokens } from "../utils/jwt/generateToken";
 import crypto from "crypto";
 import axios from "axios";
 import sharp from "sharp";
-import { S3Client, PutObjectCommand,PutObjectCommandInput,
-    DeleteObjectCommand,ObjectCannedACL } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    PutObjectCommandInput,
+    DeleteObjectCommand,
+    ObjectCannedACL,
+} from "@aws-sdk/client-s3";
 import config from "../config/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "../utils/imageFunctions/store";
 import { IUser } from "../model/userModel";
-import { User} from "../interfaces/data";
+import { User } from "../interfaces/data";
 import { IGenre } from "../model/genresModel";
 import { Types } from "mongoose";
-import {getSignedImageUrl} from '../utils/imageFunctions/getImageFromS3'
+import { getSignedImageUrl } from "../utils/imageFunctions/getImageFromS3";
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
 import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
-import {Twilio} from 'twilio';
-import upload from '../utils/imageFunctions/store';
+import { Twilio } from "twilio";
+import upload from "../utils/imageFunctions/store";
 
-
-
-  
-const uploadImageToS3 = async (imageBuffer: Buffer, fileName: string): Promise<string> => {
+const uploadImageToS3 = async (
+    imageBuffer: Buffer,
+    fileName: string
+): Promise<string> => {
     const uploadParams: PutObjectCommandInput = {
-      Bucket: config.BUCKET_NAME,
-      Key: fileName,
-      Body: imageBuffer,
-      ContentType: 'image/jpeg',
-     
+        Bucket: config.BUCKET_NAME,
+        Key: fileName,
+        Body: imageBuffer,
+        ContentType: "image/jpeg",
     };
-  
+
     const command = new PutObjectCommand(uploadParams);
     await s3Client.send(command);
-  
-    return `https://${config.BUCKET_NAME}.s3.${config.BUCKET_REGION}.amazonaws.com/${fileName}`;
-  };
-  
 
-const twilioClient=new Twilio(config.TWILIO_ACCOUNT_SID,config.TWILIO_AUTH_TOKEN)
+    return `https://${config.BUCKET_NAME}.s3.${config.BUCKET_REGION}.amazonaws.com/${fileName}`;
+};
+
+const twilioClient = new Twilio(
+    config.TWILIO_ACCOUNT_SID,
+    config.TWILIO_AUTH_TOKEN
+);
 
 interface CustomFile extends Express.Multer.File {
-    location?: string;  
-  }
+    location?: string;
+}
 
 const userService = new UserService();
 
-const sendOTP = async (req:Request,res:Response) => {
+const sendOTP = async (req: Request, res: Response) => {
     try {
-        const {phone} = req.body
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
-        console.log(otp,'otp')
+        const { phone } = req.body;
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log(otp, "otp");
         const message = await twilioClient.messages.create({
             body: `Your verification code is ${otp} for our Book.D website`,
-            from: '+13146280298',
-            to: phone 
+            from: "+13146280298",
+            to: phone,
         });
 
         res.cookie("otp", otp, { maxAge: 60000 });
@@ -67,7 +73,7 @@ const sendOTP = async (req:Request,res:Response) => {
             .status(200)
             .json({ message: "OTP generated and sent successfully" });
     } catch (error) {
-        console.error('Error sending OTP:', error);
+        console.error("Error sending OTP:", error);
         throw error;
     }
 };
@@ -75,7 +81,7 @@ const sendOTP = async (req:Request,res:Response) => {
 const signUp = async (req: Request, res: Response) => {
     try {
         const { name, email, phone, password } = req.body;
-     
+
         let existUser = await userService.getUserByEmail(email);
         if (existUser) {
             return res.status(400).json({ message: "Email already exist" });
@@ -190,7 +196,7 @@ const loginUser = async (req: Request, res: Response) => {
         //     const image = await getSignedImageUrl(imageUrl)
         //     return res.status(200).json({ user: { ...user.toObject(), image , accessToken, refreshToken} });
         // }
-        
+
         return res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
         console.error(error.message);
@@ -200,12 +206,8 @@ const loginUser = async (req: Request, res: Response) => {
 
 const loginByGoogle = async (req: Request, res: Response) => {
     try {
-
         const { name, email, image } = req.body;
-        console.log(req.body,'req.body')
         let existUser = await userService.getUserByEmail(email);
-        console.log(existUser,'existUser')
-
         if (existUser?.isBlocked == true) {
             return res.status(401).json({ message: "User is Blocked" });
         }
@@ -215,58 +217,58 @@ const loginByGoogle = async (req: Request, res: Response) => {
                 userId,
                 userRole: "user",
             });
-            console.log(accessToken,'accessToken')
-            console.log(refreshToken,'refreshToken')
-
-                return res.status(200).json({ user: { ...existUser.toObject(),accessToken, refreshToken } });
-
-        } else if (existUser?.isGoogle == false) {
             return res
-                .status(400) 
-                .json({
-                    message:
-                        "Your email is not linked with google.",
-                });
+                .status(200)
+                .json({ user: existUser, accessToken, refreshToken });
+        } else if (existUser?.isGoogle == false) {
+            return res.status(400).json({
+                message: "Your email is not linked with google.",
+            });
         } else {
             let imageUrl: string | undefined;
 
-        
-if (image) {
-    try {
-      
-      const response = await axios.get(image, { responseType: 'arraybuffer' });
-      const imageBuffer = Buffer.from(response.data, 'binary');
-  
-      const fileName = `${Date.now()}-${name.replace(/\s+/g, '_')}-google-profile.jpg`;
-  
-             imageUrl = await uploadImageToS3(imageBuffer, fileName);
-                    // imageUrl = await upload(image);
+            if (image) {
+                try {
+                    const response = await axios.get(image, {
+                        responseType: "arraybuffer",
+                    });
+                    const imageBuffer = Buffer.from(response.data, "binary");
+
+                    const fileName = `${Date.now()}-${name.replace(
+                        /\s+/g,
+                        "_"
+                    )}-google-profile.jpg`;
+
+                    imageUrl = await uploadImageToS3(imageBuffer, fileName);
+                   
                 } catch (uploadError) {
                     console.error("Error uploading image:", uploadError);
-                    return res.status(500).json({ error: "Failed to upload image." });
+                    return res
+                        .status(500)
+                        .json({ error: "Failed to upload image." });
                 }
-            }   
-    
+            }
+
             const newUser = { name, email, image: imageUrl, isGoogle: true };
             const user = await userService.getCreateUserByGoogle(newUser);
-    
-          if(!user){
-            return res.status(400).json({message:"user is not created"})
-          }else{
-            const userId = user._id.toString();
-            const { accessToken, refreshToken } = generateTokens(res, {
-                userId,
-                userRole: "user",
-            });
-    
-            return res.status(200).json({ 
-                user: { 
-                    ...user.toObject(), 
-                    accessToken, 
-                    refreshToken 
-                } 
-            });
-          }
+
+            if (!user) {
+                return res.status(400).json({ message: "user is not created" });
+            } else {
+                const userId = user._id.toString();
+                const { accessToken, refreshToken } = generateTokens(res, {
+                    userId,
+                    userRole: "user",
+                });
+
+                return res.status(200).json({
+                    user: {
+                        ...user.toObject(),
+                        accessToken,
+                        refreshToken,
+                    },
+                });
+            }
         }
     } catch (error: any) {
         console.error("Error in loginByGoogle:", error);
@@ -289,7 +291,7 @@ const linkGoogleAccount = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "password is incorrect" });
         }
         const user = await userService.getUpdateIsGoogleTrue(email);
-    
+
         return res.status(200).json({ user });
     } catch (error: any) {
         console.log("Error linkGoogleAccount:", error);
@@ -323,8 +325,8 @@ const googleLog = async (req: Request, res: Response) => {
 const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { formData } = req.body;
-        const { name, email, phone,address } = formData;
-        const {street, city, district, state,pincode} = address
+        const { name, email, phone, address } = formData;
+        const { street, city, district, state, pincode } = address;
         const userId = req.userId!;
 
         const userExist: IUser | null = await userService.getUserById(userId);
@@ -336,25 +338,22 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
             name,
             email,
             phone,
-            address:{
-            street:street,
-            city:city,
-            district:district,
-            state:state,
-            pincode:pincode
-            }
+            address: {
+                street: street,
+                city: city,
+                district: district,
+                state: state,
+                pincode: pincode,
+            },
         };
         // const filteredUser = Object.fromEntries(
         //     Object.entries(user).filter(
         //       ([_, value]) => typeof value === 'string' && value.trim() !== ""
         //     )
         //   );
-          
-        console.log(user,'user deila ')
-        const updatedUser = await userService.getUpdateUser(
-            userId,
-            user
-        );
+
+        console.log(user, "user deila ");
+        const updatedUser = await userService.getUpdateUser(userId, user);
 
         return res.status(200).json({ user: updatedUser });
     } catch (error: any) {
@@ -374,13 +373,12 @@ const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
         const file = req.file as CustomFile;
         if (!file || !file.location) {
             return res.status(400).json({ message: "No file uploaded" });
-          }
-      
+        }
+
         let imageUrl: string = file.location;
-      
+
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
         return res.status(200).json({ user });
-      
     } catch (error: any) {
         console.error("Error updating user:", error.message);
         return res.status(500).json({ error: "Internal server error" });
@@ -412,7 +410,7 @@ const deleteUserImage = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const verifyEmail= async (req: Request, res: Response) => {
+const verifyEmail = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
         let isValidEmail: IUser | null = await userService.getUserByEmail(
@@ -466,10 +464,9 @@ const updatePassword = async (req: Request, res: Response) => {
             resetTokenExpiration,
         };
         const user: IUser | null = await userService.getUpdatePassword(data);
-       
-        if(user?.image){
-            
-             user.image = await getSignedImageUrl(user.image)
+
+        if (user?.image) {
+            user.image = await getSignedImageUrl(user.image);
         }
         return res.status(200).json({ user });
     } catch (error: any) {
@@ -512,7 +509,7 @@ const sendUnlinkEmail = async (req: AuthenticatedRequest, res: Response) => {
             resetToken,
             resetTokenExpiration
         );
-      
+
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error(error.message);
@@ -533,8 +530,8 @@ const getUser = async (req: Request, res: Response) => {
         if (!receiver) {
             return res.status(404).json({ message: "User not found" });
         }
-        if(receiver?.image){
-            receiver.image = await getSignedImageUrl(receiver?.image)
+        if (receiver?.image) {
+            receiver.image = await getSignedImageUrl(receiver?.image);
         }
         return res.status(200).json({ receiver });
     } catch (error: any) {
@@ -544,12 +541,16 @@ const getUser = async (req: Request, res: Response) => {
             .json({ message: "Internal server error at notifications" });
     }
 };
-const calculateDistance = async(req:Request,res:Response)=>{
-    try{
-        const key = 'AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q';
-        const {lat1,lng1,lat2,lng2} = req.query;
-        if(!lat1 || !lat2 || !lng1 ||!lng2){
-            return res.status(500).json({message:"Error while getting while calculating distance"})
+const calculateDistance = async (req: Request, res: Response) => {
+    try {
+        const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
+        const { lat1, lng1, lat2, lng2 } = req.query;
+        if (!lat1 || !lat2 || !lng1 || !lng2) {
+            return res
+                .status(500)
+                .json({
+                    message: "Error while getting while calculating distance",
+                });
         }
         // console.log(lat1,'lat1',lat2,'lat2',lng1,'lng1',lng2,'lng2')
         const origin = `${lat1},${lng1}`;
@@ -561,44 +562,46 @@ const calculateDistance = async(req:Request,res:Response)=>{
             const data = response.data;
             // console.log(data,'data')
             if (data.status === "OK") {
-                const distance = data.rows[0].elements[0].distance.value; 
-                const distanceResponse = distance/1000;
-                return res.status(200).json({distanceResponse})
-
+                const distance = data.rows[0].elements[0].distance.value;
+                const distanceResponse = distance / 1000;
+                return res.status(200).json({ distanceResponse });
             } else {
-                console.error('Error in Google Maps API response:', data.error_message);
+                console.error(
+                    "Error in Google Maps API response:",
+                    data.error_message
+                );
                 return null;
             }
         } catch (error) {
-            console.error('Error fetching road distance:', error);
+            console.error("Error fetching road distance:", error);
             return null;
         }
-    }catch(error:any){
-        console.log("Error calculateDistance controller:",error)
+    } catch (error: any) {
+        console.log("Error calculateDistance controller:", error);
         return res
-        .status(500)
-        .json({ message: "Internal server error at calculateDistance" });
+            .status(500)
+            .json({ message: "Internal server error at calculateDistance" });
     }
-}
+};
 
-
-const userDetails = async(req:Request,res:Response)=>{
-    try{
-        const {lenderId} = req.params;
-        if(!lenderId){
-            return res.status(500).json({message:"Lender id not found"});
+const userDetails = async (req: Request, res: Response) => {
+    try {
+        const { lenderId } = req.params;
+        if (!lenderId) {
+            return res.status(500).json({ message: "Lender id not found" });
         }
-        const lender = await userService.getUserById(lenderId)
-        if(lender?.image){
-            lender.image=await getSignedImageUrl(lender.image)
+        const lender = await userService.getUserById(lenderId);
+        if (lender?.image) {
+            lender.image = await getSignedImageUrl(lender.image);
         }
-        return res.status(200).json({lender})
-    }catch(error:any){
-        console.log("Error userDetails:",error);
-        return res.status(500).json({message: "Internal server error at userDetails"})
+        return res.status(200).json({ lender });
+    } catch (error: any) {
+        console.log("Error userDetails:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at userDetails" });
     }
-}
-
+};
 
 export {
     signUp,
@@ -619,5 +622,5 @@ export {
     calculateDistance,
     userDetails,
     sendOTP,
-    verifyEmail
+    verifyEmail,
 };
