@@ -177,8 +177,10 @@ const loginUser = async (req, res) => {
 exports.loginUser = loginUser;
 const loginByGoogle = async (req, res) => {
     try {
+        console.log(req.body, 'req.body');
         const { name, email, image } = req.body;
         let existUser = await userService.getUserByEmail(email);
+        console.log(existUser, 'existUser');
         if (existUser?.isBlocked == true) {
             return res.status(401).json({ message: "User is Blocked" });
         }
@@ -188,7 +190,9 @@ const loginByGoogle = async (req, res) => {
                 userId,
                 userRole: "user",
             });
-            return res.status(200).json({ user: { ...existUser.toObject(), accessToken, refreshToken } });
+            console.log(accessToken, 'accessToken');
+            console.log(refreshToken, 'refreshToken');
+            return res.status(200).json({ user: existUser, accessToken, refreshToken });
         }
         else if (existUser?.isGoogle == false) {
             return res
