@@ -200,9 +200,12 @@ const loginUser = async (req: Request, res: Response) => {
 
 const loginByGoogle = async (req: Request, res: Response) => {
     try {
-        const { name, email, image } = req.body;
+        console.log(req.body,'req.body')
 
+        const {userData } = req.body;
+        const { name, email, image } = userData;
         let existUser = await userService.getUserByEmail(email);
+        console.log(existUser,'existUser')
 
         if (existUser?.isBlocked == true) {
             return res.status(401).json({ message: "User is Blocked" });
@@ -213,8 +216,10 @@ const loginByGoogle = async (req: Request, res: Response) => {
                 userId,
                 userRole: "user",
             });
-            
-                return res.status(200).json({ user: { ...existUser.toObject(),accessToken, refreshToken } });
+            console.log(accessToken,'accessToken')
+            console.log(refreshToken,'refreshToken')
+
+                return res.status(200).json({success:true ,  user:existUser ,accessToken,refreshToken});
 
         } else if (existUser?.isGoogle == false) {
             return res
