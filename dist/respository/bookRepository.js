@@ -7,12 +7,53 @@ const orderModel_1 = require("../model/orderModel");
 class BookRepository {
     async updateoo() {
         try {
-            return await orderModel_1.orders.updateMany({}, { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } }, { new: true });
+            // First, check how many documents have the field 'reachedAtUserDate'
+            const count = await orderModel_1.orders.countDocuments({ reachedAtUserDate: { $exists: true } });
+            console.log(`Documents with 'reachedAtUserDate': ${count}`);
+            // Proceed with renaming if documents are found
+            if (count > 0) {
+                const result = await orderModel_1.orders.updateMany({ reachedAtUserDate: { $exists: true } }, // Ensure the field exists
+                { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } });
+                console.log(result); // Logs the result of the operation
+            }
+            else {
+                console.log("No documents found with 'reachedAtUserDate'");
+            }
         }
         catch (error) {
             console.log(error);
         }
     }
+    async findUpdateBookQuantity(bookId, quantity) {
+        try {
+            const updateBook = await bookModel_1.books.findByIdAndUpdate({ _id: bookId }, { quantity: quantity }, { new: true });
+            return updateBook;
+        }
+        catch (error) {
+            console.log("Error findCreateOrder:", error);
+            throw error;
+        }
+    }
+    async findIsOrderExist(sessionId) {
+        try {
+            const isOrderExist = await orderModel_1.orders.findOne({ sessionId: sessionId });
+            return isOrderExist;
+        }
+        catch (error) {
+            console.log("Error findCreateOrder:", error);
+            throw error;
+        }
+    }
+    //     async updateoo(){
+    //         try{
+    //             const or =  await orders.updateMany( {},
+    //                 { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } } ,{new:true}
+    //               );  
+    // console.log(or,'ordeeeeeeeeeee')
+    //         }catch(error){
+    // console.log(error)
+    //         }
+    //     }
     async addToBookRent(bookRentData) {
         try {
             return new bookModel_1.books({
@@ -165,6 +206,7 @@ class BookRepository {
     async findCreateOrder(data) {
         try {
             const order = await new orderModel_1.orders({
+                sessionId: data.sessionId,
                 cartId: data.cartId,
                 bookId: data.bookId,
                 userId: data.userId,
@@ -252,6 +294,38 @@ class BookRepository {
             throw error;
         }
     }
+    async findRentList(userId) {
+        try {
+            const order = await orderModel_1.orders
+                .find({ userId: userId })
+                .populate("bookId")
+                .populate("userId")
+                .populate("cartId")
+                .populate("lenderId")
+                .sort({ createdAt: -1 });
+            return order;
+        }
+        catch (error) {
+            console.log("Error findOrders:", error);
+            throw error;
+        }
+    }
+    async findLendList(userId) {
+        try {
+            const order = await orderModel_1.orders
+                .find({ lenderId: userId })
+                .populate("bookId")
+                .populate("userId")
+                .populate("cartId")
+                .populate("lenderId")
+                .sort({ createdAt: -1 });
+            return order;
+        }
+        catch (error) {
+            console.log("Error findOrders:", error);
+            throw error;
+        }
+    }
     async findSearchResult(searchQuery) {
         try {
             const result = await bookModel_1.books.find({
@@ -267,18 +341,52 @@ class BookRepository {
             throw error;
         }
     }
-    async findUpdateOrderStatus(selectedOrderId, bookStatus) {
+    async findUpdateOrderStatusRenter(selectedOrderId, bookStatus) {
         try {
-            const orderDetails = await orderModel_1.orders.findById({ _id: selectedOrderId }).populate('orderId').populate('userId').populate('lenderId').populate({ path: 'cartId', select: 'totalRentalPrice  ' });
+            const orderDetails = await orderModel_1.orders.findById({ _id: selectedOrderId }).populate('userId').populate('lenderId').populate({ path: 'cartId', select: 'totalRentalPrice  ' });
+            if (bookStatus == "not_returned") {
+                console.log(bookStatus, 'bookStatusbookStatusbookStatusbookStatus');
+                const order = await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, {
+                    $set: {
+                        bookStatusFromRenter: `${bookStatus}`,
+                        statusUpdateRenterDate: new Date(),
+                    }
+                }, { new: true });
+                console.log(order, 'orderrrrrrrrrr');
+            }
+            const order = await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, { bookStatusFromRenter: bookStatus }, { new: true });
+            // const userId = orderDetails.userId;
+            // const lenderId = orderDetails.lenderId;
+            // const orderId = orderDetails._id;
+            // if (orderDetails && typeof orderDetails.cartId !== 'string') {
+            //     const createWallet `= await new wallet({
+            //         userId:userId,
+            //         lenderId:lenderId,
+            //         orderId:orderId,
+            //         creditAmount: orderDetails.cartId.totalRentalPrice 
+            //     });
+            // } else {
+            //     throw new Error("cartId is not populated properly or is a string.");
+            // }
+            return order;
+        }
+        catch (error) {
+            console.log("Error findUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+    async findUpdateOrderStatusLender(selectedOrderId, bookStatus) {
+        try {
+            const orderDetails = await orderModel_1.orders.findById({ _id: selectedOrderId }).populate('userId').populate('lenderId').populate({ path: 'cartId', select: 'totalRentalPrice  ' });
             if (bookStatus == "not_returned") {
                 return await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, {
                     $set: {
-                        bookStatus: `${bookStatus}`,
+                        bookStatusFromLender: `${bookStatus}`,
                         statusUpdateRenterDate: new Date(),
                     }
                 }, { new: true });
             }
-            const order = await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, { bookStatus: bookStatus }, { new: true });
+            const order = await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, { bookStatusFromLender: bookStatus }, { new: true });
             // const userId = orderDetails.userId;
             // const lenderId = orderDetails.lenderId;
             // const orderId = orderDetails._id;

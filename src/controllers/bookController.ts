@@ -21,6 +21,7 @@ import { CartService } from "../services/cartService";
 import { UserService } from "../services/userService";
 import { WalletService } from "../services/walletService";
 import { BookRepository } from "../respository/bookRepository";
+import session from "express-session";
 
 const bookService = new BookService();
 const cartService = new CartService();
@@ -43,9 +44,11 @@ const genresOfBooks = async (req: AuthenticatedRequest, res: Response) => {
 };
 const genres = async (req: AuthenticatedRequest, res: Response) => {
     try {
-            const ni= await bookRepository.updateoo()
-            //  console.log(ni,'niniiiiiiiiiiiiiiiiii')
-             return
+
+        const userId = req.userId!
+        const genres: IGenre[] = await bookService.getAllGenres(userId);
+        return res.status(200).json(genres);
+        
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });
@@ -522,7 +525,7 @@ const createCheckout = async (req: Request, res: Response) => {
                 },
             ],
             mode: "payment",
-            success_url: `${config.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}`,
+            success_url: `${config.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${config.API}/payment-cancel`,
         });
 
@@ -565,19 +568,26 @@ const createCheckout = async (req: Request, res: Response) => {
 
 const createOrder = async (req: Request, res: Response) => {
     try {
-        const { userId, bookId, cartId } = req.body;
-        console.log(userId, "userid", bookId, "bookdi", cartId, "cartid");
+        const { userId, bookId, cartId,sessionId } = req.body;
+        console.log( sessionId,"sessionId");
         if (!userId || !bookId) {
             return res
                 .status(400)
                 .json({ message: "user or book id is missing" });
         }
 
+        const existOrder = await bookService.getIsOrderExist(sessionId)
+        if(existOrder){
+            console.log(existOrder,'existorder')
+           return res.status(200).json({ order:existOrder });
+
+        }
         const cartData = await cartService.getCartById(cartId);
         if (!cartData) {
             console.log("cart is not found");
         } else {
             const orderData = {
+                sessionId,
                 cartId: cartId,
                 userId:
                     typeof cartData?.userId === "string" ? cartData.userId : "",
@@ -594,7 +604,19 @@ const createOrder = async (req: Request, res: Response) => {
             const wallet = await walletService.getCreateWalletForWebsite(
                 cartId
             );
-            res.status(200).json({ order });
+            const selectedQuantity = cart?.quantity!
+            const book = await bookService.getBookById(bookId);
+            if (book && book.quantity > 0) {
+                const updatedQuantity = book.quantity - selectedQuantity; 
+                if (updatedQuantity < 0) {
+                    return res.status(400).json({ message: "Book is out of stock" });
+                }
+
+                await bookService.getUpdateBookQuantity(bookId, updatedQuantity);
+            } else {
+                return res.status(404).json({ message: "Book not found or out of stock" });
+            }
+            return res.status(200).json({ order });
         }
 
       
@@ -621,7 +643,39 @@ const orders = async (req: Request, res: Response) => {
         res.status(500).json({ error: "An error occurred getting Orders." });
     }
 };
+const rentList = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
 
+        if (!userId) {
+            return res.status(400).json({ message: "user is missing" });
+        }
+
+        const orders = await bookService.getRentList(userId);
+     
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Error createOrder:", error);
+        res.status(500).json({ error: "An error occurred getting Orders." });
+    }
+};
+
+const lendList = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        console.log(userId,'userind')
+        if (!userId) {
+            return res.status(400).json({ message: "user is missing" });
+        }
+
+        const orders = await bookService.getLendList(userId);
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Error createOrder:", error);
+        res.status(500).json({ error: "An error occurred getting Orders." });
+    }
+};
 const search = async (req: AuthenticatedRequest, res: Response) => {
     const { searchQuery } = req.params;
     const booksToShow: IBooks[] = [];
@@ -661,16 +715,18 @@ const search = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const updateOrderStatus = async (req: Request, res: Response) => {
+const updateOrderStatusRenter = async (req: Request, res: Response) => {
     try {
         const { selectedOrderId } = req.params;
+        console.log(selectedOrderId,'selectedOrderId')
         const { isBookHandover } = req.body;
+        console.log(isBookHandover,'isBookHandover')
 
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });
         }
-        const order = await bookService.getUpdateOrderStatus(
+        const order = await bookService.getUpdateOrderStatusRenter(
             selectedOrderId,
             bookStatus
         );
@@ -683,6 +739,32 @@ const updateOrderStatus = async (req: Request, res: Response) => {
         });
     }
 };
+
+const updateOrderStatusLender = async (req: Request, res: Response) => {
+    try {
+        const { selectedOrderId } = req.params;
+        console.log(selectedOrderId,'selectedOrderId')
+        const { isBookHandover } = req.body;
+        console.log(isBookHandover,'isBookHandover')
+
+        const bookStatus = isBookHandover;
+        if (!selectedOrderId) {
+            return res.status(400).json({ message: "Order ID is missing" });
+        }
+        const order = await bookService.getUpdateOrderStatusLender(
+            selectedOrderId,
+            bookStatus
+        );
+
+        res.status(200).json({ order });
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({
+            error: "An error occurred updating the order status.",
+        });
+    }
+};
+
 
 const OrderToShowSuccess = async (req: Request, res: Response) => {
     try {
@@ -720,8 +802,11 @@ export {
     createCheckout,
     createOrder,
     orders,
+    rentList,
+    lendList,
     search,
     OrderToShowSuccess,
-    updateOrderStatus,
+    updateOrderStatusRenter,
+    updateOrderStatusLender,
     genreMatchedBooks,
 };

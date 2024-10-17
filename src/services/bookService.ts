@@ -14,7 +14,26 @@ export class BookService {
         }
     }
 
-    
+    async getUpdateBookQuantity(
+        bookId: string,quantity:number
+    ): Promise<IBooks | null> {
+        try {
+            return await bookRepository.findUpdateBookQuantity(bookId,quantity);
+        } catch (error) {
+            console.log("Error getUpdateBookQuantity:", error);
+            throw error;
+        }
+    }
+    async getIsOrderExist(sessionId:string
+    ){
+        try {
+            return await bookRepository.findIsOrderExist(sessionId);
+        } catch (error) {
+            console.log("Error getIsOrderExist:", error);
+            throw error;
+        }
+    }
+
     async getUpdateBookRent(
         bookRentData: Books,
         bookId: string
@@ -91,6 +110,23 @@ export class BookService {
             throw error;
         }
     }
+
+    async getRentList(userId: string) {
+        try {
+            return await bookRepository.findRentList(userId);
+        } catch (error) {
+            console.log("Error getOrders:", error);
+            throw error;
+        }
+    }
+    async getLendList(userId: string) {
+        try {
+            return await bookRepository.findLendList(userId);
+        } catch (error) {
+            console.log("Error getOrders:", error);
+            throw error;
+        }
+    }
     
     async getCreateOrder(data: Order) {
         try {
@@ -128,13 +164,24 @@ export class BookService {
         }
     }
 
-    async getUpdateOrderStatus(selectedOrderId: string,bookStatus:string) {
+    async getUpdateOrderStatusRenter(selectedOrderId: string,bookStatus:string) {
     try{
-        return await bookRepository.findUpdateOrderStatus(selectedOrderId,bookStatus);
+        return await bookRepository.findUpdateOrderStatusRenter(selectedOrderId,bookStatus);
     }
     catch(error) {
         console.log("Error getUpdateOrderStatus:", error);
         throw error;
     }
+    }
+    async getUpdateOrderStatusLender(selectedOrderId: string,bookStatus:string) {
+        try{
+            return await bookRepository.findUpdateOrderStatusLender(selectedOrderId,bookStatus);
+        }
+        catch(error) {
+            console.log("Error getUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+
 }
-}
+

@@ -30,13 +30,15 @@ const orderSchema = new mongoose_1.Schema({
     bookId: { type: String, ref: 'books' },
     userId: { type: String, ref: 'user' },
     lenderId: { type: String, ref: 'user' },
+    sessionId: { type: String },
     isPaid: { type: Boolean, default: false },
-    bookStatusFromLender: {
+    reason: { types: String },
+    bookStatusFromRenter: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
         default: 'not_reached',
     },
-    bookStatusFromRenter: {
+    bookStatusFromLender: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
         default: 'not_reached',

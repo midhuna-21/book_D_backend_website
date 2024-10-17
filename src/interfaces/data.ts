@@ -95,6 +95,7 @@ export type Order = {
    cartId:string;
    bookId: string;
    userId: string;
+   sessionId:string;
    lenderId: string;
    isReturned?: boolean;
    isMoneyTransactionStatus?:string;

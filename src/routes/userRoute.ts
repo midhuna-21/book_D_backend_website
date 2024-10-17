@@ -5,7 +5,7 @@ calculateDistance,verifyEmail,
 import express from 'express'
 import upload from '../utils/imageFunctions/store';
 import {verifyToken} from '../utils/middleware/authMiddleware';
-import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout,genres ,lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, genreMatchedBooks,rentBookUpdate ,updateOrderStatus} from '../controllers/bookController';
+import { bookDetail, exploreBooks, genresOfBooks,createOrder,createCheckout,genres ,lenderDetails,OrderToShowSuccess, lendingProcess, orders, rentBook, rentedBooks, sellBook, soldBooks, search, genreMatchedBooks,rentBookUpdate ,updateOrderStatusRenter,updateOrderStatusLender,rentList,lendList} from '../controllers/bookController';
 import { notifications, sendNotification ,unReadNotifications,updateNotification} from '../controllers/notificationController';
 import { allMessages, chat, createChatRoom, messageCreation, sendMessage, userMessagesList ,updateChatRoomRead,unReadMessages} from '../controllers/messageController';
 import { updateCart, checkAccept, checkUserSentRequest, saveCart } from '../controllers/cartController';
@@ -102,6 +102,9 @@ userRouter.post('/create-order',verifyToken,createOrder)
 userRouter.get('/get-order-to-showSuccess',verifyToken,OrderToShowSuccess)
 
 userRouter.get('/orders/:userId',verifyToken,orders)
+userRouter.get('/rent-list/:userId',verifyToken,rentList)
+userRouter.get('/lend-list/:userId',verifyToken,lendList)
+
 
 userRouter.get('/search/:searchQuery',verifyToken,search)
 userRouter.get('/genre-books/:genreName',verifyToken,genreMatchedBooks)
@@ -115,8 +118,9 @@ userRouter.put('/rent-book-update/:bookId', verifyToken, upload.array('images', 
 userRouter.post('/create-cart-item',verifyToken,saveCart);
 
 userRouter.put('/cart-item-update/:cartId',verifyToken,updateCart)
-userRouter.put('/update-order-status/:selectedOrderId',verifyToken,updateOrderStatus)
+userRouter.post('/update-order-status/:selectedOrderId',verifyToken,updateOrderStatusRenter)
 
+userRouter.post('/update-order-status-from-renter/:selectedOrderId',verifyToken,updateOrderStatusLender)
 
 export default userRouter 
 

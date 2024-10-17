@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genreMatchedBooks = exports.updateOrderStatus = exports.OrderToShowSuccess = exports.search = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.lenderDetails = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
+exports.genreMatchedBooks = exports.updateOrderStatusLender = exports.updateOrderStatusRenter = exports.OrderToShowSuccess = exports.search = exports.lendList = exports.rentList = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.lenderDetails = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const sharp_1 = __importDefault(require("sharp"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -37,9 +37,9 @@ const genresOfBooks = async (req, res) => {
 exports.genresOfBooks = genresOfBooks;
 const genres = async (req, res) => {
     try {
-        const ni = await bookRepository.updateoo();
-        console.log(ni, 'niniiiiiiiiiiiiiiiiii');
-        return;
+        const userId = req.userId;
+        const genres = await bookService.getAllGenres(userId);
+        return res.status(200).json(genres);
     }
     catch (error) {
         console.log(error.message);
@@ -414,7 +414,7 @@ const createCheckout = async (req, res) => {
                 },
             ],
             mode: "payment",
-            success_url: `${config_1.default.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}`,
+            success_url: `${config_1.default.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${config_1.default.API}/payment-cancel`,
         });
         res.json({ id: session.id });
@@ -453,12 +453,17 @@ exports.createCheckout = createCheckout;
 //   };
 const createOrder = async (req, res) => {
     try {
-        const { userId, bookId, cartId } = req.body;
-        console.log(userId, "userid", bookId, "bookdi", cartId, "cartid");
+        const { userId, bookId, cartId, sessionId } = req.body;
+        console.log(sessionId, "sessionId");
         if (!userId || !bookId) {
             return res
                 .status(400)
                 .json({ message: "user or book id is missing" });
+        }
+        const existOrder = await bookService.getIsOrderExist(sessionId);
+        if (existOrder) {
+            console.log(existOrder, 'existorder');
+            return res.status(200).json({ order: existOrder });
         }
         const cartData = await cartService.getCartById(cartId);
         if (!cartData) {
@@ -466,6 +471,7 @@ const createOrder = async (req, res) => {
         }
         else {
             const orderData = {
+                sessionId,
                 cartId: cartId,
                 userId: typeof cartData?.userId === "string" ? cartData.userId : "",
                 lenderId: typeof cartData?.ownerId === "string"
@@ -476,7 +482,19 @@ const createOrder = async (req, res) => {
             const order = await bookService.getCreateOrder(orderData);
             const cart = await cartService.getUpdateIsPaid(cartId);
             const wallet = await walletService.getCreateWalletForWebsite(cartId);
-            res.status(200).json({ order });
+            const selectedQuantity = cart?.quantity;
+            const book = await bookService.getBookById(bookId);
+            if (book && book.quantity > 0) {
+                const updatedQuantity = book.quantity - selectedQuantity;
+                if (updatedQuantity < 0) {
+                    return res.status(400).json({ message: "Book is out of stock" });
+                }
+                await bookService.getUpdateBookQuantity(bookId, updatedQuantity);
+            }
+            else {
+                return res.status(404).json({ message: "Book not found or out of stock" });
+            }
+            return res.status(200).json({ order });
         }
     }
     catch (error) {
@@ -502,6 +520,37 @@ const orders = async (req, res) => {
     }
 };
 exports.orders = orders;
+const rentList = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({ message: "user is missing" });
+        }
+        const orders = await bookService.getRentList(userId);
+        res.status(200).json({ orders });
+    }
+    catch (error) {
+        console.error("Error createOrder:", error);
+        res.status(500).json({ error: "An error occurred getting Orders." });
+    }
+};
+exports.rentList = rentList;
+const lendList = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log(userId, 'userind');
+        if (!userId) {
+            return res.status(400).json({ message: "user is missing" });
+        }
+        const orders = await bookService.getLendList(userId);
+        res.status(200).json({ orders });
+    }
+    catch (error) {
+        console.error("Error createOrder:", error);
+        res.status(500).json({ error: "An error occurred getting Orders." });
+    }
+};
+exports.lendList = lendList;
 const search = async (req, res) => {
     const { searchQuery } = req.params;
     const booksToShow = [];
@@ -542,15 +591,17 @@ const search = async (req, res) => {
     }
 };
 exports.search = search;
-const updateOrderStatus = async (req, res) => {
+const updateOrderStatusRenter = async (req, res) => {
     try {
         const { selectedOrderId } = req.params;
+        console.log(selectedOrderId, 'selectedOrderId');
         const { isBookHandover } = req.body;
+        console.log(isBookHandover, 'isBookHandover');
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });
         }
-        const order = await bookService.getUpdateOrderStatus(selectedOrderId, bookStatus);
+        const order = await bookService.getUpdateOrderStatusRenter(selectedOrderId, bookStatus);
         res.status(200).json({ order });
     }
     catch (error) {
@@ -560,7 +611,28 @@ const updateOrderStatus = async (req, res) => {
         });
     }
 };
-exports.updateOrderStatus = updateOrderStatus;
+exports.updateOrderStatusRenter = updateOrderStatusRenter;
+const updateOrderStatusLender = async (req, res) => {
+    try {
+        const { selectedOrderId } = req.params;
+        console.log(selectedOrderId, 'selectedOrderId');
+        const { isBookHandover } = req.body;
+        console.log(isBookHandover, 'isBookHandover');
+        const bookStatus = isBookHandover;
+        if (!selectedOrderId) {
+            return res.status(400).json({ message: "Order ID is missing" });
+        }
+        const order = await bookService.getUpdateOrderStatusLender(selectedOrderId, bookStatus);
+        res.status(200).json({ order });
+    }
+    catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({
+            error: "An error occurred updating the order status.",
+        });
+    }
+};
+exports.updateOrderStatusLender = updateOrderStatusLender;
 const OrderToShowSuccess = async (req, res) => {
     try {
         const { userId, bookId } = req.query;

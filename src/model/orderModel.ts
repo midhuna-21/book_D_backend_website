@@ -6,11 +6,13 @@ interface IOrder extends Document {
     bookId: string;
     userId: string;
     lenderId: string;
+    sessionId:string;
     isPaid?: boolean;
     bookStatusFromRenter:string;
     bookStatusFromLender:string;
     statusUpdateLenderDate?: Date;
     statusUpdateRenterDate?: Date;
+    reason:string;
 }
 
 const orderSchema = new Schema<IOrder>({
@@ -18,15 +20,17 @@ const orderSchema = new Schema<IOrder>({
     bookId: { type: String, ref: 'books' },
     userId: { type: String, ref: 'user' }, 
     lenderId: { type: String, ref: 'user' }, 
+    sessionId:{type:String},
     isPaid: { type: Boolean,default:false},
-    bookStatusFromLender: {
+    reason:{types:String},
+    bookStatusFromRenter: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed','cancelled','overdue'],
         default: 'not_reached',
       },
-      
+                        
 
-    bookStatusFromRenter: {
+    bookStatusFromLender: {
         type: String,
         enum: ['not_reached', 'not_returned', 'completed','cancelled','overdue'],
         default: 'not_reached',

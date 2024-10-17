@@ -13,6 +13,24 @@ class BookService {
             throw error;
         }
     }
+    async getUpdateBookQuantity(bookId, quantity) {
+        try {
+            return await bookRepository.findUpdateBookQuantity(bookId, quantity);
+        }
+        catch (error) {
+            console.log("Error getUpdateBookQuantity:", error);
+            throw error;
+        }
+    }
+    async getIsOrderExist(sessionId) {
+        try {
+            return await bookRepository.findIsOrderExist(sessionId);
+        }
+        catch (error) {
+            console.log("Error getIsOrderExist:", error);
+            throw error;
+        }
+    }
     async getUpdateBookRent(bookRentData, bookId) {
         try {
             return await bookRepository.updateBookRent(bookRentData, bookId);
@@ -86,6 +104,24 @@ class BookService {
             throw error;
         }
     }
+    async getRentList(userId) {
+        try {
+            return await bookRepository.findRentList(userId);
+        }
+        catch (error) {
+            console.log("Error getOrders:", error);
+            throw error;
+        }
+    }
+    async getLendList(userId) {
+        try {
+            return await bookRepository.findLendList(userId);
+        }
+        catch (error) {
+            console.log("Error getOrders:", error);
+            throw error;
+        }
+    }
     async getCreateOrder(data) {
         try {
             return await bookRepository.findCreateOrder(data);
@@ -122,9 +158,18 @@ class BookService {
             throw error;
         }
     }
-    async getUpdateOrderStatus(selectedOrderId, bookStatus) {
+    async getUpdateOrderStatusRenter(selectedOrderId, bookStatus) {
         try {
-            return await bookRepository.findUpdateOrderStatus(selectedOrderId, bookStatus);
+            return await bookRepository.findUpdateOrderStatusRenter(selectedOrderId, bookStatus);
+        }
+        catch (error) {
+            console.log("Error getUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+    async getUpdateOrderStatusLender(selectedOrderId, bookStatus) {
+        try {
+            return await bookRepository.findUpdateOrderStatusLender(selectedOrderId, bookStatus);
         }
         catch (error) {
             console.log("Error getUpdateOrderStatus:", error);

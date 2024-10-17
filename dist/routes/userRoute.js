@@ -58,6 +58,8 @@ userRouter.post('/create-checkout', authMiddleware_1.verifyToken, bookController
 userRouter.post('/create-order', authMiddleware_1.verifyToken, bookController_1.createOrder);
 userRouter.get('/get-order-to-showSuccess', authMiddleware_1.verifyToken, bookController_1.OrderToShowSuccess);
 userRouter.get('/orders/:userId', authMiddleware_1.verifyToken, bookController_1.orders);
+userRouter.get('/rent-list/:userId', authMiddleware_1.verifyToken, bookController_1.rentList);
+userRouter.get('/lend-list/:userId', authMiddleware_1.verifyToken, bookController_1.lendList);
 userRouter.get('/search/:searchQuery', authMiddleware_1.verifyToken, bookController_1.search);
 userRouter.get('/genre-books/:genreName', authMiddleware_1.verifyToken, bookController_1.genreMatchedBooks);
 // userRouter.get('/search/:searchQuery',verifyToken,search)
@@ -66,6 +68,7 @@ userRouter.post('/chatRoom-update/:chatRoomId', authMiddleware_1.verifyToken, me
 userRouter.put('/rent-book-update/:bookId', authMiddleware_1.verifyToken, store_1.default.array('images', 10), bookController_1.rentBookUpdate);
 userRouter.post('/create-cart-item', authMiddleware_1.verifyToken, cartController_1.saveCart);
 userRouter.put('/cart-item-update/:cartId', authMiddleware_1.verifyToken, cartController_1.updateCart);
-userRouter.put('/update-order-status/:selectedOrderId', authMiddleware_1.verifyToken, bookController_1.updateOrderStatus);
+userRouter.post('/update-order-status/:selectedOrderId', authMiddleware_1.verifyToken, bookController_1.updateOrderStatusRenter);
+userRouter.post('/update-order-status-from-renter/:selectedOrderId', authMiddleware_1.verifyToken, bookController_1.updateOrderStatusLender);
 exports.default = userRouter;
 //# sourceMappingURL=userRoute.js.map
