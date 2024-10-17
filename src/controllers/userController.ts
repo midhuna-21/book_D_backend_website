@@ -217,7 +217,7 @@ const loginByGoogle = async (req: Request, res: Response) => {
             console.log(accessToken,'accessToken')
             console.log(refreshToken,'refreshToken')
 
-                return res.status(200).json({user:existUser ,accessToken,refreshToken});
+                return res.status(200).json({success:true ,  user:existUser ,accessToken,refreshToken});
 
         } else if (existUser?.isGoogle == false) {
             return res
