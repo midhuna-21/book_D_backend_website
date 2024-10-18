@@ -19,8 +19,7 @@ const generateTokens = (res: Response, payload: UserTokenPayload): { accessToken
   const cookieName = payload.userRole === 'admin' ? 'adminrefreshToken' : 'userrefreshToken';
   res.cookie(cookieName, refreshToken, {
     httpOnly: true,
-    sameSite: 'none',
-    secure: true, 
+    sameSite:'none',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
