@@ -15,7 +15,7 @@ const refreshTokenController = async (req, res) => {
     try {
         // const refreshToken = req.body.token;
         const userRole = req.body.userRole;
-        const cookieName = userRole === "admin" ? "adminRefreshToken" : "userRefreshToken";
+        const cookieName = userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
         const cookieToken = req.cookies[cookieName];
         if (!cookieToken) {
             return res.status(401).json({ message: "No token, authorization denied or token mismatch" });

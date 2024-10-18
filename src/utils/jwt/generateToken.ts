@@ -16,10 +16,11 @@ const generateTokens = (res: Response, payload: UserTokenPayload): { accessToken
     expiresIn: '30d'
   } as SignOptions);
 
-  const cookieName = payload.userRole === 'admin' ? 'adminRefreshToken' : 'userRefreshToken';
+  const cookieName = payload.userRole === 'admin' ? 'adminrefreshToken' : 'userrefreshToken';
   res.cookie(cookieName, refreshToken, {
     httpOnly: true,
-    sameSite:'none',
+    sameSite: 'none',
+    secure: true, 
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 

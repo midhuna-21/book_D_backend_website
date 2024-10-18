@@ -12,7 +12,7 @@ const refreshTokenController = async (req: Request, res: Response) => {
     try {
         // const refreshToken = req.body.token;
         const userRole = req.body.userRole;
-        const cookieName = userRole === "admin" ? "adminRefreshToken" : "userRefreshToken";
+        const cookieName = userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
         const cookieToken = req.cookies[cookieName];
        
         if (!cookieToken ) {
