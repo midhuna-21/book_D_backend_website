@@ -18,7 +18,6 @@ const generateTokens = (res, payload) => {
         httpOnly: true,
         sameSite: 'none',
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: false,
     });
     return { accessToken, refreshToken };
 };
