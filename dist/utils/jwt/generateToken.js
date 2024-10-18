@@ -17,7 +17,6 @@ const generateTokens = (res, payload) => {
     res.cookie(cookieName, refreshToken, {
         httpOnly: true,
         sameSite: 'none',
-        secure: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { accessToken, refreshToken };
