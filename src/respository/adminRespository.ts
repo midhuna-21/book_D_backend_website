@@ -140,6 +140,7 @@ export class AdminRepository {
             .populate("lenderId")
             .populate("userId")
             .populate("cartId")
+            .sort({createdAt: -1})
         } catch (error) {
             console.log("Error findAllOrders:", error);
             throw error;

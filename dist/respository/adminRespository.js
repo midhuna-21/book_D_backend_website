@@ -140,7 +140,8 @@ class AdminRepository {
                 .populate("bookId")
                 .populate("lenderId")
                 .populate("userId")
-                .populate("cartId");
+                .populate("cartId")
+                .sort({ createdAt: -1 });
         }
         catch (error) {
             console.log("Error findAllOrders:", error);

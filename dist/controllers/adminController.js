@@ -69,6 +69,7 @@ exports.adminLogin = adminLogin;
 const getUsersList = async (req, res) => {
     try {
         const users = await adminService.getAllUsers();
+        console.log(users, 'userssss afom adin');
         return res.status(200).json(users);
     }
     catch (error) {

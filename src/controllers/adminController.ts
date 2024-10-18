@@ -88,6 +88,7 @@ const adminLogin = async (req: Request, res: Response) => {
 const getUsersList = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllUsers();
+        console.log(users,'userssss afom adin')
         return res.status(200).json(users);
     } catch (error: any) {
         console.log(error.message);
