@@ -8,17 +8,17 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config/config"));
 const generateTokens = (res, payload) => {
     const accessToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.userRole }, config_1.default.JWT_SECRET, {
-        expiresIn: '1m'
+        expiresIn: "1m",
     });
     const refreshToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.userRole }, config_1.default.JWT_SECRET, {
-        expiresIn: '30d'
+        expiresIn: "30d",
     });
-    const cookieName = payload.userRole === 'admin' ? 'adminRefreshToken' : 'userRefreshToken';
+    const cookieName = payload.userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
     res.cookie(cookieName, refreshToken, {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: "none",
+        secure: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: false,
     });
     return { accessToken, refreshToken };
 };
