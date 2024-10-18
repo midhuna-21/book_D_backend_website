@@ -13,12 +13,12 @@ const generateTokens = (res, payload) => {
     const refreshToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.userRole }, config_1.default.JWT_SECRET, {
         expiresIn: '30d'
     });
-    const cookieName = payload.userRole === 'admin' ? 'adminrefreshToken' : 'userRerreshToken';
+    const cookieName = payload.userRole === 'admin' ? 'adminRefreshToken' : 'userRefreshToken';
     res.cookie(cookieName, refreshToken, {
         httpOnly: true,
-        sameSite: 'none',
-        secure: false,
+        sameSite: 'strict',
         maxAge: 30 * 24 * 60 * 60 * 1000,
+        secure: false,
     });
     return { accessToken, refreshToken };
 };
