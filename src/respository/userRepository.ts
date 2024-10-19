@@ -1,12 +1,12 @@
 import { user, IUser } from "../model/userModel";
-import {User } from "../interfaces/data";
+import { User } from "../interfaces/data";
 
 export class UserRepository {
     async findUserByPhone(phone: string): Promise<IUser | null> {
         try {
-            const phoneNumber =  await user.findOne({ phone:phone });
-           
-            return phoneNumber
+            const phoneNumber = await user.findOne({ phone: phone });
+
+            return phoneNumber;
         } catch (error) {
             console.log("Error findUserByPhone:", error);
             throw error;
@@ -31,18 +31,18 @@ export class UserRepository {
         }
     }
 
-    async findUpdateIsGoogleTrue(email:string){
-        try{
-            return await user.findOneAndUpdate({email:email},{isGoogle:true,password:null},{new:true})
-        }catch(error:any){
-            console.log("Error findUpdateIsGoogleTrue:",error)
-            throw error
+    async findUpdateIsGoogleTrue(email: string) {
+        try {
+            return await user.findOneAndUpdate(
+                { email: email },
+                { isGoogle: true, password: null },
+                { new: true }
+            );
+        } catch (error: any) {
+            console.log("Error findUpdateIsGoogleTrue:", error);
+            throw error;
         }
     }
-
-  
-
- 
 
     async createUser(data: Partial<User>): Promise<IUser | null> {
         try {
@@ -81,49 +81,66 @@ export class UserRepository {
     }
 
     async updatePassword(data: User): Promise<IUser | null> {
-        try { 
+        try {
             return await user.findOneAndUpdate(
                 { email: data.email },
-                { $set: { password: data.password ,resetToken:undefined,resetTokenExpiration:undefined} }
+                {
+                    $set: {
+                        password: data.password,
+                        resetToken: undefined,
+                        resetTokenExpiration: undefined,
+                    },
+                }
             );
         } catch (error) {
             console.log("Error updatePassword:", error);
             throw error;
         }
     }
- 
+
     async findUserById(_id: string): Promise<IUser | null> {
-        try {    
+        try {
             const lender = await user.findById(_id);
-            return lender
-         
+            return lender;
         } catch (error) {
             console.log("Error findUserById:", error);
             throw error;
         }
     }
- 
-    async updateUser(userId:string,filteredUser: User): Promise<IUser | null> {
+
+    async updateUser(
+        userId: string,
+        filteredUser: User
+    ): Promise<IUser | null> {
         try {
-           
-            const userToUpdate: IUser | null = await this.findUserById(userId)
+            const userToUpdate: IUser | null = await this.findUserById(userId);
 
             if (!userToUpdate) {
                 console.log("Error finding the user to update:");
                 return null;
-            }else{
+            } else {
                 const updateFields: Partial<IUser> = {
                     name: filteredUser.name || userToUpdate.name,
                     email: filteredUser.email || userToUpdate.email,
                     phone: filteredUser.phone || userToUpdate.phone,
-                 
+
                     address: {
-                        street: filteredUser.address?.street || userToUpdate.address?.street,
-                        city: filteredUser.address?.city || userToUpdate.address?.city,
-                        district: filteredUser.address?.district || userToUpdate.address?.district,
-                        state: filteredUser.address?.state || userToUpdate.address?.state,
-                        pincode: filteredUser.address?.pincode || userToUpdate.address?.pincode,
-                    }
+                        street:
+                            filteredUser.address?.street ||
+                            userToUpdate.address?.street,
+                        city:
+                            filteredUser.address?.city ||
+                            userToUpdate.address?.city,
+                        district:
+                            filteredUser.address?.district ||
+                            userToUpdate.address?.district,
+                        state:
+                            filteredUser.address?.state ||
+                            userToUpdate.address?.state,
+                        pincode:
+                            filteredUser.address?.pincode ||
+                            userToUpdate.address?.pincode,
+                    },
                 };
 
                 const updatedUser = await user.findByIdAndUpdate(
@@ -131,7 +148,6 @@ export class UserRepository {
                     updateFields,
                     { new: true }
                 );
-  console.log(updatedUser,'updatedUser')
                 if (!updatedUser) {
                     console.log("Error updating the user:");
                     return null;
@@ -143,57 +159,82 @@ export class UserRepository {
             throw error;
         }
     }
- 
-      async activeUsers () {
-       try{
-        const users = await user.find({isBlocked: false })
-        return users
-       }catch(error:any){
-        console.log("Error getActiveUsers:", error);
-          throw error;
-       }
-    };
 
-   
-
-    async updateProfileImage(userId:string,imageUrl:string): Promise<IUser | null> {
-        try{
-            return await user.findByIdAndUpdate(userId,{image:imageUrl},{new:true})
-           
-        }catch(error){
-            console.log("Error updateProfileImage:",error)
-            throw error
+    async activeUsers() {
+        try {
+            const users = await user.find({ isBlocked: false });
+            return users;
+        } catch (error: any) {
+            console.log("Error getActiveUsers:", error);
+            throw error;
         }
     }
 
-    async deleteUserImage(userId:string):Promise<IUser | null>{
-        try{
-            return await user.findByIdAndUpdate(userId,{$unset: {image: ""}},{new:true});
-        }catch(error){
-            console.log("Error deleteUserImage:",error)
-            throw error
+    async updateProfileImage(
+        userId: string,
+        imageUrl: string
+    ): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate(
+                userId,
+                { image: imageUrl },
+                { new: true }
+            );
+        } catch (error) {
+            console.log("Error updateProfileImage:", error);
+            throw error;
         }
     }
 
-   
-    async saveToken(userId:string,resetToken:string,resetTokenExpiration:number){
-        try{
-            return await user.findByIdAndUpdate(userId,{resetToken,resetTokenExpiration},{new:true})
-        }catch(error){
-            console.log('Error saveToken:',error)
-            throw error
+    async deleteUserImage(userId: string): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate(
+                userId,
+                { $unset: { image: "" } },
+                { new: true }
+            );
+        } catch (error) {
+            console.log("Error deleteUserImage:", error);
+            throw error;
         }
     }
 
-    async updateIsGoogle(gmail:string,resetToken:string,resetTokenExpiration:number){
-        try{
-            const update = await user.findOneAndUpdate({email:gmail},{isGoogle:false,resetToken:null,resetTokenExpiration:null},{new:true})
-            console.log(update,'update')
-            return update
-        }catch(error){
-            console.log("Error updateIsGoogle:",error)
-            throw error
+    async saveToken(
+        userId: string,
+        resetToken: string,
+        resetTokenExpiration: number
+    ) {
+        try {
+            return await user.findByIdAndUpdate(
+                userId,
+                { resetToken, resetTokenExpiration },
+                { new: true }
+            );
+        } catch (error) {
+            console.log("Error saveToken:", error);
+            throw error;
         }
     }
 
+    async updateIsGoogle(
+        gmail: string,
+        resetToken: string,
+        resetTokenExpiration: number
+    ) {
+        try {
+            const update = await user.findOneAndUpdate(
+                { email: gmail },
+                {
+                    isGoogle: false,
+                    resetToken: null,
+                    resetTokenExpiration: null,
+                },
+                { new: true }
+            );
+            return update;
+        } catch (error) {
+            console.log("Error updateIsGoogle:", error);
+            throw error;
+        }
+    }
 }

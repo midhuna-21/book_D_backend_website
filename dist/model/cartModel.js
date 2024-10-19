@@ -28,7 +28,7 @@ const cartSchema = new mongoose_1.default.Schema({
     },
     totalAmount: {
         type: Number,
-        required: true
+        required: true,
     },
     totalRentalPrice: {
         type: Number,
@@ -36,7 +36,7 @@ const cartSchema = new mongoose_1.default.Schema({
     },
     total_deposit_amount: {
         type: Number,
-        required: true
+        required: true,
     },
     quantity: {
         type: Number,
@@ -52,8 +52,8 @@ const cartSchema = new mongoose_1.default.Schema({
     },
     isPaid: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
 }, { timestamps: true });
 const cart = mongoose_1.default.model("cart", cartSchema);
 exports.cart = cart;

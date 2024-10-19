@@ -3,30 +3,11 @@ import { books, IBooks } from "../model/bookModel";
 import { genres } from "../model/genresModel";
 import { Order } from "../interfaces/data";
 import { orders,IOrder } from "../model/orderModel";
+import { WalletRepository } from "./walletRepository";
 
+
+const walletRepository = new WalletRepository()
 export class BookRepository {
-
-    async  updateoo() {
-        try {
-            // First, check how many documents have the field 'reachedAtUserDate'
-            const count = await orders.countDocuments({ reachedAtUserDate: { $exists: true } });
-            console.log(`Documents with 'reachedAtUserDate': ${count}`);
-            
-            // Proceed with renaming if documents are found
-            if (count > 0) {
-                const result = await orders.updateMany(
-                    { reachedAtUserDate: { $exists: true } }, // Ensure the field exists
-                    { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } }
-                );
-                console.log(result); // Logs the result of the operation
-            } else {
-                console.log("No documents found with 'reachedAtUserDate'");
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    
 
     async findUpdateBookQuantity(bookId: string,quantity: number) {
         try {
@@ -46,16 +27,7 @@ export class BookRepository {
             throw error;
         }
     }
-//     async updateoo(){
-//         try{
-//             const or =  await orders.updateMany( {},
-//                 { $rename: { 'reachedAtUserDate': 'bookStatusFromRenter' } } ,{new:true}
-//               );  
-// console.log(or,'ordeeeeeeeeeee')
-//         }catch(error){
-// console.log(error)
-//         }
-//     }
+
     async addToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
       
@@ -134,7 +106,7 @@ export class BookRepository {
 
     async findAllBooks() {
         try {
-            const bookies=  await books.find();
+            const bookies=  await books.find().sort({updatedAt:-1});
             return bookies
         } catch (error) {   
             console.log("Error findAllGenres:", error);
@@ -144,7 +116,7 @@ export class BookRepository {
 
     async findGenres() {
         try {
-            const allGenres = await genres.find()
+            const allGenres = await genres.find().sort({updatedAt:-1})
             return allGenres
         } catch (error) {
             console.log("Error findAllGenres:", error);
@@ -216,7 +188,8 @@ export class BookRepository {
                 bookId: data.bookId,
                 userId: data.userId,
                 lenderId: data.lenderId,
-                isPaid:true
+                isPaid:true,
+                
             }).save()
 
             const populatedOrder = await orders.findById(order._id)
@@ -322,7 +295,7 @@ export class BookRepository {
                 .populate("userId")
                 .populate("cartId")
                 .populate("lenderId")
-                .sort({ createdAt: -1 });
+                .sort({ updatedAt: -1 });
 
             return order;
 
@@ -339,7 +312,7 @@ export class BookRepository {
                 .populate("userId")
                 .populate("cartId")
                 .populate("lenderId")
-                .sort({ createdAt: -1 });
+                .sort({ updatedAt: -1 });
             return order;
 
         } catch (error) {
@@ -361,13 +334,11 @@ export class BookRepository {
             throw error;
         }
     }
-
     async findUpdateOrderStatusRenter(selectedOrderId: string,bookStatus:string) {
         try {
             const orderDetails: IOrder | null = await orders.findById({_id:selectedOrderId}).populate('userId').populate('lenderId').populate({path:'cartId',select:'totalRentalPrice  '})
             if(bookStatus=="not_returned"){
-                console.log(bookStatus,'bookStatusbookStatusbookStatusbookStatus')
-               const order= await orders.findByIdAndUpdate(
+               return await orders.findByIdAndUpdate(
                     {_id:selectedOrderId},
                     {
                         $set: {
@@ -377,32 +348,26 @@ export class BookRepository {
                     },
                     { new: true } 
                 );
-console.log(order,'orderrrrrrrrrr')
+            }else if(bookStatus=="completed"){
+                return await orders.findByIdAndUpdate(
+                    {_id:selectedOrderId},
+                    {
+                        $set: {
+                            bookStatusFromRenter: `${bookStatus}`,
+                            bookStatusFromLender:`${bookStatus}`,
+                            statusUpdateRenterDate: new Date(), 
+                        }
+                    },
+                    { new: true } 
+                );
             }
-
             const order = await orders.findByIdAndUpdate({_id:selectedOrderId},{bookStatusFromRenter:bookStatus},{new:true});
-
-            // const userId = orderDetails.userId;
-            // const lenderId = orderDetails.lenderId;
-            // const orderId = orderDetails._id;
-    
-            // if (orderDetails && typeof orderDetails.cartId !== 'string') {
-            //     const createWallet `= await new wallet({
-            //         userId:userId,
-            //         lenderId:lenderId,
-            //         orderId:orderId,
-            //         creditAmount: orderDetails.cartId.totalRentalPrice 
-            //     });
-            // } else {
-            //     throw new Error("cartId is not populated properly or is a string.");
-            // }
             return order;
         } catch (error) {
             console.log("Error findUpdateOrderStatus:", error);
             throw error;
         }
     }
-
     async findUpdateOrderStatusLender(selectedOrderId: string,bookStatus:string) {
         try {
             const orderDetails: IOrder | null = await orders.findById({_id:selectedOrderId}).populate('userId').populate('lenderId').populate({path:'cartId',select:'totalRentalPrice  '})
@@ -418,24 +383,25 @@ console.log(order,'orderrrrrrrrrr')
                     { new: true } 
                 );
 
+            }else if(bookStatus=="completed"){
+                const updatedOrderCompleted =  await orders.findByIdAndUpdate(
+                    {_id:selectedOrderId},
+                    {
+                        $set: {
+                            bookStatusFromLender: `${bookStatus}`,
+                            statusUpdateRenterDate: new Date(), 
+                        }
+                    },
+                    { new: true } 
+                );
+
+                if(updatedOrderCompleted){
+                    return await walletRepository.walletPaymentTransfer(selectedOrderId)
+                }
+
             }
            
             const order = await orders.findByIdAndUpdate({_id:selectedOrderId},{bookStatusFromLender:bookStatus},{new:true});
-
-            // const userId = orderDetails.userId;
-            // const lenderId = orderDetails.lenderId;
-            // const orderId = orderDetails._id;
-    
-            // if (orderDetails && typeof orderDetails.cartId !== 'string') {
-            //     const createWallet `= await new wallet({
-            //         userId:userId,
-            //         lenderId:lenderId,
-            //         orderId:orderId,
-            //         creditAmount: orderDetails.cartId.totalRentalPrice 
-            //     });
-            // } else {
-            //     throw new Error("cartId is not populated properly or is a string.");
-            // }
             return order;
         } catch (error) {
             console.log("Error findUpdateOrderStatus:", error);

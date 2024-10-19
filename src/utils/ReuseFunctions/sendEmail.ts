@@ -1,34 +1,38 @@
-import nodemailer from 'nodemailer'
-import crypto from 'crypto';
-import config from '../../config/config';
-import {UserService} from '../../services/userService'
+import nodemailer from "nodemailer";
+import crypto from "crypto";
+import config from "../../config/config";
+import { UserService } from "../../services/userService";
 
 const userService = new UserService();
-export const sendEmail = async(userId:string,email:string,resetToken:string,resetTokenExpiration:number)=>{
-   const transporter = nodemailer.createTransport({
-      service:'gmail',
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user:config.EMAIL,
-        pass:config.APP_PASSWORD,
-      },
+export const sendEmail = async (
+    userId: string,
+    email: string,
+    resetToken: string,
+    resetTokenExpiration: number
+) => {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+            user: config.EMAIL,
+            pass: config.APP_PASSWORD,
+        },
     });
 
+    const user = await userService.getUserById(userId);
+    const userName = user?.name;
 
-    const user = await userService.getUserById(userId)
-    const userName = user?.name
+    const logoUrl = "D:Book.D\backendsrcpublicsiteLogo.png";
 
-    const logoUrl = 'D:\Book.D\backend\src\public\siteLogo.png'
-   
-    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
+    const resetLink = `${config.API}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
 
     const info = await transporter.sendMail({
-      from: '"Book.D" <krishnamidhuna850@gmail.com>', 
-      to: email, 
-      subject: "Important: Reset Your Book.D Account Password", 
-      html: `
+        from: '"Book.D" <krishnamidhuna850@gmail.com>',
+        to: email,
+        subject: "Important: Reset Your Book.D Account Password",
+        html: `
       <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
           <div style="max-width: 600px; margin: auto; border: 1px solid #dddddd; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
              
@@ -56,8 +60,7 @@ export const sendEmail = async(userId:string,email:string,resetToken:string,rese
           </div>
       </div>
       `,
-  });
+    });
 
-  return info;
-
-}
+    return info;
+};

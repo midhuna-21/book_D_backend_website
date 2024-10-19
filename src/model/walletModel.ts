@@ -1,27 +1,50 @@
-import mongoose, { Document, Schema,Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
-interface IWallet extends Document {
-    cartId:string;
-    bookId: string;
-    userId: string;
-    lenderId: string;
-    orderId:string;
-    totalAmount:number;
-    creditAmount:number;
-    debitAmount:number;
+interface ITransaction extends Document {
+  type: "credit" | "debit"; 
+  total_amount: number;
+  source: string; 
+  orderId?: Types.ObjectId; 
+  createdAt: Date; 
 }
 
-const walletSchema = new Schema<IWallet>({
-    cartId:{type:String,ref:'cart'},
-    bookId: { type: String, ref: 'books' },
-    userId: { type: String, ref: 'user' }, 
-    lenderId: { type: String, ref: 'user' }, 
-    orderId: { type: String, ref: 'orders' }, 
-    totalAmount :{type:Number},
-    creditAmount:{type:Number},
-    debitAmount:{type:Number},
+interface IWallet extends Document {
+  userId: Types.ObjectId; 
+  balance: number;
+  transactions: Types.DocumentArray<ITransaction>; 
+}
 
-}, { timestamps: true });
+const transactionSchema = new Schema<ITransaction>(
+  {
+    type: {
+      type: String,
+      enum: ["credit", "debit"], 
+     
+    },
+    total_amount: { type: Number, },
+    source: { 
+      type: String, 
+        enum: [
+            "payment_to_lender", 
+            "refund_to_user", 
+      ],
+   
+    },
+    orderId: { type: Schema.Types.ObjectId, ref: "orders"},
+    createdAt: { type: Date, default: Date.now }, 
+  },
+  { _id: false }
+);
 
-const wallet = mongoose.model<IWallet>('wallet', walletSchema);
+const walletSchema = new Schema<IWallet>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: "user", required: true }, 
+    balance: { type: Number, default: 0 }, 
+    transactions: [transactionSchema], 
+  },
+  { timestamps: true }
+);
+
+const wallet = mongoose.model<IWallet>("wallet", walletSchema);
+
 export { wallet, IWallet };

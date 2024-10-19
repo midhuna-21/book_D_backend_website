@@ -19,7 +19,7 @@ class UserService {
             return user;
         }
         catch (error) {
-            console.log('Error getDeleteUserImage:', error);
+            console.log("Error getDeleteUserImage:", error);
             throw error;
         }
     }
@@ -97,7 +97,7 @@ class UserService {
     }
     async getUpdateUser(userId, filteredUser) {
         try {
-            console.log(filteredUser, 'filterd user at service ');
+            console.log(filteredUser, "filterd user at service ");
             return await userRepository.updateUser(userId, filteredUser);
         }
         catch (error) {

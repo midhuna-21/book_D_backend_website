@@ -7,23 +7,23 @@ exports.books = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bookSchema = new mongoose_1.default.Schema({
     bookTitle: {
-        type: String
+        type: String,
     },
     description: {
         type: String,
     },
     images: [{ type: String }],
     author: {
-        type: String
+        type: String,
     },
     genre: {
-        type: String
+        type: String,
     },
     publisher: {
-        type: String
+        type: String,
     },
     publishedYear: {
-        type: String
+        type: String,
     },
     rentalFee: {
         type: Number,
@@ -51,7 +51,7 @@ const bookSchema = new mongoose_1.default.Schema({
         city: { type: String, required: true },
         district: { type: String, required: true },
         state: { type: String, required: true },
-        pincode: { type: String, required: true }
+        pincode: { type: String, required: true },
     },
     latitude: {
         type: Number,
@@ -60,14 +60,14 @@ const bookSchema = new mongoose_1.default.Schema({
         type: Number,
     },
     isRented: {
-        type: Boolean
+        type: Boolean,
     },
     isSell: {
-        type: Boolean
+        type: Boolean,
     },
     lenderId: {
         type: String,
-        ref: "user"
+        ref: "user",
     },
     // location:{
     //    type:String,

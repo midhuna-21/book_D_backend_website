@@ -5,7 +5,7 @@ import config from '../../config/config';
 export interface AuthenticatedRequest extends Request {
   userId?: string; 
   adminId?: string; 
-  userRole?: string;  
+  role?: string;  
 }
 
 const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -19,10 +19,10 @@ const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunctio
     if (err) { 
       return res.status(401).json({ message: 'Unauthorized!' }); 
     }   
-    if (decoded && decoded.userRole === "user") {
+    if (decoded && decoded.role === "user") {
     
       req.userId = decoded.userId; 
-    } else if (decoded && decoded.userRole === "admin") {   
+    } else if (decoded && decoded.role === "admin") {   
       req.adminId = decoded.userId;
     } else {
       return res.status(403).json({ message: 'Forbidden: Access denied' });

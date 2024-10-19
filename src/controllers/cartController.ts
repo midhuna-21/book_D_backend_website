@@ -28,11 +28,11 @@ const saveCart = async (req: Request, res: Response) => {
             totalDays,
             quantity,
             totalAmount,
-            total_deposit_amount:totalDepositAmount,
+            total_deposit_amount: totalDepositAmount,
             totalRentalPrice,
         };
         const cart = await cartService.getCreateCart(data);
-        console.log(cart,'cartt created')
+       
         return res.status(200).json({ cart });
     } catch (error: any) {
         console.log("Error saveRequest:", error);
@@ -72,7 +72,7 @@ const checkUserSentRequest = async (req: Request, res: Response) => {
         }
 
         const isRequested = await cartService.getCheckRequest(userId, bookId);
-         
+
         return res.status(200).json({ isRequested });
     } catch (error: any) {
         console.log("Error checkUserSent:", error);
@@ -82,7 +82,7 @@ const checkUserSentRequest = async (req: Request, res: Response) => {
     }
 };
 
-const updateCart= async (req: Request, res: Response) => {
+const updateCart = async (req: Request, res: Response) => {
     try {
         const { cartId } = req.params;
         const { types } = req.body;
@@ -104,10 +104,4 @@ const updateCart= async (req: Request, res: Response) => {
     }
 };
 
-
-export {
-    checkUserSentRequest,
-    checkAccept,
-    saveCart,
-    updateCart,
-};
+export { checkUserSentRequest, checkAccept, saveCart, updateCart };

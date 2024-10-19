@@ -8,7 +8,7 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const config_1 = __importDefault(require("../../config/config"));
 const otpGenerate = async (email) => {
     const transporter = nodemailer_1.default.createTransport({
-        service: 'gmail',
+        service: "gmail",
         host: "smtp.gmail.com",
         port: 587,
         secure: false,

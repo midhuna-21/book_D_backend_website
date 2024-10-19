@@ -12,13 +12,10 @@ const db_1 = __importDefault(require("./config/db"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
 const adminRoute_1 = __importDefault(require("./routes/adminRoute"));
 const config_1 = __importDefault(require("./config/config"));
-const refreshToken_1 = require("./controllers/refreshToken");
-const userService_1 = require("./services/userService");
-const bookService_1 = require("./services/bookService");
+const userRefreshToken_1 = require("./controllers/userRefreshToken");
+const adminRefreshToken_1 = require("./controllers/adminRefreshToken");
 const chatService_1 = require("./services/chatService");
 require("./utils/ReuseFunctions/cronJob");
-const userService = new userService_1.UserService();
-const bookService = new bookService_1.BookService();
 const chatService = new chatService_1.ChatService();
 const app = (0, express_1.default)();
 const corsOptions = {
@@ -49,8 +46,7 @@ io.on("connection", (socket) => {
         if (userId) {
             userSockets.set(userId, socket.id);
             onlineUsers.set(userId, socket.id);
-            console.log(userSockets, 'user sockets');
-            // console.log(onlineUsers,'onlineUsers')
+            console.log(userSockets, "user sockets");
             io.emit("user-status", { userId, isOnline: true });
         }
     });
@@ -66,7 +62,7 @@ io.on("connection", (socket) => {
     });
     socket.on("send-notification", (data) => {
         const receiverSocketId = userSockets.get(data.receiverId);
-        console.log(receiverSocketId, 'receiverSocketId');
+        console.log(receiverSocketId, "receiverSocketId");
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("notification", data.notification);
             console.log(`Notification sent to ${data.receiverId}`);
@@ -120,7 +116,8 @@ app.use((req, res, next) => {
 });
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
-app.post("/api/refresh-token", refreshToken_1.refreshTokenController);
+app.post("/api/user-refresh-token", userRefreshToken_1.userRefreshTokenController);
+app.post("/api/admin-refresh-token", adminRefreshToken_1.adminRefreshTokenController);
 server.listen(config_1.default.PORT, () => {
     console.log(`Server running at ${config_1.default.PORT}`);
 });

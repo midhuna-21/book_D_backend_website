@@ -7,14 +7,14 @@ exports.genres = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const genreSchema = new mongoose_1.default.Schema({
     genreName: {
-        type: String
+        type: String,
     },
     image: {
-        type: String
+        type: String,
     },
     customGenre: {
-        type: String
-    }
+        type: String,
+    },
 }, { timestamps: true });
 const genres = mongoose_1.default.model("genres", genreSchema);
 exports.genres = genres;

@@ -10,7 +10,6 @@ class ChatRepository {
                 senderId,
                 receiverId,
             }).save();
-            console.log(chatRoomCreated, "chatRoom created");
             return chatRoomCreated;
         }
         catch (error) {
@@ -30,8 +29,12 @@ class ChatRepository {
     }
     async findUpdateChatRoomRead(chatRoomId) {
         try {
-            const messageUpdate = await message_1.message.updateMany({ chatRoomId: chatRoomId }, { isRead: true }, { new: true }).exec();
-            const chatUpdate = await chatRoom_1.chatRoom.findByIdAndUpdate({ _id: chatRoomId }, { isRead: true }, { new: true }).exec();
+            const messageUpdate = await message_1.message
+                .updateMany({ chatRoomId: chatRoomId }, { isRead: true }, { new: true })
+                .exec();
+            const chatUpdate = await chatRoom_1.chatRoom
+                .findByIdAndUpdate({ _id: chatRoomId }, { isRead: true }, { new: true })
+                .exec();
             return { message: messageUpdate, chat: chatUpdate };
         }
         catch (error) {
@@ -47,7 +50,7 @@ class ChatRepository {
             })
                 .populate("receiverId", "name email image")
                 .populate("senderId", "name email image")
-                .populate('messageId')
+                .populate("messageId")
                 .exec();
             const filteredChatRooms = chatRooms.filter((chatRoom) => {
                 const senderId = chatRoom.senderId;
@@ -68,12 +71,12 @@ class ChatRepository {
                 .populate({
                 path: "receiverId",
                 select: "name image",
-                match: { _id: { $exists: true } }
+                match: { _id: { $exists: true } },
             })
                 .populate({
                 path: "senderId",
                 select: "name image",
-                match: { _id: { $exists: true } }
+                match: { _id: { $exists: true } },
             })
                 .exec();
             if (!chatRoomData?.receiverId || !chatRoomData?.senderId) {
@@ -86,30 +89,6 @@ class ChatRepository {
             throw error;
         }
     }
-    // async findUserChat(chatRoomId: string) {
-    //     try {
-    //         const chatRoomData= await chatRoom
-    //             .findById({ _id: chatRoomId })
-    //             .populate({
-    //                 path: "receiverId",
-    //                 select: "name image",
-    //                 match: { _id: { $exists: true } } 
-    //             })
-    //             .populate({
-    //                 path: "senderId",
-    //                 select: "name image",
-    //                 match: { _id: { $exists: true } }
-    //             })
-    //             .exec();
-    //             if (!chatRoomData || !chatRoomData.receiverId || !chatRoomData.senderId) {
-    //                 return null; 
-    //             }
-    //             return chatRoomData;
-    //     } catch (error) {
-    //         console.log("Error findUpdateMessagesList:", error);
-    //         throw error;
-    //     }
-    // }
     async createSendMessage(senderId, receiverId, content, chatRoomId) {
         try {
             const saveMessage = await new message_1.message({
@@ -175,7 +154,10 @@ class ChatRepository {
     }
     async findUnReadMessages(userId) {
         try {
-            const messages = await message_1.message.countDocuments({ receiverId: userId, isRead: false });
+            const messages = await message_1.message.countDocuments({
+                receiverId: userId,
+                isRead: false,
+            });
             return messages;
         }
         catch (error) {

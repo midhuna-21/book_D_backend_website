@@ -8,8 +8,7 @@ const notificationService = new NotificationService();
 
 const sendNotification = async (req: Request, res: Response) => {
     try {
-       
-        const { userId, receiverId, cartId,notificationId,bookId, status } =
+        const { userId, receiverId, cartId, notificationId, bookId, status } =
             req.body;
         const data: Notification = {
             userId,
@@ -18,7 +17,10 @@ const sendNotification = async (req: Request, res: Response) => {
             cartId,
             status,
         };
-        const notification = await notificationService.getCreateNotification(notificationId,data);
+        const notification = await notificationService.getCreateNotification(
+            notificationId,
+            data
+        );
         return res.status(200).json({ notification });
     } catch (error: any) {
         console.log(error.message);
@@ -29,16 +31,13 @@ const sendNotification = async (req: Request, res: Response) => {
 const notifications = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId: string = req.userId!;
-
         if (!userId) {
             return res
                 .status(400)
                 .json({ message: "User ID not found in request" });
         }
-        const notifications = await notificationService.getNotificationsByUserId(
-            userId
-        );
-   
+        const notifications =
+            await notificationService.getNotificationsByUserId(userId);
         return res.status(200).json({ notifications });
     } catch (error: any) {
         console.log(error.message);
@@ -48,14 +47,16 @@ const notifications = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const unReadNotifications= async (req: Request, res: Response) => {
+const unReadNotifications = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUnReadNotifications(userId);
-        return res.status(200).json({ count:notifications });
+        const notifications = await notificationService.getUnReadNotifications(
+            userId
+        );
+        return res.status(200).json({ count: notifications });
     } catch (error: any) {
         console.log("Error unReadNotifications:", error);
         return res
@@ -66,12 +67,14 @@ const unReadNotifications= async (req: Request, res: Response) => {
 
 const updateNotification = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const  userId  = req.userId;
+        const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUpdateNotifications(userId);
-        return res.status(200).json({notifications});
+        const notifications = await notificationService.getUpdateNotifications(
+            userId
+        );
+        return res.status(200).json({ notifications });
     } catch (error: any) {
         console.log("Error unReadNotifications:", error);
         return res
@@ -84,5 +87,5 @@ export {
     sendNotification,
     notifications,
     unReadNotifications,
-    updateNotification
+    updateNotification,
 };

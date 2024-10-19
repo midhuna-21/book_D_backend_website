@@ -1,18 +1,18 @@
 import jwt, { SignOptions } from "jsonwebtoken";
-import { Response, Request } from "express";
+import { Response } from "express";
 import config from "../../config/config";
 
-interface UserTokenPayload {
-    userId: string;
-    userRole: string;
+interface AdminTokenPayload {
+    adminId?: string;
+    role: string;
 }
 
-const generateTokens = (
+const adminGenerateTokens = (
     res: Response,
-    payload: UserTokenPayload
+    payload: AdminTokenPayload
 ): { accessToken: string; refreshToken: string } => {
     const accessToken = jwt.sign(
-        { userId: payload.userId, userRole: payload.userRole },
+        { adminId: payload.adminId, role: payload.role },
         config.JWT_SECRET as string,
         {
             expiresIn: "1m",
@@ -20,15 +20,15 @@ const generateTokens = (
     );
 
     const refreshToken = jwt.sign(
-        { userId: payload.userId, userRole: payload.userRole },
+        { adminId: payload.adminId, role: payload.role },
         config.JWT_SECRET as string,
         {
             expiresIn: "30d",
         } as SignOptions
     );
 
-    const cookieName =
-        payload.userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
+    const cookieName = "adminrefreshToken";
+
     res.cookie(cookieName, refreshToken, {
         httpOnly: true,
         sameSite: "none",
@@ -39,4 +39,4 @@ const generateTokens = (
     return { accessToken, refreshToken };
 };
 
-export { generateTokens };
+export { adminGenerateTokens };

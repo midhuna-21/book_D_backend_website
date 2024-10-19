@@ -29,9 +29,9 @@ const s3Storage = (0, multer_s3_1.default)({
     },
 });
 function sanitizeFile(file, cb) {
-    const fileExts = ['.png', '.jpg', '.jpeg', '.gif'];
+    const fileExts = [".png", ".jpg", ".jpeg", ".gif"];
     const isAllowedExt = fileExts.includes(path_1.default.extname(file.originalname).toLowerCase());
-    const isAllowedMimeType = file.mimetype.startsWith('image/');
+    const isAllowedMimeType = file.mimetype.startsWith("image/");
     if (isAllowedExt && isAllowedMimeType) {
         cb(null, true);
     }

@@ -11,10 +11,10 @@ export class CartRepository {
                 bookId: data.bookId,
                 totalDays: data.totalDays,
                 quantity: data.quantity,
-                totalAmount:data.totalAmount,
-                total_deposit_amount:data.total_deposit_amount,
+                totalAmount: data.totalAmount,
+                total_deposit_amount: data.total_deposit_amount,
                 totalRentalPrice: data.totalRentalPrice,
-                types:data.types
+                types: data.types,
             }).save();
         } catch (error) {
             console.log("Error creatCart:", error);
@@ -22,7 +22,10 @@ export class CartRepository {
         }
     }
 
-    async findCheckRequest(userId: string, bookId: string): Promise<ICart | null> {
+    async findCheckRequest(
+        userId: string,
+        bookId: string
+    ): Promise<ICart | null> {
         try {
             const existingRequest = await cart.findOne({
                 userId: userId,
@@ -51,7 +54,7 @@ export class CartRepository {
     }
     async findCartById(cartId: string) {
         try {
-            const cartItem = await cart.findById({ _id: cartId })
+            const cartItem = await cart.findById({ _id: cartId });
             return cartItem;
         } catch (error) {
             console.log("Error findCartById:", error);
@@ -61,11 +64,10 @@ export class CartRepository {
 
     async findUpdateCart(cartId: string, types: string) {
         try {
-            const  updateCart = await cart.findByIdAndUpdate(
+            const updateCart = await cart.findByIdAndUpdate(
                 { _id: cartId },
                 { types: types },
-                { new: true },
-                
+                { new: true }
             );
             return updateCart;
         } catch (error) {
@@ -75,7 +77,6 @@ export class CartRepository {
     }
     async findCartDetails(cartId: string) {
         try {
-            console.log(cartId,'cartid')
             const details = await cart
                 .findById({ _id: cartId })
                 .populate("bookId")
@@ -89,27 +90,16 @@ export class CartRepository {
 
     async findUpdateIsPaid(cartId: string) {
         try {
-            const update = await cart
-                .findByIdAndUpdate({ _id: cartId },{isPaid:true},{new:true})
-                
+            const update = await cart.findByIdAndUpdate(
+                { _id: cartId },
+                { isPaid: true },
+                { new: true }
+            );
+
             return update;
         } catch (error) {
             console.log("Error findUpdateIsPaid:", error);
             throw error;
         }
     }
-
-    // async findUpdateCart(cartId: string) {
-    //     try {
-    //         const update = await cart.findByIdAndUpdate(
-    //             { _id: cartId },
-    //             { isPaid: true },
-    //             { new: true }
-    //         );
-    //         return update;
-    //     } catch (error) {
-    //         console.log("Error findUpdateRequest:", error);
-    //         throw error;
-    //     }
-    // }
 }

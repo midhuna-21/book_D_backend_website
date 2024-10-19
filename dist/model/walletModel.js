@@ -25,16 +25,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wallet = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+const transactionSchema = new mongoose_1.Schema({
+    type: {
+        type: String,
+        enum: ["credit", "debit"],
+    },
+    total_amount: { type: Number, },
+    source: {
+        type: String,
+        enum: [
+            "payment_to_lender",
+            "refund_to_user",
+        ],
+    },
+    orderId: { type: mongoose_1.Schema.Types.ObjectId, ref: "orders" },
+    createdAt: { type: Date, default: Date.now },
+}, { _id: false });
 const walletSchema = new mongoose_1.Schema({
-    cartId: { type: String, ref: 'cart' },
-    bookId: { type: String, ref: 'books' },
-    userId: { type: String, ref: 'user' },
-    lenderId: { type: String, ref: 'user' },
-    orderId: { type: String, ref: 'orders' },
-    totalAmount: { type: Number },
-    creditAmount: { type: Number },
-    debitAmount: { type: Number },
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "user", required: true },
+    balance: { type: Number, default: 0 },
+    transactions: [transactionSchema],
 }, { timestamps: true });
-const wallet = mongoose_1.default.model('wallet', walletSchema);
+const wallet = mongoose_1.default.model("wallet", walletSchema);
 exports.wallet = wallet;
 //# sourceMappingURL=walletModel.js.map

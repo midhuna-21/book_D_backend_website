@@ -36,11 +36,11 @@ adminRouter.post(
     upload.single("file"),
     updateGenre
 );
-// get-users
+
 adminRouter.get("/get-users", verifyToken, getUsersList);
-// block-user
+
 adminRouter.post("/block-user", verifyToken, blockUser);
-// unblock-user
+
 adminRouter.post("/unblock-user", verifyToken, unBlockUser);
 
 adminRouter.get("/total-rented-books", verifyToken, totalRentedBooks);
@@ -50,7 +50,12 @@ adminRouter.get("/total-sold-books", verifyToken, totalSoldBooks);
 adminRouter.get("/total-books", verifyToken, totalBooks);
 
 adminRouter.get("/get-rental-orders", verifyToken, allOrders);
+
 adminRouter.get("/order-detail/:orderId", verifyToken, orderDetail);
-adminRouter.get("/get-wallet-transactions", verifyToken, walletTransactions);
+
+adminRouter.get("/bookd-wallet", verifyToken, walletTransactions);
+
+// adminRouter.get("/bookd-wallet", verifyToken,walletTransactions);
+
 
 export default adminRouter;

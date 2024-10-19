@@ -40,14 +40,6 @@ class AdminService {
             throw error;
         }
     }
-    // async getCreateCustomGenre(genreName:Partial<Genre>):Promise<IGenre | null>{
-    //    try{
-    //       return await adminRepository.createCustomGenre(genreName)
-    //    }catch(error){
-    //       console.log("Error getGenreName:",error);
-    //       throw error
-    // }
-    // }
     async getAllUsers() {
         try {
             return await adminRepository.findAllUsers();
@@ -57,12 +49,12 @@ class AdminService {
             throw error;
         }
     }
-    async getWalletTransactions() {
+    async getWalletTransactionsAdmin() {
         try {
-            return await adminRepository.findWalletTransactions();
+            return await adminRepository.findWalletTransactionsAdmin();
         }
         catch (error) {
-            console.log("Error getWalletTransactions:", error);
+            console.log("Error getWalletTransactionsAdmin:", error);
             throw error;
         }
     }
@@ -158,19 +150,4 @@ class AdminService {
     }
 }
 exports.AdminService = AdminService;
-// const getUnBlockUser =async(_id:string)=>{
-//    return await adminRepository.findUnBlockUser(_id)
-// }
-// const getBlockUser =async(_id:string)=>{
-//    return await adminRepository.findBlockUser(_id)
-// }
-// const getAllUsers =async()=>{
-//    return await adminRepository.findAllUsers()
-// }
-// const getAddGenre = async(genreName:string, image:string)=>{
-//    return await adminRepository.addGenre(genreName,image)
-// }
-// const getGenreName = async(genreName:string)=>{
-//    return await adminRepository.findGenreName(genreName)
-// }
 //# sourceMappingURL=adminService.js.map

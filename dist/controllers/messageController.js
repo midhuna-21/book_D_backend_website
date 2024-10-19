@@ -28,9 +28,7 @@ const updateChatRoomRead = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
         if (!chatRoomId) {
-            return res
-                .status(400)
-                .json({ message: "Missing chatRoomId" });
+            return res.status(400).json({ message: "Missing chatRoomId" });
         }
         const isExistChatRoom = await chatService.getChatRoomById(chatRoomId);
         if (!isExistChatRoom) {
@@ -84,9 +82,7 @@ const sendMessage = async (req, res) => {
     try {
         const { senderId, receiverId, content, chatRoomId } = req.body;
         if (!senderId && !receiverId && !chatRoomId) {
-            return res
-                .status(500)
-                .json({
+            return res.status(500).json({
                 message: "senderId or receiverId or chatRoomId is not available",
             });
         }

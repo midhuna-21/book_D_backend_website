@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genreMatchedBooks = exports.updateOrderStatusLender = exports.updateOrderStatusRenter = exports.OrderToShowSuccess = exports.search = exports.lendList = exports.rentList = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.lenderDetails = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
+exports.genreMatchedBooks = exports.updateOrderStatusLender = exports.updateOrderStatusRenter = exports.OrderToShowSuccess = exports.search = exports.lendList = exports.rentList = exports.orders = exports.createOrder = exports.createCheckout = exports.lendingProcess = exports.soldBooks = exports.rentedBooks = exports.sellBook = exports.rentBookUpdate = exports.rentBook = exports.bookDetail = exports.genres = exports.exploreBooks = exports.genresOfBooks = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const sharp_1 = __importDefault(require("sharp"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -17,16 +17,13 @@ const bookService_1 = require("../services/bookService");
 const cartService_1 = require("../services/cartService");
 const userService_1 = require("../services/userService");
 const walletService_1 = require("../services/walletService");
-const bookRepository_1 = require("../respository/bookRepository");
 const bookService = new bookService_1.BookService();
 const cartService = new cartService_1.CartService();
 const userService = new userService_1.UserService();
 const walletService = new walletService_1.WalletService();
-const bookRepository = new bookRepository_1.BookRepository();
 const genresOfBooks = async (req, res) => {
     try {
         const genres = await bookService.getGenres();
-        // return await bookRepository.updateoo()
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -314,11 +311,8 @@ const rentedBooks = async (req, res) => {
         const booksToShow = [];
         for (const book of allBooks) {
             if (book.lenderId == userId && book.isRented) {
-                // const isLenderExist = await bookService.getUserById(book.lenderId);
-                // if(isLenderExist && !isLenderExist.isBlocked ){
                 booksToShow.push(book);
             }
-            // }
         }
         return res.status(200).json(booksToShow);
     }
@@ -360,23 +354,6 @@ const soldBooks = async (req, res) => {
     }
 };
 exports.soldBooks = soldBooks;
-const lenderDetails = async (req, res) => {
-    try {
-        // const bookId = req.params.Id as string;
-        // const book: IBooks | null = await bookService.getBookById(bookId);
-        // if (!book) {
-        //     return res.status(500).json({ message: "Book is not found " });
-        // }
-        // const lenderId: string = book.lenderId;
-        // const lender = await bookService.getUserById(lenderId);
-        return res.status(200).json({});
-    }
-    catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-exports.lenderDetails = lenderDetails;
 const lendingProcess = async (req, res) => {
     try {
         const { cartId } = req.params;
@@ -410,7 +387,7 @@ const createCheckout = async (req, res) => {
                         },
                         unit_amount: totalPrice * 100,
                     },
-                    quantity: quantity,
+                    quantity: 1,
                 },
             ],
             mode: "payment",
@@ -425,36 +402,9 @@ const createCheckout = async (req, res) => {
     }
 };
 exports.createCheckout = createCheckout;
-// const createCheckout = async (req:Request,res:Response) => {
-//     const { bookTitle, totalPrice,cartId, quantity, userId, lenderId, bookId, depositAmount,totalRentalPrice } = req.body;
-//     try {
-//       const session = await stripe.checkout.sessions.create({
-//         payment_method_types: ["card"],
-//         line_items: [
-//           {
-//             price_data: {
-//               currency: "usd",
-//               product_data: {
-//                 name: bookTitle,
-//               },
-//               unit_amount: totalPrice * 100,
-//             },
-//             quantity: quantity,
-//           },
-//         ],
-//         mode: "payment",
-//         success_url: `${config.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}`,
-//         cancel_url: `${config.API}/payment-cancel`,
-//       });
-//       res.json({ id: session.id });
-//     } catch (error:any) {
-//       res.status(500).json({ error: error.message });
-//     }
-//   };
 const createOrder = async (req, res) => {
     try {
         const { userId, bookId, cartId, sessionId } = req.body;
-        console.log(sessionId, "sessionId");
         if (!userId || !bookId) {
             return res
                 .status(400)
@@ -462,7 +412,6 @@ const createOrder = async (req, res) => {
         }
         const existOrder = await bookService.getIsOrderExist(sessionId);
         if (existOrder) {
-            console.log(existOrder, 'existorder');
             return res.status(200).json({ order: existOrder });
         }
         const cartData = await cartService.getCartById(cartId);
@@ -481,19 +430,24 @@ const createOrder = async (req, res) => {
             };
             const order = await bookService.getCreateOrder(orderData);
             const cart = await cartService.getUpdateIsPaid(cartId);
-            const wallet = await walletService.getCreateWalletForWebsite(cartId);
             const selectedQuantity = cart?.quantity;
             const book = await bookService.getBookById(bookId);
             if (book && book.quantity > 0) {
                 const updatedQuantity = book.quantity - selectedQuantity;
                 if (updatedQuantity < 0) {
-                    return res.status(400).json({ message: "Book is out of stock" });
+                    return res
+                        .status(400)
+                        .json({ message: "Book is out of stock" });
                 }
                 await bookService.getUpdateBookQuantity(bookId, updatedQuantity);
             }
             else {
-                return res.status(404).json({ message: "Book not found or out of stock" });
+                return res
+                    .status(404)
+                    .json({ message: "Book not found or out of stock" });
             }
+            const totalAmount = Number(cart?.totalAmount);
+            await walletService.updateBookWallet(orderData.lenderId, totalAmount, userId);
             return res.status(200).json({ order });
         }
     }
@@ -538,7 +492,6 @@ exports.rentList = rentList;
 const lendList = async (req, res) => {
     try {
         const { userId } = req.params;
-        console.log(userId, 'userind');
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
@@ -559,27 +512,6 @@ const search = async (req, res) => {
         const books = await bookService.getSearchResult(searchQuery);
         for (const book of books) {
             if (book.lenderId !== userId) {
-                // const isLenderExist = await bookService.getUserById(book.lenderId);
-                // if(isLenderExist && !isLenderExist.isBlocked ){
-                // if (book.images && Array.isArray(book.images)) {
-                //     const imageUrls = await Promise.all(
-                //         book.images.map(async (imageKey: string) => {
-                //             const getObjectParams: GetObjectCommandInput = {
-                //                 Bucket: config.BUCKET_NAME,
-                //                 Key: imageKey,
-                //             };
-                //             const command = new GetObjectCommand(
-                //                 getObjectParams
-                //             );
-                //             return await getSignedUrl(s3Client, command, {
-                //                 expiresIn: 3600,
-                //             });
-                //         })
-                //     );
-                //     book.images = imageUrls;
-                // } else {
-                //     book.images = [];
-                // }
                 booksToShow.push(book);
             }
         }
@@ -594,9 +526,7 @@ exports.search = search;
 const updateOrderStatusRenter = async (req, res) => {
     try {
         const { selectedOrderId } = req.params;
-        console.log(selectedOrderId, 'selectedOrderId');
         const { isBookHandover } = req.body;
-        console.log(isBookHandover, 'isBookHandover');
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });
@@ -615,9 +545,7 @@ exports.updateOrderStatusRenter = updateOrderStatusRenter;
 const updateOrderStatusLender = async (req, res) => {
     try {
         const { selectedOrderId } = req.params;
-        console.log(selectedOrderId, 'selectedOrderId');
         const { isBookHandover } = req.body;
-        console.log(isBookHandover, 'isBookHandover');
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });

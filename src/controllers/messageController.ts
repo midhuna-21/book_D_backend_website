@@ -3,7 +3,6 @@ import { IChatRoom } from "../model/chatRoom";
 import { IMessage } from "../model/message";
 import { ChatService } from "../services/chatService";
 
-
 const chatService = new ChatService();
 
 const createChatRoom = async (req: Request, res: Response) => {
@@ -31,22 +30,22 @@ const createChatRoom = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const updateChatRoomRead= async (req: Request, res: Response) => {
+const updateChatRoomRead = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
         if (!chatRoomId) {
-            return res
-                .status(400)
-                .json({ message: "Missing chatRoomId" });
+            return res.status(400).json({ message: "Missing chatRoomId" });
         }
         const isExistChatRoom = await chatService.getChatRoomById(chatRoomId);
         if (!isExistChatRoom) {
-            return res.status(400).json({message:"chat is not found"});
+            return res.status(400).json({ message: "chat is not found" });
         }
-        const {message,chat} = await chatService.getUpdateChatRoomRead(chatRoomId);
-    
-        const  isRead=chat?.isRead;
-        return res.status(200).json({isRead});
+        const { message, chat } = await chatService.getUpdateChatRoomRead(
+            chatRoomId
+        );
+
+        const isRead = chat?.isRead;
+        return res.status(200).json({ isRead });
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });
@@ -65,10 +64,8 @@ const messageCreation = async (req: Request, res: Response) => {
 const userMessagesList = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-
         const conversations: IChatRoom[] | null =
             await chatService.getUserMessagesList(userId);
-   
         return res.status(200).json({ conversations });
     } catch (error) {
         console.log("Error messsageCreation", error);
@@ -79,7 +76,6 @@ const userMessagesList = async (req: Request, res: Response) => {
 const chat = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
-
         const chat = await chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     } catch (error) {
@@ -92,12 +88,10 @@ const sendMessage = async (req: Request, res: Response) => {
     try {
         const { senderId, receiverId, content, chatRoomId } = req.body;
         if (!senderId && !receiverId && !chatRoomId) {
-            return res
-                .status(500)
-                .json({
-                    message:
-                        "senderId or receiverId or chatRoomId is not available",
-                });
+            return res.status(500).json({
+                message:
+                    "senderId or receiverId or chatRoomId is not available",
+            });
         }
         const savedMessage: IMessage | null = await chatService.getSendMessage(
             senderId,
@@ -126,7 +120,6 @@ const sendMessage = async (req: Request, res: Response) => {
         const message: IMessage[] | null = await chatService.getMesssage(
             messageIdStr
         );
-
         return res.status(200).json({ message });
     } catch (error) {
         console.log("Error sendMessage", error);
@@ -140,7 +133,6 @@ const allMessages = async (req: Request, res: Response) => {
         if (!chatRoomId) {
             return res.status(400).json({ message: "chatroom ID not found" });
         }
-
         const messages = await chatService.getAllMessages(chatRoomId);
         return res.status(200).json({ messages });
     } catch (error: any) {
@@ -151,7 +143,7 @@ const allMessages = async (req: Request, res: Response) => {
     }
 };
 
-const unReadMessages= async (req: Request, res: Response) => {
+const unReadMessages = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         if (!userId) {
@@ -159,7 +151,7 @@ const unReadMessages= async (req: Request, res: Response) => {
         }
 
         const messages = await chatService.getUnReadMessages(userId);
-        return res.status(200).json({ count:messages });
+        return res.status(200).json({ count: messages });
     } catch (error: any) {
         console.log("Error checkUserSent:", error);
         return res
@@ -176,6 +168,5 @@ export {
     chat,
     sendMessage,
     allMessages,
-    unReadMessages
- 
+    unReadMessages,
 };

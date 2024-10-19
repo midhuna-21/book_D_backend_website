@@ -5,7 +5,7 @@ import {
 } from "../utils/ReuseFunctions/passwordValidation";
 import { UserService } from "../services/userService";
 import { otpGenerate } from "../utils/ReuseFunctions/otpGenerate";
-import { generateTokens } from "../utils/jwt/generateToken";
+import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
 import crypto from "crypto";
 import axios from "axios";
 import sharp from "sharp";
@@ -144,9 +144,9 @@ const verifyOtp = async (req: Request, res: Response) => {
                 return res.status(404).json({ message: "User not found" });
             } else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = generateTokens(res, {
+                const { accessToken, refreshToken } = userGenerateTokens(res, {
                     userId,
-                    userRole: "user",
+                    role: "user",
                 });
                 return res
                     .status(200)
@@ -187,16 +187,10 @@ const loginUser = async (req: Request, res: Response) => {
         }
 
         const userId: string = (user._id as Types.ObjectId).toString();
-        const { accessToken, refreshToken } = generateTokens(res, {
+        const { accessToken, refreshToken } = userGenerateTokens(res, {
             userId,
-            userRole: "user",
-        });
-        // const imageUrl = user.image
-        // if (imageUrl) {
-        //     const image = await getSignedImageUrl(imageUrl)
-        //     return res.status(200).json({ user: { ...user.toObject(), image , accessToken, refreshToken} });
-        // }
-
+            role: "user",
+        }); 
         return res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
         console.error(error.message);
@@ -213,9 +207,9 @@ const loginByGoogle = async (req: Request, res: Response) => {
         }
         if (existUser?.isGoogle == true) {
             const userId = existUser._id.toString();
-            const { accessToken, refreshToken } = generateTokens(res, {
+            const { accessToken, refreshToken } = userGenerateTokens(res, {
                 userId,
-                userRole: "user",
+                role: "user",
             });
             return res
                 .status(200)
@@ -240,7 +234,6 @@ const loginByGoogle = async (req: Request, res: Response) => {
                     )}-google-profile.jpg`;
 
                     imageUrl = await uploadImageToS3(imageBuffer, fileName);
-                   
                 } catch (uploadError) {
                     console.error("Error uploading image:", uploadError);
                     return res
@@ -256,9 +249,9 @@ const loginByGoogle = async (req: Request, res: Response) => {
                 return res.status(400).json({ message: "user is not created" });
             } else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = generateTokens(res, {
+                const { accessToken, refreshToken } = userGenerateTokens(res, {
                     userId,
-                    userRole: "user",
+                    role: "user",
                 });
 
                 return res.status(200).json({
@@ -321,7 +314,6 @@ const googleLog = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-
 const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { formData } = req.body;
@@ -333,7 +325,6 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
         if (!userExist) {
             return res.status(404).json({ message: "User not found" });
         }
-
         const user: Partial<IUser> = {
             name,
             email,
@@ -346,15 +337,7 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
                 pincode: pincode,
             },
         };
-        // const filteredUser = Object.fromEntries(
-        //     Object.entries(user).filter(
-        //       ([_, value]) => typeof value === 'string' && value.trim() !== ""
-        //     )
-        //   );
-
-        console.log(user, "user deila ");
         const updatedUser = await userService.getUpdateUser(userId, user);
-
         return res.status(200).json({ user: updatedUser });
     } catch (error: any) {
         console.error("Error updating user:", error.message);
@@ -509,7 +492,6 @@ const sendUnlinkEmail = async (req: AuthenticatedRequest, res: Response) => {
             resetToken,
             resetTokenExpiration
         );
-
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error(error.message);
@@ -546,11 +528,9 @@ const calculateDistance = async (req: Request, res: Response) => {
         const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
         const { lat1, lng1, lat2, lng2 } = req.query;
         if (!lat1 || !lat2 || !lng1 || !lng2) {
-            return res
-                .status(500)
-                .json({
-                    message: "Error while getting while calculating distance",
-                });
+            return res.status(500).json({
+                message: "Error while getting while calculating distance",
+            });
         }
         // console.log(lat1,'lat1',lat2,'lat2',lng1,'lng1',lng2,'lng2')
         const origin = `${lat1},${lng1}`;

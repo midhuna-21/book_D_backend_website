@@ -7,13 +7,13 @@ exports.generateTokens = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config/config"));
 const generateTokens = (res, payload) => {
-    const accessToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.userRole }, config_1.default.JWT_SECRET, {
+    const accessToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.role }, config_1.default.JWT_SECRET, {
         expiresIn: "1m",
     });
-    const refreshToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.userRole }, config_1.default.JWT_SECRET, {
+    const refreshToken = jsonwebtoken_1.default.sign({ userId: payload.userId, userRole: payload.role }, config_1.default.JWT_SECRET, {
         expiresIn: "30d",
     });
-    const cookieName = payload.userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
+    const cookieName = payload.role === "admin" ? "adminrefreshToken" : "userrefreshToken";
     res.cookie(cookieName, refreshToken, {
         httpOnly: true,
         sameSite: "none",

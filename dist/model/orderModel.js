@@ -26,26 +26,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.orders = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const orderSchema = new mongoose_1.Schema({
-    cartId: { type: String, ref: 'cart' },
-    bookId: { type: String, ref: 'books' },
-    userId: { type: String, ref: 'user' },
-    lenderId: { type: String, ref: 'user' },
+    cartId: { type: String, ref: "cart" },
+    bookId: { type: String, ref: "books" },
+    userId: { type: String, ref: "user" },
+    lenderId: { type: String, ref: "user" },
     sessionId: { type: String },
     isPaid: { type: Boolean, default: false },
     reason: { types: String },
     bookStatusFromRenter: {
         type: String,
-        enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
-        default: 'not_reached',
+        enum: [
+            "not_reached",
+            "not_returned",
+            "completed",
+            "cancelled",
+            "overdue",
+        ],
+        default: "not_reached",
+    },
+    isAmountCredited: {
+        type: Boolean,
+        default: false,
     },
     bookStatusFromLender: {
         type: String,
-        enum: ['not_reached', 'not_returned', 'completed', 'cancelled', 'overdue'],
-        default: 'not_reached',
+        enum: [
+            "not_reached",
+            "not_returned",
+            "completed",
+            "cancelled",
+            "overdue",
+        ],
+        default: "not_reached",
     },
     statusUpdateLenderDate: { type: Date },
     statusUpdateRenterDate: { type: mongoose_1.Schema.Types.Date },
 }, { timestamps: true });
-const orders = mongoose_1.default.model('orders', orderSchema);
+const orders = mongoose_1.default.model("orders", orderSchema);
 exports.orders = orders;
 //# sourceMappingURL=orderModel.js.map

@@ -79,7 +79,13 @@ class UserRepository {
     }
     async updatePassword(data) {
         try {
-            return await userModel_1.user.findOneAndUpdate({ email: data.email }, { $set: { password: data.password, resetToken: undefined, resetTokenExpiration: undefined } });
+            return await userModel_1.user.findOneAndUpdate({ email: data.email }, {
+                $set: {
+                    password: data.password,
+                    resetToken: undefined,
+                    resetTokenExpiration: undefined,
+                },
+            });
         }
         catch (error) {
             console.log("Error updatePassword:", error);
@@ -109,15 +115,19 @@ class UserRepository {
                     email: filteredUser.email || userToUpdate.email,
                     phone: filteredUser.phone || userToUpdate.phone,
                     address: {
-                        street: filteredUser.address?.street || userToUpdate.address?.street,
-                        city: filteredUser.address?.city || userToUpdate.address?.city,
-                        district: filteredUser.address?.district || userToUpdate.address?.district,
-                        state: filteredUser.address?.state || userToUpdate.address?.state,
-                        pincode: filteredUser.address?.pincode || userToUpdate.address?.pincode,
-                    }
+                        street: filteredUser.address?.street ||
+                            userToUpdate.address?.street,
+                        city: filteredUser.address?.city ||
+                            userToUpdate.address?.city,
+                        district: filteredUser.address?.district ||
+                            userToUpdate.address?.district,
+                        state: filteredUser.address?.state ||
+                            userToUpdate.address?.state,
+                        pincode: filteredUser.address?.pincode ||
+                            userToUpdate.address?.pincode,
+                    },
                 };
                 const updatedUser = await userModel_1.user.findByIdAndUpdate(userId, updateFields, { new: true });
-                console.log(updatedUser, 'updatedUser');
                 if (!updatedUser) {
                     console.log("Error updating the user:");
                     return null;
@@ -140,7 +150,6 @@ class UserRepository {
             throw error;
         }
     }
-    ;
     async updateProfileImage(userId, imageUrl) {
         try {
             return await userModel_1.user.findByIdAndUpdate(userId, { image: imageUrl }, { new: true });
@@ -164,14 +173,17 @@ class UserRepository {
             return await userModel_1.user.findByIdAndUpdate(userId, { resetToken, resetTokenExpiration }, { new: true });
         }
         catch (error) {
-            console.log('Error saveToken:', error);
+            console.log("Error saveToken:", error);
             throw error;
         }
     }
     async updateIsGoogle(gmail, resetToken, resetTokenExpiration) {
         try {
-            const update = await userModel_1.user.findOneAndUpdate({ email: gmail }, { isGoogle: false, resetToken: null, resetTokenExpiration: null }, { new: true });
-            console.log(update, 'update');
+            const update = await userModel_1.user.findOneAndUpdate({ email: gmail }, {
+                isGoogle: false,
+                resetToken: null,
+                resetTokenExpiration: null,
+            }, { new: true });
             return update;
         }
         catch (error) {

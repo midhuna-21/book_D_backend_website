@@ -9,61 +9,60 @@ export class NotificationRepository {
     ): Promise<INotification | null> {
         try {
             if (notificationId) {
-                
                 const existNotification = await notification.findById({
                     _id: notificationId,
                 });
                 const id = existNotification?._id;
-                const existNotificationUpdate =  await notification
+                const existNotificationUpdate = await notification
                     .findByIdAndUpdate(
                         { _id: id },
                         { status: data.status },
                         { new: true }
                     )
-                    .populate('userId')
-                    .populate('receiverId')
-                    .populate('bookId')
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
                     .populate("cartId")
                     .exec();
 
-                    const newNotification = new notification({
-                        userId: data.userId,
-                        receiverId: data.receiverId,
-                        bookId: data.bookId,
-                        cartId:data.cartId,
-                        status: data.status,
-                      });
-                
-                      const savedNotification = await newNotification.save();
-    
-                      const value = await notification
-                        .findById(savedNotification._id)
-                        .populate('userId')
-                        .populate('receiverId')
-                        .populate('bookId')
-                        .populate("cartId")
-                        .exec();
-                        return value;
-            }else {
                 const newNotification = new notification({
                     userId: data.userId,
                     receiverId: data.receiverId,
                     bookId: data.bookId,
-                    cartId:data.cartId,
+                    cartId: data.cartId,
                     status: data.status,
-                  });
-            
-                  const savedNotification = await newNotification.save();
+                });
 
-                  const value = await notification
+                const savedNotification = await newNotification.save();
+
+                const value = await notification
                     .findById(savedNotification._id)
-                    .populate('userId')
-                    .populate('receiverId')
-                    .populate('bookId')
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
                     .populate("cartId")
                     .exec();
-                    return value;
-                }
+                return value;
+            } else {
+                const newNotification = new notification({
+                    userId: data.userId,
+                    receiverId: data.receiverId,
+                    bookId: data.bookId,
+                    cartId: data.cartId,
+                    status: data.status,
+                });
+
+                const savedNotification = await newNotification.save();
+
+                const value = await notification
+                    .findById(savedNotification._id)
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
+                    .populate("cartId")
+                    .exec();
+                return value;
+            }
         } catch (error) {
             console.log("Error createUser:", error);
             throw error;
@@ -72,13 +71,13 @@ export class NotificationRepository {
 
     async notificationsByUserId(userId: string): Promise<INotification[]> {
         try {
-            const notifications = await notification  
-            .find({ receiverId: new mongoose.Types.ObjectId(userId) } )
+            const notifications = await notification
+                .find({ receiverId: new mongoose.Types.ObjectId(userId) })
                 .populate("userId")
                 .populate("receiverId")
                 .populate("bookId")
                 .populate("cartId")
-                .sort({ createdAt: -1 });
+                .sort({ updatedAt: -1 });
             return notifications;
         } catch (error) {
             console.log("Error notificationsByUserId:", error);
@@ -111,8 +110,11 @@ export class NotificationRepository {
 
     async findUnReadNotifications(userId: string) {
         try {
-            const notifications= await notification.countDocuments({receiverId:userId,isRead:false})
-            return notifications
+            const notifications = await notification.countDocuments({
+                receiverId: userId,
+                isRead: false,
+            });
+            return notifications;
         } catch (error) {
             console.log("Error findUnReadNotifications:", error);
             throw error;
@@ -124,7 +126,7 @@ export class NotificationRepository {
             const notifications = await notification.updateMany(
                 { receiverId: userId },
                 { isRead: true },
-                { new: true } 
+                { new: true }
             );
             return notifications;
         } catch (error) {
@@ -132,5 +134,4 @@ export class NotificationRepository {
             throw error;
         }
     }
-    
 }

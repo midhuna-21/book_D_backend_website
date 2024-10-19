@@ -16,9 +16,9 @@ class NotificationRepository {
                 const id = existNotification?._id;
                 const existNotificationUpdate = await notificationModel_1.notification
                     .findByIdAndUpdate({ _id: id }, { status: data.status }, { new: true })
-                    .populate('userId')
-                    .populate('receiverId')
-                    .populate('bookId')
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
                     .populate("cartId")
                     .exec();
                 const newNotification = new notificationModel_1.notification({
@@ -31,9 +31,9 @@ class NotificationRepository {
                 const savedNotification = await newNotification.save();
                 const value = await notificationModel_1.notification
                     .findById(savedNotification._id)
-                    .populate('userId')
-                    .populate('receiverId')
-                    .populate('bookId')
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
                     .populate("cartId")
                     .exec();
                 return value;
@@ -49,9 +49,9 @@ class NotificationRepository {
                 const savedNotification = await newNotification.save();
                 const value = await notificationModel_1.notification
                     .findById(savedNotification._id)
-                    .populate('userId')
-                    .populate('receiverId')
-                    .populate('bookId')
+                    .populate("userId")
+                    .populate("receiverId")
+                    .populate("bookId")
                     .populate("cartId")
                     .exec();
                 return value;
@@ -70,7 +70,7 @@ class NotificationRepository {
                 .populate("receiverId")
                 .populate("bookId")
                 .populate("cartId")
-                .sort({ createdAt: -1 });
+                .sort({ updatedAt: -1 });
             return notifications;
         }
         catch (error) {
@@ -96,7 +96,10 @@ class NotificationRepository {
     }
     async findUnReadNotifications(userId) {
         try {
-            const notifications = await notificationModel_1.notification.countDocuments({ receiverId: userId, isRead: false });
+            const notifications = await notificationModel_1.notification.countDocuments({
+                receiverId: userId,
+                isRead: false,
+            });
             return notifications;
         }
         catch (error) {

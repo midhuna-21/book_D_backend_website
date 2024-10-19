@@ -8,15 +8,15 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const adminSchema = new mongoose_1.default.Schema({
     email: {
         type: String,
-        unique: true
+        unique: true,
     },
     password: {
-        type: String
+        type: String,
     },
     isAdmin: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
 });
 const admin = mongoose_1.default.model("admin", adminSchema);
 exports.admin = admin;

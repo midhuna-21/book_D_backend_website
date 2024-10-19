@@ -21,7 +21,6 @@ const saveCart = async (req, res) => {
             totalRentalPrice,
         };
         const cart = await cartService.getCreateCart(data);
-        console.log(cart, 'cartt created');
         return res.status(200).json({ cart });
     }
     catch (error) {

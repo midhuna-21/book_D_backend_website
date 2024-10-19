@@ -20,14 +20,11 @@ import { BookService } from "../services/bookService";
 import { CartService } from "../services/cartService";
 import { UserService } from "../services/userService";
 import { WalletService } from "../services/walletService";
-import { BookRepository } from "../respository/bookRepository";
-import session from "express-session";
 
 const bookService = new BookService();
 const cartService = new CartService();
 const userService = new UserService();
 const walletService = new WalletService();
-const bookRepository = new BookRepository()
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
 }
@@ -35,7 +32,6 @@ interface CustomMulterFile extends Express.Multer.File {
 const genresOfBooks = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const genres: IGenre[] = await bookService.getGenres();
-        // return await bookRepository.updateoo()
         return res.status(200).json(genres);
     } catch (error: any) {
         console.log(error.message);
@@ -44,11 +40,9 @@ const genresOfBooks = async (req: AuthenticatedRequest, res: Response) => {
 };
 const genres = async (req: AuthenticatedRequest, res: Response) => {
     try {
-
-        const userId = req.userId!
+        const userId = req.userId!;
         const genres: IGenre[] = await bookService.getAllGenres(userId);
         return res.status(200).json(genres);
-        
     } catch (error: any) {
         console.log(error.message);
         return res.status(500).json({ message: "Internal server error" });
@@ -412,12 +406,8 @@ const rentedBooks = async (req: AuthenticatedRequest, res: Response) => {
 
         for (const book of allBooks) {
             if (book.lenderId == userId && book.isRented) {
-                // const isLenderExist = await bookService.getUserById(book.lenderId);
-                // if(isLenderExist && !isLenderExist.isBlocked ){
-
                 booksToShow.push(book);
             }
-            // }
         }
 
         return res.status(200).json(booksToShow);
@@ -461,23 +451,6 @@ const soldBooks = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const lenderDetails = async (req: Request, res: Response) => {
-    try {
-        // const bookId = req.params.Id as string;
-        // const book: IBooks | null = await bookService.getBookById(bookId);
-
-        // if (!book) {
-        //     return res.status(500).json({ message: "Book is not found " });
-        // }
-        // const lenderId: string = book.lenderId;
-        // const lender = await bookService.getUserById(lenderId);
-
-        return res.status(200).json({});
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
 const lendingProcess = async (req: Request, res: Response) => {
     try {
         const { cartId } = req.params;
@@ -521,7 +494,7 @@ const createCheckout = async (req: Request, res: Response) => {
                         },
                         unit_amount: totalPrice * 100,
                     },
-                    quantity: quantity,
+                    quantity: 1,
                 },
             ],
             mode: "payment",
@@ -530,57 +503,26 @@ const createCheckout = async (req: Request, res: Response) => {
         });
 
         res.json({ id: session.id });
-
     } catch (error: any) {
         console.error("Error createCheckout :", error);
 
         res.status(500).json({ error: error.message });
     }
 };
-// const createCheckout = async (req:Request,res:Response) => {
-//     const { bookTitle, totalPrice,cartId, quantity, userId, lenderId, bookId, depositAmount,totalRentalPrice } = req.body;
-
-//     try {
-//       const session = await stripe.checkout.sessions.create({
-//         payment_method_types: ["card"],
-//         line_items: [
-//           {
-//             price_data: {
-//               currency: "usd",
-//               product_data: {
-//                 name: bookTitle,
-//               },
-//               unit_amount: totalPrice * 100,
-//             },
-//             quantity: quantity,
-//           },
-//         ],
-//         mode: "payment",
-//         success_url: `${config.API}/home/payment-success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}`,
-//         cancel_url: `${config.API}/payment-cancel`,
-//       });
-
-//       res.json({ id: session.id });
-//     } catch (error:any) {
-//       res.status(500).json({ error: error.message });
-//     }
-//   };
 
 const createOrder = async (req: Request, res: Response) => {
     try {
-        const { userId, bookId, cartId,sessionId } = req.body;
-        console.log( sessionId,"sessionId");
+        const { userId, bookId, cartId, sessionId } = req.body;
+
         if (!userId || !bookId) {
             return res
                 .status(400)
                 .json({ message: "user or book id is missing" });
         }
 
-        const existOrder = await bookService.getIsOrderExist(sessionId)
-        if(existOrder){
-            console.log(existOrder,'existorder')
-           return res.status(200).json({ order:existOrder });
-
+        const existOrder = await bookService.getIsOrderExist(sessionId);
+        if (existOrder) {
+            return res.status(200).json({ order: existOrder });
         }
         const cartData = await cartService.getCartById(cartId);
         if (!cartData) {
@@ -601,25 +543,34 @@ const createOrder = async (req: Request, res: Response) => {
 
             const order = await bookService.getCreateOrder(orderData);
             const cart = await cartService.getUpdateIsPaid(cartId);
-            const wallet = await walletService.getCreateWalletForWebsite(
-                cartId
-            );
-            const selectedQuantity = cart?.quantity!
+            const selectedQuantity = cart?.quantity!;
             const book = await bookService.getBookById(bookId);
             if (book && book.quantity > 0) {
-                const updatedQuantity = book.quantity - selectedQuantity; 
+                const updatedQuantity = book.quantity - selectedQuantity;
                 if (updatedQuantity < 0) {
-                    return res.status(400).json({ message: "Book is out of stock" });
+                    return res
+                        .status(400)
+                        .json({ message: "Book is out of stock" });
                 }
 
-                await bookService.getUpdateBookQuantity(bookId, updatedQuantity);
+                await bookService.getUpdateBookQuantity(
+                    bookId,
+                    updatedQuantity
+                );
             } else {
-                return res.status(404).json({ message: "Book not found or out of stock" });
+                return res
+                    .status(404)
+                    .json({ message: "Book not found or out of stock" });
             }
+
+            const totalAmount = Number(cart?.totalAmount);
+            await walletService.updateBookWallet(
+                orderData.lenderId,
+                totalAmount,
+                userId
+            );
             return res.status(200).json({ order });
         }
-
-      
     } catch (error) {
         console.error("Error createOrder:", error);
         res.status(500).json({
@@ -652,7 +603,7 @@ const rentList = async (req: Request, res: Response) => {
         }
 
         const orders = await bookService.getRentList(userId);
-     
+
         res.status(200).json({ orders });
     } catch (error) {
         console.error("Error createOrder:", error);
@@ -663,7 +614,6 @@ const rentList = async (req: Request, res: Response) => {
 const lendList = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-        console.log(userId,'userind')
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
@@ -684,27 +634,6 @@ const search = async (req: AuthenticatedRequest, res: Response) => {
         const books = await bookService.getSearchResult(searchQuery);
         for (const book of books) {
             if (book.lenderId !== userId) {
-                // const isLenderExist = await bookService.getUserById(book.lenderId);
-                // if(isLenderExist && !isLenderExist.isBlocked ){
-                // if (book.images && Array.isArray(book.images)) {
-                //     const imageUrls = await Promise.all(
-                //         book.images.map(async (imageKey: string) => {
-                //             const getObjectParams: GetObjectCommandInput = {
-                //                 Bucket: config.BUCKET_NAME,
-                //                 Key: imageKey,
-                //             };
-                //             const command = new GetObjectCommand(
-                //                 getObjectParams
-                //             );
-                //             return await getSignedUrl(s3Client, command, {
-                //                 expiresIn: 3600,
-                //             });
-                //         })
-                //     );
-                //     book.images = imageUrls;
-                // } else {
-                //     book.images = [];
-                // }
                 booksToShow.push(book);
             }
         }
@@ -718,9 +647,7 @@ const search = async (req: AuthenticatedRequest, res: Response) => {
 const updateOrderStatusRenter = async (req: Request, res: Response) => {
     try {
         const { selectedOrderId } = req.params;
-        console.log(selectedOrderId,'selectedOrderId')
         const { isBookHandover } = req.body;
-        console.log(isBookHandover,'isBookHandover')
 
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
@@ -743,9 +670,7 @@ const updateOrderStatusRenter = async (req: Request, res: Response) => {
 const updateOrderStatusLender = async (req: Request, res: Response) => {
     try {
         const { selectedOrderId } = req.params;
-        console.log(selectedOrderId,'selectedOrderId')
         const { isBookHandover } = req.body;
-        console.log(isBookHandover,'isBookHandover')
 
         const bookStatus = isBookHandover;
         if (!selectedOrderId) {
@@ -764,7 +689,6 @@ const updateOrderStatusLender = async (req: Request, res: Response) => {
         });
     }
 };
-
 
 const OrderToShowSuccess = async (req: Request, res: Response) => {
     try {
@@ -787,6 +711,7 @@ const OrderToShowSuccess = async (req: Request, res: Response) => {
         });
     }
 };
+
 export {
     genresOfBooks,
     exploreBooks,
@@ -797,7 +722,6 @@ export {
     sellBook,
     rentedBooks,
     soldBooks,
-    lenderDetails,
     lendingProcess,
     createCheckout,
     createOrder,

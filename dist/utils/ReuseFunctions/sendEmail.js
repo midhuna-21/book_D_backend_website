@@ -10,7 +10,7 @@ const userService_1 = require("../../services/userService");
 const userService = new userService_1.UserService();
 const sendEmail = async (userId, email, resetToken, resetTokenExpiration) => {
     const transporter = nodemailer_1.default.createTransport({
-        service: 'gmail',
+        service: "gmail",
         host: "smtp.gmail.com",
         port: 587,
         secure: false,
@@ -21,8 +21,8 @@ const sendEmail = async (userId, email, resetToken, resetTokenExpiration) => {
     });
     const user = await userService.getUserById(userId);
     const userName = user?.name;
-    const logoUrl = 'D:\Book.D\backend\src\public\siteLogo.png';
-    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
+    const logoUrl = "D:Book.D\backendsrcpublicsiteLogo.png";
+    const resetLink = `${config_1.default.API}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
     const info = await transporter.sendMail({
         from: '"Book.D" <krishnamidhuna850@gmail.com>',
         to: email,

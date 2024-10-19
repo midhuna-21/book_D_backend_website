@@ -1,27 +1,29 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { UserService } from "../services/userService";
-import { generateTokens } from "../utils/jwt/generateToken";
+import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
 import config from "../config/config";
-import { AdminService } from "../services/adminService";
 
 const userService = new UserService();
-const adminService = new AdminService();
 
-const refreshTokenController = async (req: Request, res: Response) => {
+const userRefreshTokenController = async (req: Request, res: Response) => {
     try {
-        // const refreshToken = req.body.token;
-        const userRole = req.body.userRole;
-        const cookieName = userRole === "admin" ? "adminrefreshToken" : "userrefreshToken";
+        const role = req.body.role;
+        const cookieName = "userrefreshToken";
         const cookieToken = req.cookies[cookieName];
-       
-        if (!cookieToken ) {
-            return res.status(401).json({ message: "No token, authorization denied or token mismatch" });
+        if (!cookieToken) {
+            return res
+                .status(401)
+                .json({
+                    message: "No token, authorization denied or token mismatch",
+                });
         }
-
         let decoded: JwtPayload;
         try {
-            decoded = jwt.verify(cookieToken, config.JWT_SECRET || "") as JwtPayload;
+            decoded = jwt.verify(
+                cookieToken,
+                config.JWT_SECRET || ""
+            ) as JwtPayload;
         } catch (err) {
             console.error("Token verification error", err);
             return res.status(401).json({ message: "Invalid token" });
@@ -32,15 +34,12 @@ const refreshTokenController = async (req: Request, res: Response) => {
         }
 
         let user;
-        if (userRole === "user") {
+        if (role === "user") {
             user = await userService.getUserById(decoded.userId);
-     
-            if(user?.isBlocked){
+
+            if (user?.isBlocked) {
                 return res.status(401).json({ message: "User is blocked" });
             }
-    
-        } else if (userRole === "admin") {
-            user = await adminService.getAdminById(decoded.userId);
         } else {
             return res.status(401).json({ message: "Invalid user role" });
         }
@@ -49,12 +48,8 @@ const refreshTokenController = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        
-      
-   
-
         const userId = (user._id as unknown as string).toString();
-        const tokens = generateTokens(res, { userId, userRole });
+        const tokens = userGenerateTokens(res, { userId, role });
         return res.status(200).json({
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
@@ -65,4 +60,4 @@ const refreshTokenController = async (req: Request, res: Response) => {
     }
 };
 
-export { refreshTokenController };
+export { userRefreshTokenController };

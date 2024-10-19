@@ -5,7 +5,7 @@ interface INotification extends Document {
     userId?: ObjectId;
     receiverId?: ObjectId;
     bookId?: ObjectId;
-    cartId?:ObjectId;
+    cartId?: ObjectId;
     status?: string;
     isRead?: boolean;
     createdAt?: Date;

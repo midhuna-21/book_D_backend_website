@@ -7,7 +7,7 @@ exports.verifyEmail = exports.sendOTP = exports.userDetails = exports.calculateD
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const userService_1 = require("../services/userService");
 const otpGenerate_1 = require("../utils/ReuseFunctions/otpGenerate");
-const generateToken_1 = require("../utils/jwt/generateToken");
+const userGenerateToken_1 = require("../utils/jwt/userGenerateToken");
 const crypto_1 = __importDefault(require("crypto"));
 const axios_1 = __importDefault(require("axios"));
 const client_s3_1 = require("@aws-sdk/client-s3");
@@ -115,9 +115,9 @@ const verifyOtp = async (req, res) => {
             }
             else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = (0, generateToken_1.generateTokens)(res, {
+                const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
                     userId,
-                    userRole: "user",
+                    role: "user",
                 });
                 return res
                     .status(200)
@@ -158,15 +158,10 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid password" });
         }
         const userId = user._id.toString();
-        const { accessToken, refreshToken } = (0, generateToken_1.generateTokens)(res, {
+        const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
             userId,
-            userRole: "user",
+            role: "user",
         });
-        // const imageUrl = user.image
-        // if (imageUrl) {
-        //     const image = await getSignedImageUrl(imageUrl)
-        //     return res.status(200).json({ user: { ...user.toObject(), image , accessToken, refreshToken} });
-        // }
         return res.status(200).json({ user, accessToken, refreshToken });
     }
     catch (error) {
@@ -184,9 +179,9 @@ const loginByGoogle = async (req, res) => {
         }
         if (existUser?.isGoogle == true) {
             const userId = existUser._id.toString();
-            const { accessToken, refreshToken } = (0, generateToken_1.generateTokens)(res, {
+            const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
                 userId,
-                userRole: "user",
+                role: "user",
             });
             return res
                 .status(200)
@@ -222,9 +217,9 @@ const loginByGoogle = async (req, res) => {
             }
             else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = (0, generateToken_1.generateTokens)(res, {
+                const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
                     userId,
-                    userRole: "user",
+                    role: "user",
                 });
                 return res.status(200).json({
                     user: {
@@ -303,12 +298,6 @@ const updateUser = async (req, res) => {
                 pincode: pincode,
             },
         };
-        // const filteredUser = Object.fromEntries(
-        //     Object.entries(user).filter(
-        //       ([_, value]) => typeof value === 'string' && value.trim() !== ""
-        //     )
-        //   );
-        console.log(user, "user deila ");
         const updatedUser = await userService.getUpdateUser(userId, user);
         return res.status(200).json({ user: updatedUser });
     }
@@ -489,9 +478,7 @@ const calculateDistance = async (req, res) => {
         const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
         const { lat1, lng1, lat2, lng2 } = req.query;
         if (!lat1 || !lat2 || !lng1 || !lng2) {
-            return res
-                .status(500)
-                .json({
+            return res.status(500).json({
                 message: "Error while getting while calculating distance",
             });
         }

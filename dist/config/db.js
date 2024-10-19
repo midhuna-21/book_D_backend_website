@@ -9,10 +9,10 @@ const dbConnect = async () => {
     try {
         const mongoURI = config_1.default.MONGODB_URI;
         await mongoose_1.default.connect(mongoURI);
-        console.log('DB Connected');
+        console.log("DB Connected");
     }
     catch (error) {
-        console.error('MongoDB Connection Error:', error);
+        console.error("MongoDB Connection Error:", error);
     }
 };
 exports.default = dbConnect;

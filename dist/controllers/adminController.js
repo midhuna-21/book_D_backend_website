@@ -1,16 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalSoldBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const adminService_1 = require("../services/adminService");
-// import generateToken from "../utils/generateToken";
-const crypto_1 = __importDefault(require("crypto"));
-const generateToken_1 = require("../utils/jwt/generateToken");
+const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
+const walletService_1 = require("../services/walletService");
 const adminService = new adminService_1.AdminService();
-const randomImageName = (bytes = 32) => crypto_1.default.randomBytes(bytes).toString("hex");
+const walletService = new walletService_1.WalletService();
 const addGenre = async (req, res) => {
     try {
         const { genreName } = req.body;
@@ -54,10 +50,11 @@ const adminLogin = async (req, res) => {
                 .json({ message: "Invalid email or password" });
         }
         const adminId = admin._id.toString();
-        const { accessToken, refreshToken } = (0, generateToken_1.generateTokens)(res, {
-            userId: adminId,
-            userRole: "admin",
+        const { accessToken, refreshToken } = (0, adminGenerateToken_1.adminGenerateTokens)(res, {
+            adminId,
+            role: "admin",
         });
+        const wallet = await walletService.getCreateWalletAdmin(adminId);
         return res.status(200).json({ admin, accessToken, refreshToken });
     }
     catch (error) {
@@ -69,7 +66,6 @@ exports.adminLogin = adminLogin;
 const getUsersList = async (req, res) => {
     try {
         const users = await adminService.getAllUsers();
-        console.log(users, 'userssss afom adin');
         return res.status(200).json(users);
     }
     catch (error) {
@@ -80,7 +76,7 @@ const getUsersList = async (req, res) => {
 exports.getUsersList = getUsersList;
 const walletTransactions = async (req, res) => {
     try {
-        const wallet = await adminService.getWalletTransactions();
+        const wallet = await adminService.getWalletTransactionsAdmin();
         return res.status(200).json(wallet);
     }
     catch (error) {
@@ -212,7 +208,7 @@ const updateGenre = async (req, res) => {
         }
         const data = {
             genreName,
-            image
+            image,
         };
         const genre = await adminService.getUpdateGenre(data, genreId);
         return res.status(200).json(genre);

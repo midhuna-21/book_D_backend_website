@@ -14,17 +14,15 @@ adminRouter.post("/add-genre", authMiddleware_1.verifyToken, store_1.default.sin
 adminRouter.get("/genres", authMiddleware_1.verifyToken, adminController_1.genresList);
 adminRouter.get("/genre/:genreId", authMiddleware_1.verifyToken, adminController_1.genre);
 adminRouter.post("/genre-update/:genreId", authMiddleware_1.verifyToken, store_1.default.single("file"), adminController_1.updateGenre);
-// get-users
 adminRouter.get("/get-users", authMiddleware_1.verifyToken, adminController_1.getUsersList);
-// block-user
 adminRouter.post("/block-user", authMiddleware_1.verifyToken, adminController_1.blockUser);
-// unblock-user
 adminRouter.post("/unblock-user", authMiddleware_1.verifyToken, adminController_1.unBlockUser);
 adminRouter.get("/total-rented-books", authMiddleware_1.verifyToken, adminController_1.totalRentedBooks);
 adminRouter.get("/total-sold-books", authMiddleware_1.verifyToken, adminController_1.totalSoldBooks);
 adminRouter.get("/total-books", authMiddleware_1.verifyToken, adminController_1.totalBooks);
 adminRouter.get("/get-rental-orders", authMiddleware_1.verifyToken, adminController_1.allOrders);
 adminRouter.get("/order-detail/:orderId", authMiddleware_1.verifyToken, adminController_1.orderDetail);
-adminRouter.get("/get-wallet-transactions", authMiddleware_1.verifyToken, adminController_1.walletTransactions);
+adminRouter.get("/bookd-wallet", authMiddleware_1.verifyToken, adminController_1.walletTransactions);
+// adminRouter.get("/bookd-wallet", verifyToken,walletTransactions);
 exports.default = adminRouter;
 //# sourceMappingURL=adminRoute.js.map

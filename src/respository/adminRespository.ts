@@ -3,7 +3,7 @@ import { user, IUser } from "../model/userModel";
 import { Genre } from "../interfaces/data";
 import { admin, IAdmin } from "../model/adminModel";
 import { books } from "../model/bookModel";
-import {orders} from '../model/orderModel';
+import { orders } from "../model/orderModel";
 import { bookDWallet } from "../model/bookDWallet";
 
 export class AdminRepository {
@@ -34,14 +34,7 @@ export class AdminRepository {
             throw error;
         }
     }
-    // async createCustomGenre(genreName:Partial<Genre>):Promise<IGenre | null>{
-    //    try{
-    //       return await new genres({genreName:genreName}).save()
-    //    }catch(error){
-    //       console.log("Error createGenre:",error);
-    //       throw error
-    //   }
-    // }
+
     async findAllUsers() {
         try {
             return await user.find();
@@ -51,31 +44,16 @@ export class AdminRepository {
         }
     }
 
-    async findWalletTransactions() {
+    async findWalletTransactionsAdmin() {
         try {
-            return await bookDWallet.findOne()
-                .populate({
-                    path: 'transactions.userId',
-                    model: 'user',
-                })
-                .populate({
-                    path: 'transactions.lenderId',
-                    model: 'user',
-                });
+            const wallet =  bookDWallet.findOne()
+            return wallet
         } catch (error) {
-            console.log("Error findWalletTransactions:", error);
+            console.log("Error findWalletTransactionsAdmin:", error);
             throw error;
         }
-    }    
+    }
 
-    // async findWalletTransactions(){
-    //     try {
-    //         return await bookDWallet.find().populate('userId').populate('lenderId')
-    //     } catch (error) {
-    //         console.log("Error findWalletTransactions:", error);
-    //         throw error;
-    //     }
-    // }
     async findAllTotalRentedBooks() {
         try {
             return await books.find({ isRented: true });
@@ -135,25 +113,27 @@ export class AdminRepository {
 
     async findAllOrders() {
         try {
-            return await orders.find()
-            .populate("bookId")
-            .populate("lenderId")
-            .populate("userId")
-            .populate("cartId")
-            .sort({createdAt: -1})
+            return await orders
+                .find()
+                .populate("bookId")
+                .populate("lenderId")
+                .populate("userId")
+                .populate("cartId")
+                .sort({ updatedAt: -1 });
         } catch (error) {
             console.log("Error findAllOrders:", error);
             throw error;
         }
     }
 
-    async findOrderDetail(orderId:string) {
+    async findOrderDetail(orderId: string) {
         try {
-            return await orders.findById({_id:orderId})
-            .populate("bookId")
-            .populate("lenderId")
-            .populate("userId")
-            .populate("cartId")
+            return await orders
+                .findById({ _id: orderId })
+                .populate("bookId")
+                .populate("lenderId")
+                .populate("userId")
+                .populate("cartId");
         } catch (error) {
             console.log("Error findOrderDetail:", error);
             throw error;
@@ -162,33 +142,40 @@ export class AdminRepository {
 
     async findAllGenres() {
         try {
-            return await genres.find()
+            return await genres.find();
         } catch (error) {
             console.log("Error findAllOrders:", error);
             throw error;
         }
     }
 
-    async findGenre(genreId:string) {
+    async findGenre(genreId: string) {
         try {
-            return await genres.findById({_id:genreId})
+            return await genres.findById({ _id: genreId });
         } catch (error) {
             console.log("Error findGenre:", error);
             throw error;
         }
     }
 
-    async findUpdateGenre(data:Genre,genreId:string){
-        try{
-            const genre  = await genres.findById({_id:genreId})
-            if(!genre){
+    async findUpdateGenre(data: Genre, genreId: string) {
+        try {
+            const genre = await genres.findById({ _id: genreId });
+            if (!genre) {
                 console.log("Error finding the genre:");
                 return null;
             }
-            const updatedGenre= await genres.findByIdAndUpdate({_id:genreId},{genreName:data.genreName || genre.genreName,image:data.image || genre.image},{new:true})
+            const updatedGenre = await genres.findByIdAndUpdate(
+                { _id: genreId },
+                {
+                    genreName: data.genreName || genre.genreName,
+                    image: data.image || genre.image,
+                },
+                { new: true }
+            );
             return updatedGenre;
-        }catch(error){
-            console.log("Error findUpdateGenre:",error)
+        } catch (error) {
+            console.log("Error findUpdateGenre:", error);
             throw error;
         }
     }

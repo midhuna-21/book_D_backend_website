@@ -28,24 +28,24 @@ const userSchema = new mongoose_1.default.Schema({
     },
     isReported: {
         type: Boolean,
-        default: false
+        default: false,
     },
     isGoogle: {
         type: Boolean,
-        default: false
+        default: false,
     },
     address: {
         street: { type: String },
         city: { type: String },
         district: { type: String },
         state: { type: String },
-        pincode: { type: String }
+        pincode: { type: String },
     },
     resetToken: {
-        type: String
+        type: String,
     },
     resetTokenExpiration: {
-        type: Number
+        type: Number,
     },
 }, { timestamps: true });
 const user = mongoose_1.default.model("user", userSchema);

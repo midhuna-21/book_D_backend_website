@@ -15,7 +15,7 @@ class CartRepository {
                 totalAmount: data.totalAmount,
                 total_deposit_amount: data.total_deposit_amount,
                 totalRentalPrice: data.totalRentalPrice,
-                types: data.types
+                types: data.types,
             }).save();
         }
         catch (error) {
@@ -72,7 +72,6 @@ class CartRepository {
     }
     async findCartDetails(cartId) {
         try {
-            console.log(cartId, 'cartid');
             const details = await cartModel_1.cart
                 .findById({ _id: cartId })
                 .populate("bookId")
@@ -86,8 +85,7 @@ class CartRepository {
     }
     async findUpdateIsPaid(cartId) {
         try {
-            const update = await cartModel_1.cart
-                .findByIdAndUpdate({ _id: cartId }, { isPaid: true }, { new: true });
+            const update = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { isPaid: true }, { new: true });
             return update;
         }
         catch (error) {
