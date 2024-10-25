@@ -1,0 +1,28 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.cartService = exports.chatService = exports.notificationService = exports.adminService = exports.userService = exports.bookService = exports.walletService = void 0;
+const walletService_1 = require("./wallet/walletService");
+const bookService_1 = require("./book/bookService");
+const userService_1 = require("./user/userService");
+const adminService_1 = require("./admin/adminService");
+const notificationService_1 = require("./notification/notificationService");
+const chatService_1 = require("./chat/chatService");
+const cartService_1 = require("./cart/cartService");
+const respository_1 = require("../respository");
+const userRepository_1 = require("../respository/user/userRepository");
+const userRepository = new userRepository_1.UserRepository();
+const walletService = new walletService_1.WalletService(respository_1.walletRepository);
+exports.walletService = walletService;
+const bookService = new bookService_1.BookService(respository_1.bookRepository);
+exports.bookService = bookService;
+const userService = new userService_1.UserService(userRepository);
+exports.userService = userService;
+const adminService = new adminService_1.AdminService(respository_1.adminRepository);
+exports.adminService = adminService;
+const notificationService = new notificationService_1.NotificationService(respository_1.notificationRepository);
+exports.notificationService = notificationService;
+const chatService = new chatService_1.ChatService(respository_1.chatRepository);
+exports.chatService = chatService;
+const cartService = new cartService_1.CartService(respository_1.cartRepository);
+exports.cartService = cartService;
+//# sourceMappingURL=index.js.map

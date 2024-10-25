@@ -1,10 +1,7 @@
 import { Request, Response } from "express";
 import { Notification } from "../interfaces/data";
-import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
-import { NotificationService } from "../services/notificationService";
-import { getSignedImageUrl } from "../utils/imageFunctions/getImageFromS3";
-
-const notificationService = new NotificationService();
+import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
+import { notificationService } from "../services/index";
 
 const sendNotification = async (req: Request, res: Response) => {
     try {

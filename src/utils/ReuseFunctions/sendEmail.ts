@@ -1,9 +1,8 @@
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 import config from "../../config/config";
-import { UserService } from "../../services/userService";
+import { userService } from "../../services";
 
-const userService = new UserService();
 export const sendEmail = async (
     userId: string,
     email: string,

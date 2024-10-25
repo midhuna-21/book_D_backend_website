@@ -3,31 +3,28 @@ import {
     comparePassword,
     hashPassword,
 } from "../utils/ReuseFunctions/passwordValidation";
-import { UserService } from "../services/userService";
+import { UserService } from "../services/user/userService";
 import { otpGenerate } from "../utils/ReuseFunctions/otpGenerate";
 import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
 import crypto from "crypto";
 import axios from "axios";
 import sharp from "sharp";
 import {
-    S3Client,
     PutObjectCommand,
     PutObjectCommandInput,
     DeleteObjectCommand,
-    ObjectCannedACL,
+    
 } from "@aws-sdk/client-s3";
 import config from "../config/config";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "../utils/imageFunctions/store";
 import { IUser } from "../model/userModel";
 import { User } from "../interfaces/data";
-import { IGenre } from "../model/genresModel";
 import { Types } from "mongoose";
 import { getSignedImageUrl } from "../utils/imageFunctions/getImageFromS3";
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
-import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
+import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
 import { Twilio } from "twilio";
-import upload from "../utils/imageFunctions/store";
+import { UserRepository } from "../respository/user/userRepository";
 
 const uploadImageToS3 = async (
     imageBuffer: Buffer,
@@ -54,8 +51,8 @@ const twilioClient = new Twilio(
 interface CustomFile extends Express.Multer.File {
     location?: string;
 }
-
-const userService = new UserService();
+const userRepository = new UserRepository(); 
+const userService = new UserService(userRepository);
 
 const sendOTP = async (req: Request, res: Response) => {
     try {

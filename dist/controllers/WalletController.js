@@ -4,20 +4,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkWallet = exports.paymentWallet = exports.walletTransactions = void 0;
-const walletService_1 = require("../services/walletService");
+const index_1 = require("../services/index");
 const stripe_1 = __importDefault(require("stripe"));
 const config_1 = __importDefault(require("../config/config"));
-const userService_1 = require("../services/userService");
 const walletModel_1 = require("../model/walletModel");
-const walletService = new walletService_1.WalletService();
-const userService = new userService_1.UserService();
 const walletTransactions = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "user id is missing" });
         }
-        const wallet = await walletService.getWalletTransactions(userId);
+        const wallet = await index_1.walletService.getWalletTransactions(userId);
         res.status(200).json({ wallet });
     }
     catch (error) {
@@ -33,7 +30,7 @@ const stripe = new stripe_1.default(stripeKey, { apiVersion: "2024-06-20" });
 const checkWallet = async (req, res) => {
     try {
         const userId = req.userId;
-        let isWalletExist = await walletService.getWalletTransactions(userId);
+        let isWalletExist = await index_1.walletService.getWalletTransactions(userId);
         if (!isWalletExist) {
             isWalletExist = new walletModel_1.wallet({
                 userId: userId,
@@ -54,7 +51,7 @@ const paymentWallet = async (req, res) => {
     try {
         const { amount } = req.body;
         const userId = req.userId;
-        let isWalletExist = await walletService.getWalletTransactions(userId);
+        let isWalletExist = await index_1.walletService.getWalletTransactions(userId);
         if (!isWalletExist) {
             isWalletExist = new walletModel_1.wallet({
                 userId: userId,

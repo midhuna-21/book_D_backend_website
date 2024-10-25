@@ -1,7 +1,7 @@
 import mongoose, { Document, Types } from "mongoose";
 
 interface IGenre extends Document {
-    genreName: string;
+    genreName?: string;
     image?: string;
 }
 const genreSchema = new mongoose.Schema(

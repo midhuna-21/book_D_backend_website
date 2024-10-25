@@ -2,9 +2,8 @@ import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { adminGenerateTokens } from "../utils/jwt/adminGenerateToken";
 import config from "../config/config";
-import { AdminService } from "../services/adminService";
+import { adminService } from "../services";
 
-const adminService = new AdminService();
 
 const adminRefreshTokenController = async (req: Request, res: Response) => {
     try {

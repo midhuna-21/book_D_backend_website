@@ -7,8 +7,7 @@ exports.adminRefreshTokenController = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
 const config_1 = __importDefault(require("../config/config"));
-const adminService_1 = require("../services/adminService");
-const adminService = new adminService_1.AdminService();
+const services_1 = require("../services");
 const adminRefreshTokenController = async (req, res) => {
     try {
         const role = req.body.role;
@@ -32,7 +31,7 @@ const adminRefreshTokenController = async (req, res) => {
         }
         let admin;
         if (role) {
-            admin = await adminService.getAdminById(decoded.adminId);
+            admin = await services_1.adminService.getAdminById(decoded.adminId);
         }
         else {
             return res.status(401).json({ message: "Invalid user role" });

@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { UserService } from "../services/userService";
+import { UserService } from "../services/user/userService";
 import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
 import config from "../config/config";
+import { UserRepository } from "../respository/user/userRepository";
 
-const userService = new UserService();
+const userRepository = new UserRepository(); 
+const userService = new UserService(userRepository);
 
 const userRefreshTokenController = async (req: Request, res: Response) => {
     try {

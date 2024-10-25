@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import { IChatRoom } from "../model/chatRoom";
 import { IMessage } from "../model/message";
-import { ChatService } from "../services/chatService";
-
-const chatService = new ChatService();
+import { chatService } from "../services/index";
 
 const createChatRoom = async (req: Request, res: Response) => {
     try {

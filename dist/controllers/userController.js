@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyEmail = exports.sendOTP = exports.userDetails = exports.calculateDistance = exports.linkGoogleAccount = exports.googleLog = exports.sendUnlinkEmail = exports.getUser = exports.deleteUserImage = exports.updateProfileImage = exports.updateUser = exports.logoutUser = exports.updatePassword = exports.verifyOtp = exports.verifyPhoneNumber = exports.loginByGoogle = exports.loginUser = exports.generateOtp = exports.signUp = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
-const userService_1 = require("../services/userService");
+const userService_1 = require("../services/user/userService");
 const otpGenerate_1 = require("../utils/ReuseFunctions/otpGenerate");
 const userGenerateToken_1 = require("../utils/jwt/userGenerateToken");
 const crypto_1 = __importDefault(require("crypto"));
@@ -16,6 +16,7 @@ const store_1 = require("../utils/imageFunctions/store");
 const getImageFromS3_1 = require("../utils/imageFunctions/getImageFromS3");
 const sendEmail_1 = require("../utils/ReuseFunctions/sendEmail");
 const twilio_1 = require("twilio");
+const userRepository_1 = require("../respository/user/userRepository");
 const uploadImageToS3 = async (imageBuffer, fileName) => {
     const uploadParams = {
         Bucket: config_1.default.BUCKET_NAME,
@@ -28,7 +29,8 @@ const uploadImageToS3 = async (imageBuffer, fileName) => {
     return `https://${config_1.default.BUCKET_NAME}.s3.${config_1.default.BUCKET_REGION}.amazonaws.com/${fileName}`;
 };
 const twilioClient = new twilio_1.Twilio(config_1.default.TWILIO_ACCOUNT_SID, config_1.default.TWILIO_AUTH_TOKEN);
-const userService = new userService_1.UserService();
+const userRepository = new userRepository_1.UserRepository();
+const userService = new userService_1.UserService(userRepository);
 const sendOTP = async (req, res) => {
     try {
         const { phone } = req.body;

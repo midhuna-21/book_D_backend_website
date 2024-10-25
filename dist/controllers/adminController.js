@@ -1,16 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalSoldBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
+exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
-const adminService_1 = require("../services/adminService");
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
-const walletService_1 = require("../services/walletService");
-const adminService = new adminService_1.AdminService();
-const walletService = new walletService_1.WalletService();
+const index_1 = require("../services/index");
+const index_2 = require("../services/index");
 const addGenre = async (req, res) => {
     try {
         const { genreName } = req.body;
-        const existGenre = await adminService.getGenreName(genreName);
+        const existGenre = await index_1.adminService.getGenreName(genreName);
         if (existGenre) {
             return res.status(400).json({ message: "Genre is already exist" });
         }
@@ -25,7 +23,7 @@ const addGenre = async (req, res) => {
         }
         const image = file.location;
         const data = { genreName, image };
-        const genre = await adminService.getCreateGenre(data);
+        const genre = await index_1.adminService.getCreateGenre(data);
         return res.status(200).json({ genre });
     }
     catch (error) {
@@ -37,7 +35,7 @@ exports.addGenre = addGenre;
 const adminLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        let admin = await adminService.getAdminByEmail(email);
+        let admin = await index_1.adminService.getAdminByEmail(email);
         if (!admin || !admin.password) {
             return res
                 .status(400)
@@ -54,7 +52,7 @@ const adminLogin = async (req, res) => {
             adminId,
             role: "admin",
         });
-        const wallet = await walletService.getCreateWalletAdmin(adminId);
+        const wallet = await index_2.walletService.getCreateWalletAdmin(adminId);
         return res.status(200).json({ admin, accessToken, refreshToken });
     }
     catch (error) {
@@ -65,7 +63,7 @@ const adminLogin = async (req, res) => {
 exports.adminLogin = adminLogin;
 const getUsersList = async (req, res) => {
     try {
-        const users = await adminService.getAllUsers();
+        const users = await index_1.adminService.getAllUsers();
         return res.status(200).json(users);
     }
     catch (error) {
@@ -76,7 +74,7 @@ const getUsersList = async (req, res) => {
 exports.getUsersList = getUsersList;
 const walletTransactions = async (req, res) => {
     try {
-        const wallet = await adminService.getWalletTransactionsAdmin();
+        const wallet = await index_1.adminService.getWalletTransactionsAdmin();
         return res.status(200).json(wallet);
     }
     catch (error) {
@@ -87,7 +85,7 @@ const walletTransactions = async (req, res) => {
 exports.walletTransactions = walletTransactions;
 const totalRentedBooks = async (req, res) => {
     try {
-        const users = await adminService.getAllTotalRentedBooks();
+        const users = await index_1.adminService.getAllTotalRentedBooks();
         return res.status(200).json(users);
     }
     catch (error) {
@@ -96,20 +94,9 @@ const totalRentedBooks = async (req, res) => {
     }
 };
 exports.totalRentedBooks = totalRentedBooks;
-const totalSoldBooks = async (req, res) => {
-    try {
-        const users = await adminService.getAllTotalSoldBooks();
-        return res.status(200).json(users);
-    }
-    catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-exports.totalSoldBooks = totalSoldBooks;
 const totalBooks = async (req, res) => {
     try {
-        const users = await adminService.getAllTotalBooks();
+        const users = await index_1.adminService.getAllTotalBooks();
         return res.status(200).json(users);
     }
     catch (error) {
@@ -121,7 +108,7 @@ exports.totalBooks = totalBooks;
 const blockUser = async (req, res) => {
     try {
         const { _id } = req.body;
-        const user = await adminService.getBlockUser(_id);
+        const user = await index_1.adminService.getBlockUser(_id);
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -133,7 +120,7 @@ exports.blockUser = blockUser;
 const unBlockUser = async (req, res) => {
     try {
         const { _id } = req.body;
-        const user = await adminService.getUnblockUser(_id);
+        const user = await index_1.adminService.getUnblockUser(_id);
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -144,7 +131,7 @@ const unBlockUser = async (req, res) => {
 exports.unBlockUser = unBlockUser;
 const allOrders = async (req, res) => {
     try {
-        const orders = await adminService.getAllOrders();
+        const orders = await index_1.adminService.getAllOrders();
         return res.status(200).json(orders);
     }
     catch (error) {
@@ -159,7 +146,7 @@ const orderDetail = async (req, res) => {
         if (!orderId) {
             return res.status(500).json({ message: "orderId is not found" });
         }
-        const order = await adminService.getOrderDetail(orderId);
+        const order = await index_1.adminService.getOrderDetail(orderId);
         return res.status(200).json(order);
     }
     catch (error) {
@@ -170,7 +157,7 @@ const orderDetail = async (req, res) => {
 exports.orderDetail = orderDetail;
 const genresList = async (req, res) => {
     try {
-        const genres = await adminService.getAllGenres();
+        const genres = await index_1.adminService.getAllGenres();
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -182,7 +169,7 @@ exports.genresList = genresList;
 const genre = async (req, res) => {
     try {
         const genreId = req.params.genreId;
-        const genre = await adminService.getGenre(genreId);
+        const genre = await index_1.adminService.getGenre(genreId);
         return res.status(200).json(genre);
     }
     catch (error) {
@@ -210,7 +197,7 @@ const updateGenre = async (req, res) => {
             genreName,
             image,
         };
-        const genre = await adminService.getUpdateGenre(data, genreId);
+        const genre = await index_1.adminService.getUpdateGenre(data, genreId);
         return res.status(200).json(genre);
     }
     catch (error) {

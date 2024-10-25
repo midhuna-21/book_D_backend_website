@@ -21,7 +21,6 @@ import {
 } from "../controllers/userController";
 import express from "express";
 import upload from "../utils/imageFunctions/store";
-import { verifyToken } from "../utils/middleware/authMiddleware";
 import {
     bookDetail,
     exploreBooks,
@@ -67,6 +66,7 @@ import {
     checkUserSentRequest,
     saveCart,
 } from "../controllers/cartController";
+import { userVerifyToken } from "../utils/middleware/userAuthMiddleware";
 
 const userRouter = express.Router();
 
@@ -92,136 +92,136 @@ userRouter.post("/update-password", updatePassword);
 
 userRouter.post(
     "/rent-book",
-    verifyToken,
+    userVerifyToken,
     upload.array("images", 10),
     rentBook
 );
 
 userRouter.post(
     "/sell-book",
-    verifyToken,
+    userVerifyToken,
     upload.array("images", 10),
     sellBook
 );
 
-userRouter.get("/genres", verifyToken, genresOfBooks);
+userRouter.get("/genres", userVerifyToken, genresOfBooks);
 
-userRouter.get("/genre", verifyToken, genres);
+userRouter.get("/genre", userVerifyToken, genres);
 
-userRouter.get("/books", verifyToken, exploreBooks);
+userRouter.get("/books", userVerifyToken, exploreBooks);
 
-userRouter.get("/book/:Id", verifyToken, bookDetail);
+userRouter.get("/book/:Id", userVerifyToken, bookDetail);
 
-userRouter.put("/update-profile", verifyToken, updateUser);
+userRouter.put("/update-profile", userVerifyToken, updateUser);
 
 userRouter.put(
     "/update-profile-image",
-    verifyToken,
+    userVerifyToken,
     upload.single("selectedImage"),
     updateProfileImage
 );
 
-userRouter.post("/notification", verifyToken, sendNotification);
+userRouter.post("/notification", userVerifyToken, sendNotification);
 
-userRouter.get("/notifications", verifyToken, notifications);
+userRouter.get("/notifications", userVerifyToken, notifications);
 
-userRouter.post("/update-notification-status", verifyToken, updateNotification);
+userRouter.post("/update-notification-status", userVerifyToken, updateNotification);
 
-userRouter.get("/rented-books", verifyToken, rentedBooks);
+userRouter.get("/rented-books", userVerifyToken, rentedBooks);
 
-userRouter.get("/sold-books", verifyToken, soldBooks);
+userRouter.get("/sold-books", userVerifyToken, soldBooks);
 
-userRouter.post("/create-message", verifyToken, messageCreation);
+userRouter.post("/create-message", userVerifyToken, messageCreation);
 
-userRouter.get("/users-messages-list/:userId", verifyToken, userMessagesList);
+userRouter.get("/users-messages-list/:userId", userVerifyToken, userMessagesList);
 
-userRouter.post("/create-chatRoom", verifyToken, createChatRoom);
+userRouter.post("/create-chatRoom", userVerifyToken, createChatRoom);
 
-userRouter.get("/chat-room/:chatRoomId", verifyToken, chat);
+userRouter.get("/chat-room/:chatRoomId", userVerifyToken, chat);
 
-userRouter.post("/send-message", verifyToken, sendMessage);
+userRouter.post("/send-message", userVerifyToken, sendMessage);
 
-userRouter.get("/messages/:chatRoomId", verifyToken, allMessages);
+userRouter.get("/messages/:chatRoomId", userVerifyToken, allMessages);
 
-userRouter.get("/unread-messages/:userId", verifyToken, unReadMessages);
+userRouter.get("/unread-messages/:userId", userVerifyToken, unReadMessages);
 
 userRouter.get(
     "/unread-notifications/:userId",
-    verifyToken,
+    userVerifyToken,
     unReadNotifications
 );
 
-userRouter.get("/user/:receiverId", verifyToken, getUser);
+userRouter.get("/user/:receiverId", userVerifyToken, getUser);
 
-userRouter.post("/send-email", verifyToken, sendUnlinkEmail);
+userRouter.post("/send-email", userVerifyToken, sendUnlinkEmail);
 
 userRouter.get(
     "/check-request/:userId/:bookId",
-    verifyToken,
+    userVerifyToken,
     checkUserSentRequest
 );
 
-userRouter.get("/check-accept/:userId/:bookId", verifyToken, checkAccept);
+userRouter.get("/check-accept/:userId/:bookId", userVerifyToken, checkAccept);
 
 // userRouter.post('/request-send',verifyToken,saveRequest)
 
 userRouter.post("/logout", logoutUser);
 
-userRouter.delete("/delete-profile-image", verifyToken, deleteUserImage);
+userRouter.delete("/delete-profile-image", userVerifyToken, deleteUserImage);
 
-userRouter.get("/google-distance", verifyToken, calculateDistance);
+userRouter.get("/google-distance", userVerifyToken, calculateDistance);
 
-userRouter.get("/user-details/:lenderId", verifyToken, userDetails);
+userRouter.get("/user-details/:lenderId", userVerifyToken, userDetails);
 
-userRouter.get("/lending-details/:cartId", verifyToken, lendingProcess);
+userRouter.get("/lending-details/:cartId", userVerifyToken, lendingProcess);
 
-userRouter.post("/create-checkout", verifyToken, createCheckout);
+userRouter.post("/create-checkout", userVerifyToken, createCheckout);
 
-userRouter.post("/create-order", verifyToken, createOrder);
-userRouter.get("/get-order-to-showSuccess", verifyToken, OrderToShowSuccess);
+userRouter.post("/create-order", userVerifyToken, createOrder);
+userRouter.get("/get-order-to-showSuccess", userVerifyToken, OrderToShowSuccess);
 
-userRouter.get("/orders/:userId", verifyToken, orders);
-userRouter.get("/rent-list/:userId", verifyToken, rentList);
-userRouter.get("/lend-list/:userId", verifyToken, lendList);
+userRouter.get("/orders/:userId", userVerifyToken, orders);
+userRouter.get("/rent-list/:userId", userVerifyToken, rentList);
+userRouter.get("/lend-list/:userId", userVerifyToken, lendList);
 
-userRouter.get("/search/:searchQuery", verifyToken, search);
-userRouter.get("/genre-books/:genreName", verifyToken, genreMatchedBooks);
+userRouter.get("/search/:searchQuery", userVerifyToken, search);
+userRouter.get("/genre-books/:genreName", userVerifyToken, genreMatchedBooks);
 // userRouter.get('/search/:searchQuery',verifyToken,search)
 
 userRouter.post(
     "/chatRoom-update/:chatRoomId",
-    verifyToken,
+    userVerifyToken,
     updateChatRoomRead
 );
 
 // userRouter.put('/rent-book-update/:bookId',verifyToken,upload.array('images', 10),rentBookUpdate)
 userRouter.put(
     "/rent-book-update/:bookId",
-    verifyToken,
+    userVerifyToken,
     upload.array("images", 10),
     rentBookUpdate
 );
 
-userRouter.post("/create-cart-item", verifyToken, saveCart);
+userRouter.post("/create-cart-item", userVerifyToken, saveCart);
 
-userRouter.put("/cart-item-update/:cartId", verifyToken, updateCart);
+userRouter.put("/cart-item-update/:cartId", userVerifyToken, updateCart);
 userRouter.post(
     "/update-order-status/:selectedOrderId",
-    verifyToken,
+    userVerifyToken,
     updateOrderStatusRenter
 );
 
 userRouter.post(
     "/update-order-status-from-lender/:selectedOrderId",
-    verifyToken,
+    userVerifyToken,
     updateOrderStatusLender
 );
 
-userRouter.get("/wallet", verifyToken,walletTransactions);
+userRouter.get("/wallet", userVerifyToken,walletTransactions);
 
-userRouter.post("/payment-wallet", verifyToken, paymentWallet);
+userRouter.post("/payment-wallet", userVerifyToken, paymentWallet);
 
-userRouter.post("/check-wallet", verifyToken, checkWallet);
+userRouter.post("/check-wallet", userVerifyToken, checkWallet);
 
 
 export default userRouter;

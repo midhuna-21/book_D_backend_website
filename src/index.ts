@@ -9,11 +9,13 @@ import adminRouter from "./routes/adminRoute";
 import config from "./config/config";
 import { userRefreshTokenController } from "./controllers/userRefreshToken";
 import { adminRefreshTokenController } from "./controllers/adminRefreshToken";
-import { ChatService } from "./services/chatService";
+import { ChatService } from "./services/chat/chatService";
 import "./utils/ReuseFunctions/cronJob";
 import { Notification } from "./interfaces/data";
+import { ChatRepository } from "./respository/chat/chatRepository";
 
-const chatService = new ChatService();
+const chatRepository = new ChatRepository();
+const chatService = new ChatService(chatRepository);
 
 const app = express();
 

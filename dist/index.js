@@ -14,9 +14,11 @@ const adminRoute_1 = __importDefault(require("./routes/adminRoute"));
 const config_1 = __importDefault(require("./config/config"));
 const userRefreshToken_1 = require("./controllers/userRefreshToken");
 const adminRefreshToken_1 = require("./controllers/adminRefreshToken");
-const chatService_1 = require("./services/chatService");
+const chatService_1 = require("./services/chat/chatService");
 require("./utils/ReuseFunctions/cronJob");
-const chatService = new chatService_1.ChatService();
+const chatRepository_1 = require("./respository/chat/chatRepository");
+const chatRepository = new chatRepository_1.ChatRepository();
+const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
 const corsOptions = {
     origin: config_1.default.API,

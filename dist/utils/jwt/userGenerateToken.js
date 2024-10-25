@@ -8,7 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config/config"));
 const userGenerateTokens = (res, payload) => {
     const accessToken = jsonwebtoken_1.default.sign({ userId: payload.userId, role: payload.role }, config_1.default.JWT_SECRET, {
-        expiresIn: "1m",
+        expiresIn: "1h",
     });
     const refreshToken = jsonwebtoken_1.default.sign({ userId: payload.userId, role: payload.role }, config_1.default.JWT_SECRET, {
         expiresIn: "30d",

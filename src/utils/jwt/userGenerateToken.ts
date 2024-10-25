@@ -15,7 +15,7 @@ const userGenerateTokens = (
         { userId: payload.userId, role: payload.role },
         config.JWT_SECRET as string,
         {
-            expiresIn: "1m",
+            expiresIn: "1h",
         } as SignOptions
     );
 

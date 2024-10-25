@@ -6,8 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const config_1 = __importDefault(require("../../config/config"));
-const userService_1 = require("../../services/userService");
-const userService = new userService_1.UserService();
+const services_1 = require("../../services");
 const sendEmail = async (userId, email, resetToken, resetTokenExpiration) => {
     const transporter = nodemailer_1.default.createTransport({
         service: "gmail",
@@ -19,7 +18,7 @@ const sendEmail = async (userId, email, resetToken, resetTokenExpiration) => {
             pass: config_1.default.APP_PASSWORD,
         },
     });
-    const user = await userService.getUserById(userId);
+    const user = await services_1.userService.getUserById(userId);
     const userName = user?.name;
     const logoUrl = "D:Book.D\backendsrcpublicsiteLogo.png";
     const resetLink = `${config_1.default.API}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;

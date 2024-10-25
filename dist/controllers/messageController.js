@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unReadMessages = exports.allMessages = exports.sendMessage = exports.chat = exports.userMessagesList = exports.updateChatRoomRead = exports.createChatRoom = exports.messageCreation = void 0;
-const chatService_1 = require("../services/chatService");
-const chatService = new chatService_1.ChatService();
+const index_1 = require("../services/index");
 const createChatRoom = async (req, res) => {
     try {
         const { senderId, receiverId } = req.body;
@@ -11,11 +10,11 @@ const createChatRoom = async (req, res) => {
                 .status(400)
                 .json({ message: "Missing userId or receiverId" });
         }
-        const isExistChatRoom = await chatService.getChatRoom(senderId, receiverId);
+        const isExistChatRoom = await index_1.chatService.getChatRoom(senderId, receiverId);
         if (isExistChatRoom) {
             return res.status(200).json({ isExistChatRoom });
         }
-        const chatRoom = await chatService.getCreateChatRoom(senderId, receiverId);
+        const chatRoom = await index_1.chatService.getCreateChatRoom(senderId, receiverId);
         return res.status(200).json({ chatRoom });
     }
     catch (error) {
@@ -30,11 +29,11 @@ const updateChatRoomRead = async (req, res) => {
         if (!chatRoomId) {
             return res.status(400).json({ message: "Missing chatRoomId" });
         }
-        const isExistChatRoom = await chatService.getChatRoomById(chatRoomId);
+        const isExistChatRoom = await index_1.chatService.getChatRoomById(chatRoomId);
         if (!isExistChatRoom) {
             return res.status(400).json({ message: "chat is not found" });
         }
-        const { message, chat } = await chatService.getUpdateChatRoomRead(chatRoomId);
+        const { message, chat } = await index_1.chatService.getUpdateChatRoomRead(chatRoomId);
         const isRead = chat?.isRead;
         return res.status(200).json({ isRead });
     }
@@ -57,7 +56,7 @@ exports.messageCreation = messageCreation;
 const userMessagesList = async (req, res) => {
     try {
         const { userId } = req.params;
-        const conversations = await chatService.getUserMessagesList(userId);
+        const conversations = await index_1.chatService.getUserMessagesList(userId);
         return res.status(200).json({ conversations });
     }
     catch (error) {
@@ -69,7 +68,7 @@ exports.userMessagesList = userMessagesList;
 const chat = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
-        const chat = await chatService.getUserChat(chatRoomId);
+        const chat = await index_1.chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     }
     catch (error) {
@@ -86,8 +85,8 @@ const sendMessage = async (req, res) => {
                 message: "senderId or receiverId or chatRoomId is not available",
             });
         }
-        const savedMessage = await chatService.getSendMessage(senderId, receiverId, content, chatRoomId);
-        const isExistChatRoom = await chatService.getChatRoom(senderId, receiverId);
+        const savedMessage = await index_1.chatService.getSendMessage(senderId, receiverId, content, chatRoomId);
+        const isExistChatRoom = await index_1.chatService.getChatRoom(senderId, receiverId);
         if (!isExistChatRoom) {
             return res.status(500).json({ message: "ChatRoom not found" });
         }
@@ -96,8 +95,8 @@ const sendMessage = async (req, res) => {
         }
         const chatRoomIdStr = isExistChatRoom._id;
         const messageIdStr = savedMessage._id;
-        const saveChatRoom = await chatService.getUpdateChatRoom(chatRoomIdStr, messageIdStr);
-        const message = await chatService.getMesssage(messageIdStr);
+        const saveChatRoom = await index_1.chatService.getUpdateChatRoom(chatRoomIdStr, messageIdStr);
+        const message = await index_1.chatService.getMesssage(messageIdStr);
         return res.status(200).json({ message });
     }
     catch (error) {
@@ -112,7 +111,7 @@ const allMessages = async (req, res) => {
         if (!chatRoomId) {
             return res.status(400).json({ message: "chatroom ID not found" });
         }
-        const messages = await chatService.getAllMessages(chatRoomId);
+        const messages = await index_1.chatService.getAllMessages(chatRoomId);
         return res.status(200).json({ messages });
     }
     catch (error) {
@@ -129,7 +128,7 @@ const unReadMessages = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const messages = await chatService.getUnReadMessages(userId);
+        const messages = await index_1.chatService.getUnReadMessages(userId);
         return res.status(200).json({ count: messages });
     }
     catch (error) {

@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
 import { comparePassword } from "../utils/ReuseFunctions/passwordValidation";
-import { AdminService } from "../services/adminService";
 import { IGenre } from "../model/genresModel";
 import { IUser } from "../model/userModel";
 import { Types } from "mongoose";
 import { adminGenerateTokens } from "../utils/jwt/adminGenerateToken";
-import { WalletService } from "../services/walletService";
+import { adminService } from '../services/index';
+import { walletService } from '../services/index';
 
-const adminService = new AdminService();
-const walletService = new WalletService();
 
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
@@ -93,15 +91,6 @@ const walletTransactions = async (req: Request, res: Response) => {
 const totalRentedBooks = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllTotalRentedBooks();
-        return res.status(200).json(users);
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-const totalSoldBooks = async (req: Request, res: Response) => {
-    try {
-        const users = await adminService.getAllTotalSoldBooks();
         return res.status(200).json(users);
     } catch (error: any) {
         console.log(error.message);
@@ -217,7 +206,6 @@ export {
     walletTransactions,
     unBlockUser,
     totalRentedBooks,
-    totalSoldBooks,
     totalBooks,
     allOrders,
     orderDetail,

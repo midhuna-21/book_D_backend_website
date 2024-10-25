@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
-import { WalletService } from "../services/walletService";
+import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
+import { walletService } from "../services/index";
 import Stripe from "stripe";
 import config from "../config/config";
-import { UserService } from "../services/userService";
 import { wallet } from "../model/walletModel";
 
-const walletService = new WalletService();
-const userService = new UserService();
 
 const walletTransactions = async (req: AuthenticatedRequest, res: Response) => {
     try {

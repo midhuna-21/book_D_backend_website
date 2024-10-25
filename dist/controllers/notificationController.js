@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateNotification = exports.unReadNotifications = exports.notifications = exports.sendNotification = void 0;
-const notificationService_1 = require("../services/notificationService");
-const notificationService = new notificationService_1.NotificationService();
+const index_1 = require("../services/index");
 const sendNotification = async (req, res) => {
     try {
         const { userId, receiverId, cartId, notificationId, bookId, status } = req.body;
@@ -13,7 +12,7 @@ const sendNotification = async (req, res) => {
             cartId,
             status,
         };
-        const notification = await notificationService.getCreateNotification(notificationId, data);
+        const notification = await index_1.notificationService.getCreateNotification(notificationId, data);
         return res.status(200).json({ notification });
     }
     catch (error) {
@@ -30,7 +29,7 @@ const notifications = async (req, res) => {
                 .status(400)
                 .json({ message: "User ID not found in request" });
         }
-        const notifications = await notificationService.getNotificationsByUserId(userId);
+        const notifications = await index_1.notificationService.getNotificationsByUserId(userId);
         return res.status(200).json({ notifications });
     }
     catch (error) {
@@ -47,7 +46,7 @@ const unReadNotifications = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUnReadNotifications(userId);
+        const notifications = await index_1.notificationService.getUnReadNotifications(userId);
         return res.status(200).json({ count: notifications });
     }
     catch (error) {
@@ -64,7 +63,7 @@ const updateNotification = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUpdateNotifications(userId);
+        const notifications = await index_1.notificationService.getUpdateNotifications(userId);
         return res.status(200).json({ notifications });
     }
     catch (error) {

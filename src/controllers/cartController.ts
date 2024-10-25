@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { Cart } from "../interfaces/data";
-import { CartService } from "../services/cartService";
+import { cartService } from "../services/index";
 
-const cartService = new CartService();
 
 const saveCart = async (req: Request, res: Response) => {
     try {

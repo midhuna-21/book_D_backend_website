@@ -3,10 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyToken = void 0;
+exports.userVerifyToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config/config"));
-const verifyToken = (req, res, next) => {
+const userVerifyToken = (req, res, next) => {
     const token = req.headers["authorization"];
     if (!token) {
         return res.status(403).json({ message: "No token provided!" });
@@ -27,5 +27,5 @@ const verifyToken = (req, res, next) => {
         next();
     });
 };
-exports.verifyToken = verifyToken;
+exports.userVerifyToken = userVerifyToken;
 //# sourceMappingURL=userAuthMiddleware.js.map

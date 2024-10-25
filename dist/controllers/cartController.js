@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateCart = exports.saveCart = exports.checkAccept = exports.checkUserSentRequest = void 0;
-const cartService_1 = require("../services/cartService");
-const cartService = new cartService_1.CartService();
+const index_1 = require("../services/index");
 const saveCart = async (req, res) => {
     try {
         const { userId, ownerId, bookId, totalDays, quantity, totalAmount, totalDepositAmount, totalRentalPrice, types, } = req.body;
@@ -20,7 +19,7 @@ const saveCart = async (req, res) => {
             total_deposit_amount: totalDepositAmount,
             totalRentalPrice,
         };
-        const cart = await cartService.getCreateCart(data);
+        const cart = await index_1.cartService.getCreateCart(data);
         return res.status(200).json({ cart });
     }
     catch (error) {
@@ -39,7 +38,7 @@ const checkAccept = async (req, res) => {
                 .status(400)
                 .json({ message: "User ID or Book ID not found in request" });
         }
-        const isAccepted = await cartService.getCheckAccepted(userId, bookId);
+        const isAccepted = await index_1.cartService.getCheckAccepted(userId, bookId);
         return res.status(200).json({ isAccepted });
     }
     catch (error) {
@@ -58,7 +57,7 @@ const checkUserSentRequest = async (req, res) => {
                 .status(400)
                 .json({ message: "User ID or Book ID not found in request" });
         }
-        const isRequested = await cartService.getCheckRequest(userId, bookId);
+        const isRequested = await index_1.cartService.getCheckRequest(userId, bookId);
         return res.status(200).json({ isRequested });
     }
     catch (error) {
@@ -76,11 +75,11 @@ const updateCart = async (req, res) => {
         if (!cartId) {
             return res.status(500).json({ message: "cartId is missing" });
         }
-        const findCart = await cartService.getCartById(cartId);
+        const findCart = await index_1.cartService.getCartById(cartId);
         if (!findCart) {
             return res.status(500).json({ message: "request is not found" });
         }
-        const cart = await cartService.getUpdateCart(cartId, types);
+        const cart = await index_1.cartService.getUpdateCart(cartId, types);
         return res.status(200).json({ cart });
     }
     catch (error) {

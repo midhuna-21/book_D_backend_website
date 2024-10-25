@@ -13,18 +13,14 @@ import { Books } from "../interfaces/data";
 import { IBooks } from "../model/bookModel";
 import rentBookValidation from "../utils/ReuseFunctions/rentBookValidation";
 import sellBookValidation from "../utils/ReuseFunctions/sellBookValidation";
-import { AuthenticatedRequest } from "../utils/middleware/authMiddleware";
+import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
 import { s3Client } from "../utils/imageFunctions/store";
 import Stripe from "stripe";
-import { BookService } from "../services/bookService";
-import { CartService } from "../services/cartService";
-import { UserService } from "../services/userService";
-import { WalletService } from "../services/walletService";
+import { bookService } from "../services/index";
+import { cartService } from "../services/index";
+import { userService } from "../services/index";
+import { walletService } from "../services/index";
 
-const bookService = new BookService();
-const cartService = new CartService();
-const userService = new UserService();
-const walletService = new WalletService();
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
 }
@@ -564,7 +560,7 @@ const createOrder = async (req: Request, res: Response) => {
             }
 
             const totalAmount = Number(cart?.totalAmount);
-            await walletService.updateBookWallet(
+            await walletService.getUpdateBookWallet(
                 orderData.lenderId,
                 totalAmount,
                 userId

@@ -57,7 +57,7 @@ export interface Admin {
 }
 
 export interface Genre {
-    genreName: string;
+    genreName?: string;
     image?: string;
 }
 

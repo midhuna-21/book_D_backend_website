@@ -5,10 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRefreshTokenController = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const userService_1 = require("../services/userService");
+const userService_1 = require("../services/user/userService");
 const userGenerateToken_1 = require("../utils/jwt/userGenerateToken");
 const config_1 = __importDefault(require("../config/config"));
-const userService = new userService_1.UserService();
+const userRepository_1 = require("../respository/user/userRepository");
+const userRepository = new userRepository_1.UserRepository();
+const userService = new userService_1.UserService(userRepository);
 const userRefreshTokenController = async (req, res) => {
     try {
         const role = req.body.role;

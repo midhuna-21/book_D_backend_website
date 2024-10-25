@@ -13,17 +13,13 @@ const rentBookValidation_1 = __importDefault(require("../utils/ReuseFunctions/re
 const sellBookValidation_1 = __importDefault(require("../utils/ReuseFunctions/sellBookValidation"));
 const store_1 = require("../utils/imageFunctions/store");
 const stripe_1 = __importDefault(require("stripe"));
-const bookService_1 = require("../services/bookService");
-const cartService_1 = require("../services/cartService");
-const userService_1 = require("../services/userService");
-const walletService_1 = require("../services/walletService");
-const bookService = new bookService_1.BookService();
-const cartService = new cartService_1.CartService();
-const userService = new userService_1.UserService();
-const walletService = new walletService_1.WalletService();
+const index_1 = require("../services/index");
+const index_2 = require("../services/index");
+const index_3 = require("../services/index");
+const index_4 = require("../services/index");
 const genresOfBooks = async (req, res) => {
     try {
-        const genres = await bookService.getGenres();
+        const genres = await index_1.bookService.getGenres();
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -35,7 +31,7 @@ exports.genresOfBooks = genresOfBooks;
 const genres = async (req, res) => {
     try {
         const userId = req.userId;
-        const genres = await bookService.getAllGenres(userId);
+        const genres = await index_1.bookService.getAllGenres(userId);
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -47,11 +43,11 @@ exports.genres = genres;
 const exploreBooks = async (req, res) => {
     try {
         const userId = req.userId;
-        const allBooks = await bookService.getAllBooks();
+        const allBooks = await index_1.bookService.getAllBooks();
         const booksToShow = [];
         for (const book of allBooks) {
             if (book.lenderId !== userId) {
-                const isLenderExist = await userService.getUserById(book.lenderId);
+                const isLenderExist = await index_3.userService.getUserById(book.lenderId);
                 if (isLenderExist && !isLenderExist.isBlocked) {
                     booksToShow.push(book);
                 }
@@ -69,14 +65,14 @@ const genreMatchedBooks = async (req, res) => {
     try {
         const userId = req.userId;
         const genreName = req.params.genreName?.toString();
-        const allBooks = await bookService.getGenreMatchedBooks(genreName);
+        const allBooks = await index_1.bookService.getGenreMatchedBooks(genreName);
         const booksToShow = [];
         if (!allBooks) {
             return res.status(200).json([]);
         }
         for (const book of allBooks) {
             if (book.lenderId !== userId) {
-                const isLenderExist = await userService.getUserById(book.lenderId);
+                const isLenderExist = await index_3.userService.getUserById(book.lenderId);
                 if (isLenderExist && !isLenderExist.isBlocked) {
                     booksToShow.push(book);
                 }
@@ -93,12 +89,12 @@ exports.genreMatchedBooks = genreMatchedBooks;
 const bookDetail = async (req, res) => {
     try {
         const bookId = req.params.Id;
-        const book = await bookService.getBookById(bookId);
+        const book = await index_1.bookService.getBookById(bookId);
         if (!book) {
             return res.status(500).json({ message: "Book is not found " });
         }
         const lenderId = book.lenderId;
-        const lender = await userService.getUserById(lenderId);
+        const lender = await index_3.userService.getUserById(lenderId);
         return res.status(200).json({ book, lender });
     }
     catch (error) {
@@ -156,7 +152,7 @@ const rentBook = async (req, res) => {
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
-        const bookAdded = await bookService.getAddToBookRent(bookRentData);
+        const bookAdded = await index_1.bookService.getAddToBookRent(bookRentData);
         return res
             .status(200)
             .json({ message: "Book rented successfully", bookAdded });
@@ -218,7 +214,7 @@ const rentBookUpdate = async (req, res) => {
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
-        const bookAdded = await bookService.getUpdateBookRent(bookRentData, bookId);
+        const bookAdded = await index_1.bookService.getUpdateBookRent(bookRentData, bookId);
         return res
             .status(200)
             .json({ message: "Book rented successfully", bookAdded });
@@ -293,7 +289,7 @@ const sellBook = async (req, res) => {
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
-        await bookService.getAddToBookSell(bookSelldata);
+        await index_1.bookService.getAddToBookSell(bookSelldata);
         return res
             .status(200)
             .json({ message: "Book sold successfully", bookSelldata });
@@ -307,7 +303,7 @@ exports.sellBook = sellBook;
 const rentedBooks = async (req, res) => {
     try {
         const userId = req.userId;
-        const allBooks = await bookService.getAllBooks();
+        const allBooks = await index_1.bookService.getAllBooks();
         const booksToShow = [];
         for (const book of allBooks) {
             if (book.lenderId == userId && book.isRented) {
@@ -324,7 +320,7 @@ exports.rentedBooks = rentedBooks;
 const soldBooks = async (req, res) => {
     try {
         const userId = req.userId;
-        const allBooks = await bookService.getAllBooks();
+        const allBooks = await index_1.bookService.getAllBooks();
         const booksToShow = [];
         for (const book of allBooks) {
             if (book.lenderId == userId && book.isSell) {
@@ -360,7 +356,7 @@ const lendingProcess = async (req, res) => {
         if (!cartId) {
             return res.status(500).json({ message: "cartId not found" });
         }
-        const details = await cartService.getCartDetails(cartId);
+        const details = await index_2.cartService.getCartDetails(cartId);
         return res.status(200).json({ details });
     }
     catch (error) {
@@ -410,11 +406,11 @@ const createOrder = async (req, res) => {
                 .status(400)
                 .json({ message: "user or book id is missing" });
         }
-        const existOrder = await bookService.getIsOrderExist(sessionId);
+        const existOrder = await index_1.bookService.getIsOrderExist(sessionId);
         if (existOrder) {
             return res.status(200).json({ order: existOrder });
         }
-        const cartData = await cartService.getCartById(cartId);
+        const cartData = await index_2.cartService.getCartById(cartId);
         if (!cartData) {
             console.log("cart is not found");
         }
@@ -428,10 +424,10 @@ const createOrder = async (req, res) => {
                     : "",
                 bookId: typeof cartData?.bookId === "string" ? cartData.bookId : "",
             };
-            const order = await bookService.getCreateOrder(orderData);
-            const cart = await cartService.getUpdateIsPaid(cartId);
+            const order = await index_1.bookService.getCreateOrder(orderData);
+            const cart = await index_2.cartService.getUpdateIsPaid(cartId);
             const selectedQuantity = cart?.quantity;
-            const book = await bookService.getBookById(bookId);
+            const book = await index_1.bookService.getBookById(bookId);
             if (book && book.quantity > 0) {
                 const updatedQuantity = book.quantity - selectedQuantity;
                 if (updatedQuantity < 0) {
@@ -439,7 +435,7 @@ const createOrder = async (req, res) => {
                         .status(400)
                         .json({ message: "Book is out of stock" });
                 }
-                await bookService.getUpdateBookQuantity(bookId, updatedQuantity);
+                await index_1.bookService.getUpdateBookQuantity(bookId, updatedQuantity);
             }
             else {
                 return res
@@ -447,7 +443,7 @@ const createOrder = async (req, res) => {
                     .json({ message: "Book not found or out of stock" });
             }
             const totalAmount = Number(cart?.totalAmount);
-            await walletService.updateBookWallet(orderData.lenderId, totalAmount, userId);
+            await index_4.walletService.getUpdateBookWallet(orderData.lenderId, totalAmount, userId);
             return res.status(200).json({ order });
         }
     }
@@ -465,7 +461,7 @@ const orders = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
-        const orders = await bookService.getOrders(userId);
+        const orders = await index_1.bookService.getOrders(userId);
         res.status(200).json({ orders });
     }
     catch (error) {
@@ -480,7 +476,7 @@ const rentList = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
-        const orders = await bookService.getRentList(userId);
+        const orders = await index_1.bookService.getRentList(userId);
         res.status(200).json({ orders });
     }
     catch (error) {
@@ -495,7 +491,7 @@ const lendList = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
-        const orders = await bookService.getLendList(userId);
+        const orders = await index_1.bookService.getLendList(userId);
         res.status(200).json({ orders });
     }
     catch (error) {
@@ -509,7 +505,7 @@ const search = async (req, res) => {
     const booksToShow = [];
     const userId = req.userId;
     try {
-        const books = await bookService.getSearchResult(searchQuery);
+        const books = await index_1.bookService.getSearchResult(searchQuery);
         for (const book of books) {
             if (book.lenderId !== userId) {
                 booksToShow.push(book);
@@ -531,7 +527,7 @@ const updateOrderStatusRenter = async (req, res) => {
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });
         }
-        const order = await bookService.getUpdateOrderStatusRenter(selectedOrderId, bookStatus);
+        const order = await index_1.bookService.getUpdateOrderStatusRenter(selectedOrderId, bookStatus);
         res.status(200).json({ order });
     }
     catch (error) {
@@ -550,7 +546,7 @@ const updateOrderStatusLender = async (req, res) => {
         if (!selectedOrderId) {
             return res.status(400).json({ message: "Order ID is missing" });
         }
-        const order = await bookService.getUpdateOrderStatusLender(selectedOrderId, bookStatus);
+        const order = await index_1.bookService.getUpdateOrderStatusLender(selectedOrderId, bookStatus);
         res.status(200).json({ order });
     }
     catch (error) {
@@ -569,7 +565,7 @@ const OrderToShowSuccess = async (req, res) => {
                 .status(400)
                 .json({ message: "user or book id is missing" });
         }
-        const order = await bookService.getOrderToShowSuccess(userId, bookId);
+        const order = await index_1.bookService.getOrderToShowSuccess(userId, bookId);
         res.status(200).json({ order });
     }
     catch (error) {

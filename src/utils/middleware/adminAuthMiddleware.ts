@@ -8,7 +8,7 @@ export interface AuthenticatedRequest extends Request {
     role?: string;
 }
 
-const verifyToken = (
+const adminVerifyToken = (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -39,4 +39,4 @@ const verifyToken = (
     );
 };
 
-export { verifyToken };
+export { adminVerifyToken };
