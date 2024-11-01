@@ -133,7 +133,8 @@ class AdminRepository {
     }
     async findAllGenres() {
         try {
-            return await genresModel_1.genres.find();
+            const genre = await genresModel_1.genres.find().sort({ createdAt: -1, updatedAt: -1 });
+            return genre;
         }
         catch (error) {
             console.log("Error findAllOrders:", error);
@@ -164,6 +165,20 @@ class AdminRepository {
         }
         catch (error) {
             console.log("Error findUpdateGenre:", error);
+            throw error;
+        }
+    }
+    async findDeleteGenre(genreId) {
+        try {
+            const deletedGenre = await genresModel_1.genres.findByIdAndDelete({ _id: genreId });
+            if (!deletedGenre) {
+                console.log("Genre not found for deletion");
+                return null;
+            }
+            return deletedGenre;
+        }
+        catch (error) {
+            console.log("Error findDeleteGenre:", error);
             throw error;
         }
     }

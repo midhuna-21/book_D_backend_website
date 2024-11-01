@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmail = exports.sendOTP = exports.userDetails = exports.calculateDistance = exports.linkGoogleAccount = exports.googleLog = exports.sendUnlinkEmail = exports.getUser = exports.deleteUserImage = exports.updateProfileImage = exports.updateUser = exports.logoutUser = exports.updatePassword = exports.verifyOtp = exports.verifyPhoneNumber = exports.loginByGoogle = exports.loginUser = exports.generateOtp = exports.signUp = void 0;
+exports.verifyEmail = exports.sendOTP = exports.userDetails = exports.calculateDistance = exports.linkGoogleAccount = exports.googleLog = exports.sendUnlinkEmail = exports.getUser = exports.deleteUserImage = exports.updateProfileImage = exports.updateUser = exports.logoutUser = exports.updatePassword = exports.verifyOtp = exports.verifyPhoneNumber = exports.loginByGoogle = exports.loginUser = exports.resendOtp = exports.signUp = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const userService_1 = require("../services/user/userService");
 const otpGenerate_1 = require("../utils/ReuseFunctions/otpGenerate");
@@ -66,6 +66,9 @@ const signUp = async (req, res) => {
         }
         const securePassword = await (0, passwordValidation_1.hashPassword)(password);
         const user = { name, email, phone, password: securePassword };
+        const otp = await (0, otpGenerate_1.otpGenerate)(email);
+        console.log(otp, 'signup');
+        res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -74,12 +77,11 @@ const signUp = async (req, res) => {
     }
 };
 exports.signUp = signUp;
-const randomImageName = (bytes = 32) => crypto_1.default.randomBytes(bytes).toString("hex");
-const generateOtp = async (req, res) => {
+const resendOtp = async (req, res) => {
     try {
         const { email } = req.body;
         let otp = await (0, otpGenerate_1.otpGenerate)(email);
-        console.log(otp, "otp");
+        console.log(otp, "resend");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res
             .status(200)
@@ -90,7 +92,7 @@ const generateOtp = async (req, res) => {
         return res.status(400).json({ message: "internal s erver error" });
     }
 };
-exports.generateOtp = generateOtp;
+exports.resendOtp = resendOtp;
 const verifyOtp = async (req, res) => {
     try {
         const { response, origin, otp } = req.body;
@@ -360,6 +362,9 @@ const verifyEmail = async (req, res) => {
         const { email } = req.body;
         let isValidEmail = await userService.getUserByEmail(email);
         if (isValidEmail) {
+            const otp = await (0, otpGenerate_1.otpGenerate)(email);
+            console.log(otp, 'forgot');
+            res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
         }
         else {

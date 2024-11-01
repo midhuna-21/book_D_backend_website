@@ -13,6 +13,7 @@ import {
     allOrders,
     orderDetail,
     walletTransactions,
+    deleteGenre
 } from "../controllers/adminController";
 import upload from "../utils/imageFunctions/store";
 import { adminVerifyToken } from "../utils/middleware/adminAuthMiddleware";
@@ -20,8 +21,6 @@ import { adminVerifyToken } from "../utils/middleware/adminAuthMiddleware";
 const adminRouter = express.Router();
 
 adminRouter.post("/admin-login", adminLogin);
-
-// add genre
 
 adminRouter.post("/add-genre", adminVerifyToken, upload.single("file"), addGenre);
 
@@ -51,6 +50,8 @@ adminRouter.get("/get-rental-orders", adminVerifyToken, allOrders);
 adminRouter.get("/order-detail/:orderId", adminVerifyToken, orderDetail);
 
 adminRouter.get("/bookd-wallet", adminVerifyToken, walletTransactions);
+
+adminRouter.post('/delete-genre',adminVerifyToken,deleteGenre)
 
 // adminRouter.get("/bookd-wallet", verifyToken,walletTransactions);
 

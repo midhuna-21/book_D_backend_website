@@ -21,4 +21,5 @@ export interface IAdminService {
    getAllGenres():Promise<IGenre[]>
    getUpdateGenre(data: Genre, genreId: string):Promise<IGenre | null>
    getGenre(genreId: string):Promise<IGenre | null>
+   getDeleteGenre(genreId:string):Promise<IGenre | null>
 }

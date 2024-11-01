@@ -135,7 +135,8 @@ export class AdminRepository implements IAdminRepository{
 
     async findAllGenres():Promise<IGenre[]> {
         try {
-            return await genres.find();
+            const genre = await genres.find().sort({createdAt:-1,updatedAt:-1})
+            return genre
         } catch (error) {
             console.log("Error findAllOrders:", error);
             throw error;
@@ -169,6 +170,20 @@ export class AdminRepository implements IAdminRepository{
             return updatedGenre;
         } catch (error) {
             console.log("Error findUpdateGenre:", error);
+            throw error;
+        }
+    }
+
+    async findDeleteGenre(genreId: string):Promise<IGenre | null> {
+        try {
+            const deletedGenre = await genres.findByIdAndDelete({ _id: genreId });
+            if (!deletedGenre) {
+                console.log("Genre not found for deletion");
+                return null;
+            }
+            return deletedGenre;
+        } catch (error) {
+            console.log("Error findDeleteGenre:", error);
             throw error;
         }
     }

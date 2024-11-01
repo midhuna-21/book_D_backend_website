@@ -22,4 +22,5 @@ export interface IAdminRepository {
    findOrderDetail(orderId: string):Promise<IOrder | null>;
    findAllGenres():Promise<IGenre[]>;
    findGenre(genreId: string):Promise<IGenre | null>
+   findDeleteGenre(genreId:string):Promise<IGenre | null>
 }

@@ -15,7 +15,7 @@ class NotificationRepository {
                 });
                 const id = existNotification?._id;
                 const existNotificationUpdate = await notificationModel_1.notification
-                    .findByIdAndUpdate({ _id: id }, { status: data.status }, { new: true })
+                    .findByIdAndUpdate({ _id: id }, { status: data.status, updatedAt: new Date() }, { new: true })
                     .populate("userId")
                     .populate("receiverId")
                     .populate("bookId")
@@ -70,7 +70,7 @@ class NotificationRepository {
                 .populate("receiverId")
                 .populate("bookId")
                 .populate("cartId")
-                .sort({ updatedAt: -1 });
+                .sort({ createdAt: -1 });
             return notifications;
         }
         catch (error) {

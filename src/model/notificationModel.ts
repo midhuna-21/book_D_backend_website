@@ -8,8 +8,6 @@ interface INotification extends Document {
     cartId?: ObjectId;
     status?: string;
     isRead?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 const notificationSchema = new mongoose.Schema(
     {

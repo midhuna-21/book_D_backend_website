@@ -56,7 +56,7 @@ export class ChatRepository {
         }
     }
 
-    async findMessagesList(userId: string): Promise<IChatRoom[] | null> {
+    async findUserMessagesList(userId: string): Promise<IChatRoom[] | null> {
         try {
             const chatRooms = await chatRoom
                 .find({
@@ -65,6 +65,7 @@ export class ChatRepository {
                 .populate("receiverId", "name email image")
                 .populate("senderId", "name email image")
                 .populate("messageId")
+                .sort({updatedAt:-1})
                 .exec();
             const filteredChatRooms = chatRooms.filter((chatRoom) => {
                 const senderId = chatRoom.senderId;

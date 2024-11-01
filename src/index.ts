@@ -44,47 +44,79 @@ app.use(cookieParser());
 // app.use(morgan('dev'))
 app.use(express.static("public/"));
 
-const userSockets = new Map<string, string>();
-const onlineUsers = new Map<string, string>();
+
+const userSockets = new Map<string, Set<string>>();
+let onlineUsers = new Set();
 
 io.on("connection", (socket: Socket) => {
-    console.log("A user connected:", socket.id);
-
     socket.on("register", (userId: string) => {
         if (userId) {
-            userSockets.set(userId, socket.id);
-            onlineUsers.set(userId, socket.id);
-            console.log(userSockets, "user sockets");
-            io.emit("user-status", { userId, isOnline: true });
+            if (!userSockets.has(userId)) {
+                userSockets.set(userId, new Set());
+            }
+            userSockets.get(userId)?.add(socket.id);
+            io.emit("user-status", { userId, status: "online" });
         }
     });
 
+    socket.on("userConnected", (userId) => {
+        onlineUsers.add(userId);
+        io.emit("userOnline", userId); 
+    });
+
     socket.on("disconnect", () => {
-        for (const [userId, socketId] of onlineUsers.entries()) {
-            if (socketId === socket.id) {
-                onlineUsers.delete(userId);
-                io.emit("user-status", { userId, isOnline: false });
-                io.emit("user-offline", userId);
+        for (const [userId, sockets] of userSockets.entries()) {
+            if (sockets.has(socket.id)) {
+                sockets.delete(socket.id);
+                if (sockets.size === 0) {
+                    userSockets.delete(userId);
+                    onlineUsers.delete(userId);
+                    io.emit("user-status", { userId, status: "offline" });
+                    io.emit("userOffline", userId);
+                }
                 break;
             }
         }
     });
+    
 
+      socket.on("typing", ({ chatId, userId }) => {
+        for (const [otherUserId, sockets] of userSockets.entries()) {
+            if (otherUserId !== userId) {
+                sockets.forEach((socketId) => {
+                    io.to(socketId).emit("typing", { userId, chatId });
+                });
+            }
+        }
+    });
+    socket.on('stop-typing', ({chatId ,userId }) => {
+        for (const [otherUserId, sockets] of userSockets.entries()) {
+            if (otherUserId !== userId) {
+                sockets.forEach((socketId) => {
+                    io.to(socketId).emit("stop-typing", { chatId,userId });
+                });
+            }
+        }
+      });
+
+    
     socket.on(
         "send-notification",
         (data: { receiverId: string; notification: Notification }) => {
-            const receiverSocketId = userSockets.get(data.receiverId);
-            console.log(receiverSocketId, "receiverSocketId");
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit("notification", data.notification);
+            const receiverSocketIds = userSockets.get(data.receiverId);
+            console.log(receiverSocketIds, "receiverSocketIds");
+            
+            if (receiverSocketIds) {
+                Array.from(receiverSocketIds).forEach((socketId) => {
+                    io.to(socketId).emit("notification", data.notification);
+                });
                 console.log(`Notification sent to ${data.receiverId}`);
             } else {
-                console.log(
-                    `No active socket found for user ${data.receiverId}`
-                );
+                console.log(`No active socket found for user ${data.receiverId}`);
             }
         }
     );
+
 
     socket.on(
         "send-message",
@@ -115,17 +147,18 @@ io.on("connection", (socket: Socket) => {
                     console.error("Chat room not found");
                     return;
                 }
-
                 socket.emit("receive-message", message);
+                const receiverSocketIds = userSockets.get(receiverId);
 
-                const receiverSocketId = userSockets.get(receiverId);
-                if (receiverSocketId) {
-                    io.to(receiverSocketId).emit("receive-message", message);
+                if (receiverSocketIds && receiverSocketIds.size > 0) {
+                    receiverSocketIds.forEach((socketId) => {
+                        io.to(socketId).emit("receive-message", message);
+                    });
                 } else {
-                    console.log(
-                        `No active socket found for user ${receiverId}`
-                    );
+                    console.log(`No active socket found for user ${receiverId}`);
                 }
+                
+                
             } catch (error) {
                 console.error("Error handling send-message event:", error);
             }
@@ -136,7 +169,6 @@ io.on("connection", (socket: Socket) => {
 app.get("/api/user/:userId/online-status", (req: Request, res: Response) => {
     const userId = req.params.userId;
     const isOnline = onlineUsers.has(userId);
-    console.log(isOnline, "Id oneli");
     res.json({ isOnline });
 });
 

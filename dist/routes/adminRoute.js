@@ -9,7 +9,6 @@ const store_1 = __importDefault(require("../utils/imageFunctions/store"));
 const adminAuthMiddleware_1 = require("../utils/middleware/adminAuthMiddleware");
 const adminRouter = express_1.default.Router();
 adminRouter.post("/admin-login", adminController_1.adminLogin);
-// add genre
 adminRouter.post("/add-genre", adminAuthMiddleware_1.adminVerifyToken, store_1.default.single("file"), adminController_1.addGenre);
 adminRouter.get("/genres", adminAuthMiddleware_1.adminVerifyToken, adminController_1.genresList);
 adminRouter.get("/genre/:genreId", adminAuthMiddleware_1.adminVerifyToken, adminController_1.genre);
@@ -22,6 +21,7 @@ adminRouter.get("/total-books", adminAuthMiddleware_1.adminVerifyToken, adminCon
 adminRouter.get("/get-rental-orders", adminAuthMiddleware_1.adminVerifyToken, adminController_1.allOrders);
 adminRouter.get("/order-detail/:orderId", adminAuthMiddleware_1.adminVerifyToken, adminController_1.orderDetail);
 adminRouter.get("/bookd-wallet", adminAuthMiddleware_1.adminVerifyToken, adminController_1.walletTransactions);
+adminRouter.post('/delete-genre', adminAuthMiddleware_1.adminVerifyToken, adminController_1.deleteGenre);
 // adminRouter.get("/bookd-wallet", verifyToken,walletTransactions);
 exports.default = adminRouter;
 //# sourceMappingURL=adminRoute.js.map

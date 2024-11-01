@@ -4,9 +4,8 @@ import { IGenre } from "../model/genresModel";
 import { IUser } from "../model/userModel";
 import { Types } from "mongoose";
 import { adminGenerateTokens } from "../utils/jwt/adminGenerateToken";
-import { adminService } from '../services/index';
-import { walletService } from '../services/index';
-
+import { adminService } from "../services/index";
+import { walletService } from "../services/index";
 
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
@@ -195,6 +194,17 @@ const updateGenre = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
+
+const deleteGenre = async (req: Request, res: Response) => {
+    try {
+        const { genreId } = req.body;
+        const genre = await adminService.getDeleteGenre(genreId);
+        return res.status(200).json({ genre });
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(400).json({ message: "Internal server error" });
+    }
+};
 export {
     adminLogin,
     addGenre,
@@ -209,4 +219,5 @@ export {
     totalBooks,
     allOrders,
     orderDetail,
+    deleteGenre,
 };

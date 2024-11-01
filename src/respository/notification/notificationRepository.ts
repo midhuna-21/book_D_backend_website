@@ -16,7 +16,7 @@ export class NotificationRepository {
                 const existNotificationUpdate = await notification
                     .findByIdAndUpdate(
                         { _id: id },
-                        { status: data.status },
+                        { status: data.status,updatedAt: new Date() },
                         { new: true }
                     )
                     .populate("userId")
@@ -77,7 +77,7 @@ export class NotificationRepository {
                 .populate("receiverId")
                 .populate("bookId")
                 .populate("cartId")
-                .sort({ updatedAt: -1 });
+                .sort({ createdAt: -1 });
             return notifications;
         } catch (error) {
             console.log("Error notificationsByUserId:", error);
@@ -143,17 +143,4 @@ export class NotificationRepository {
         }
     }
     
-    // async findUpdateNotifications(userId: string):Promise<INotification | null> {
-    //     try {
-    //         const notifications = await notification.updateMany(
-    //             { receiverId: userId },
-    //             { isRead: true },
-    //             { new: true }
-    //         );
-    //         return notifications;
-    //     } catch (error) {
-    //         console.log("Error findUpdateNotifications:", error);
-    //         throw error;
-    //     }
-    // }
 }

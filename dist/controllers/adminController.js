@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
+exports.deleteGenre = exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
 const index_1 = require("../services/index");
@@ -206,4 +206,16 @@ const updateGenre = async (req, res) => {
     }
 };
 exports.updateGenre = updateGenre;
+const deleteGenre = async (req, res) => {
+    try {
+        const { genreId } = req.body;
+        const genre = await index_1.adminService.getDeleteGenre(genreId);
+        return res.status(200).json({ genre });
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(400).json({ message: "Internal server error" });
+    }
+};
+exports.deleteGenre = deleteGenre;
 //# sourceMappingURL=adminController.js.map

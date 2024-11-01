@@ -7,7 +7,7 @@ class ChatService {
     }
     async getUserMessagesList(userId) {
         try {
-            return await this.chatRepository.findMessagesList(userId);
+            return await this.chatRepository.findUserMessagesList(userId);
         }
         catch (error) {
             console.log("Error getUserMessagesList:", error);

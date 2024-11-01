@@ -15,7 +15,7 @@ export interface IChatRepository {
   ): Promise<IChatRoom | null>
   findChatRoomById(chatRoomId: string):Promise<IChatRoom | null>
   findUpdateChatRoomRead(chatRoomId: string):Promise<{ message: IMessage[]; chat: IChatRoom | null }> 
-  findMessagesList(userId: string): Promise<IChatRoom[] | null>
+  findUserMessagesList(userId: string): Promise<IChatRoom[] | null>
   findUserChat(chatRoomId: string):Promise<IChatRoom[]>
   findCreateSendMessage(senderId: string,receiverId: string,content: string,chatRoomId: string): Promise<IMessage | null>
   findUpdateChatRoom(chatRoomId: string, messageId: string):Promise<IChatRoom | null> 

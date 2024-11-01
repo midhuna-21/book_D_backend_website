@@ -14,7 +14,7 @@ const cartController_1 = require("../controllers/cartController");
 const userAuthMiddleware_1 = require("../utils/middleware/userAuthMiddleware");
 const userRouter = express_1.default.Router();
 userRouter.post("/sign-up", userController_1.signUp);
-userRouter.post("/otp-generate", userController_1.generateOtp);
+userRouter.post("/otp-generate", userController_1.resendOtp);
 userRouter.post("/login", userController_1.loginUser);
 userRouter.post("/google-login", userController_1.loginByGoogle);
 userRouter.post("/check-email", userController_1.verifyEmail);

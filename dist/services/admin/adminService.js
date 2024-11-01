@@ -140,6 +140,15 @@ class AdminService {
             throw error;
         }
     }
+    async getDeleteGenre(genreId) {
+        try {
+            return await this.adminRepository.findDeleteGenre(genreId);
+        }
+        catch (error) {
+            console.log("Error getDeleteGenre:", error);
+            throw error;
+        }
+    }
 }
 exports.AdminService = AdminService;
 //# sourceMappingURL=adminService.js.map

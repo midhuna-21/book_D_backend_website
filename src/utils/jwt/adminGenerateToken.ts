@@ -15,7 +15,7 @@ const adminGenerateTokens = (
         { adminId: payload.adminId, role: payload.role },
         config.JWT_SECRET as string,
         {
-            expiresIn: "1m",
+            expiresIn: "1h",
         } as SignOptions
     );
 

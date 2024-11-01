@@ -43,7 +43,7 @@ class ChatRepository {
             throw error;
         }
     }
-    async findMessagesList(userId) {
+    async findUserMessagesList(userId) {
         try {
             const chatRooms = await chatRoom_1.chatRoom
                 .find({
@@ -52,6 +52,7 @@ class ChatRepository {
                 .populate("receiverId", "name email image")
                 .populate("senderId", "name email image")
                 .populate("messageId")
+                .sort({ updatedAt: -1 })
                 .exec();
             const filteredChatRooms = chatRooms.filter((chatRoom) => {
                 const senderId = chatRoom.senderId;

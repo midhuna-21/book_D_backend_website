@@ -13,7 +13,7 @@ export class ChatService implements IChatService{
     }
     async getUserMessagesList(userId: string): Promise<IChatRoom[] | null> {
         try {
-            return await this.chatRepository.findMessagesList(userId);
+            return await this.chatRepository.findUserMessagesList(userId);
         } catch (error) {
             console.log("Error getUserMessagesList:", error);
             throw error;

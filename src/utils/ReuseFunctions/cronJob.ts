@@ -26,9 +26,7 @@ cron.schedule("* * * * *", async () => {
                 });
 
                 if (!lenderWallet) {
-                    console.log(
-                        `Creating a new wallet for user ${order?.lenderId}`
-                    );
+                   
                     lenderWallet = new wallet({
                         userId: order?.lenderId,
                         balance: 0,
@@ -63,9 +61,7 @@ cron.schedule("* * * * *", async () => {
                     return await adminWallet.save();
                 }
 
-                console.log(
-                    `Refunded full amount ${cart.totalAmount} to user ${order?.userId}'s wallet for cancelled order ${order._id}`
-                );
+               
             }
         }
        
@@ -91,9 +87,7 @@ cron.schedule("* * * * *", async () => {
                 });
 
                 if (!userWallet) {
-                    console.log(
-                        `Creating a new wallet for user ${order?.userId}`
-                    );
+                  
                     userWallet = new wallet({
                         userId: order?.userId,
                         balance: 0,
@@ -128,9 +122,7 @@ cron.schedule("* * * * *", async () => {
                     return await adminWallet.save();
                 }
 
-                console.log(
-                    `Refunded full amount ${cart.totalAmount} to user ${order?.userId}'s wallet for cancelled order ${order._id}`
-                );
+              
             }
         }
 

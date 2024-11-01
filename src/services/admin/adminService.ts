@@ -141,4 +141,13 @@ export class AdminService implements IAdminService {
             throw error;
         }
     }
+
+    async getDeleteGenre(genreId:string):Promise<IGenre | null>{
+        try {
+            return await this.adminRepository.findDeleteGenre(genreId);
+        } catch (error) {
+            console.log("Error getDeleteGenre:", error);
+            throw error;
+        }
+    }
 }

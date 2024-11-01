@@ -13,7 +13,6 @@ import {
     PutObjectCommand,
     PutObjectCommandInput,
     DeleteObjectCommand,
-    
 } from "@aws-sdk/client-s3";
 import config from "../config/config";
 import { s3Client } from "../utils/imageFunctions/store";
@@ -51,7 +50,7 @@ const twilioClient = new Twilio(
 interface CustomFile extends Express.Multer.File {
     location?: string;
 }
-const userRepository = new UserRepository(); 
+const userRepository = new UserRepository();
 const userService = new UserService(userRepository);
 
 const sendOTP = async (req: Request, res: Response) => {
@@ -90,21 +89,21 @@ const signUp = async (req: Request, res: Response) => {
         }
         const securePassword = await hashPassword(password);
         const user: User = { name, email, phone, password: securePassword };
-
+        const otp = await otpGenerate(email);
+        console.log(otp, "signup");
+        res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error(error.message);
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-const randomImageName = (bytes = 32) =>
-    crypto.randomBytes(bytes).toString("hex");
 
-const generateOtp = async (req: Request, res: Response) => {
+const resendOtp = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
         let otp = await otpGenerate(email);
-        console.log(otp, "otp");
+        console.log(otp, "resend");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res
             .status(200)
@@ -187,7 +186,7 @@ const loginUser = async (req: Request, res: Response) => {
         const { accessToken, refreshToken } = userGenerateTokens(res, {
             userId,
             role: "user",
-        }); 
+        });
         return res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
         console.error(error.message);
@@ -397,6 +396,9 @@ const verifyEmail = async (req: Request, res: Response) => {
             email
         );
         if (isValidEmail) {
+            const otp = await otpGenerate(email);
+            console.log(otp, "forgot");
+            res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
         } else {
             return res.status(401).json({ message: "Invalid email id" });
@@ -582,7 +584,7 @@ const userDetails = async (req: Request, res: Response) => {
 
 export {
     signUp,
-    generateOtp,
+    resendOtp,
     loginUser,
     loginByGoogle,
     verifyPhoneNumber,

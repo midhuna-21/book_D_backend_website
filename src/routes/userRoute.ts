@@ -1,6 +1,6 @@
 import {
     signUp,
-    generateOtp,
+    resendOtp,
     loginUser,
     verifyPhoneNumber,
     verifyOtp,
@@ -72,7 +72,7 @@ const userRouter = express.Router();
 
 userRouter.post("/sign-up", signUp);
 
-userRouter.post("/otp-generate", generateOtp);
+userRouter.post("/otp-generate", resendOtp);
 
 userRouter.post("/login", loginUser);
 
