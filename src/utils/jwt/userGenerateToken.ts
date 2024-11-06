@@ -7,7 +7,7 @@ interface UserTokenPayload {
     role: string;
 }
 
-const userGenerateTokens = (
+const generateUserTokens = (
     res: Response,
     payload: UserTokenPayload
 ): { accessToken: string; refreshToken: string } => {
@@ -39,4 +39,4 @@ const userGenerateTokens = (
     return { accessToken, refreshToken };
 };
 
-export { userGenerateTokens };
+export { generateUserTokens };

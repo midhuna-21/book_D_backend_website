@@ -5,6 +5,7 @@ const bookModel_1 = require("../../model/bookModel");
 const genresModel_1 = require("../../model/genresModel");
 const orderModel_1 = require("../../model/orderModel");
 const walletRepository_1 = require("../wallet/walletRepository");
+const userModel_1 = require("../../model/userModel");
 const walletRepository = new walletRepository_1.WalletRepository();
 class BookRepository {
     async findUpdateBookQuantity(bookId, quantity) {
@@ -63,38 +64,60 @@ class BookRepository {
     }
     async updateBookRent(bookRentData, bookId) {
         try {
-            const rentBookToUpdate = await bookModel_1.books.findById({ _id: bookId });
+            const rentBookToUpdate = await bookModel_1.books.findById({
+                _id: bookId,
+            });
             if (!rentBookToUpdate) {
                 console.log("Error finding the renting book to update:");
                 return null;
             }
             else {
-                return bookModel_1.books.findByIdAndUpdate({ _id: bookId }, {
-                    bookTitle: bookRentData.bookTitle || rentBookToUpdate.bookTitle,
-                    description: bookRentData.description || rentBookToUpdate.description,
+                return bookModel_1.books
+                    .findByIdAndUpdate({ _id: bookId }, {
+                    bookTitle: bookRentData.bookTitle ||
+                        rentBookToUpdate.bookTitle,
+                    description: bookRentData.description ||
+                        rentBookToUpdate.description,
                     author: bookRentData.author || rentBookToUpdate.author,
-                    publisher: bookRentData.publisher || rentBookToUpdate.publisher,
-                    publishedYear: bookRentData.publishedYear || rentBookToUpdate.publishedYear,
+                    publisher: bookRentData.publisher ||
+                        rentBookToUpdate.publisher,
+                    publishedYear: bookRentData.publishedYear ||
+                        rentBookToUpdate.publishedYear,
                     genre: bookRentData.genre || rentBookToUpdate.genre,
                     images: bookRentData.images || rentBookToUpdate.images,
-                    rentalFee: bookRentData.rentalFee || rentBookToUpdate.rentalFee,
-                    extraFee: bookRentData.extraFee || rentBookToUpdate.extraFee,
+                    rentalFee: bookRentData.rentalFee ||
+                        rentBookToUpdate.rentalFee,
+                    extraFee: bookRentData.extraFee ||
+                        rentBookToUpdate.extraFee,
                     address: {
-                        street: bookRentData.address?.street || rentBookToUpdate.address?.street,
-                        city: bookRentData.address?.city || rentBookToUpdate.address?.city,
-                        district: bookRentData.address?.district || rentBookToUpdate.address?.district,
-                        state: bookRentData.address?.state || rentBookToUpdate.address?.state,
-                        pincode: bookRentData.address?.pincode || rentBookToUpdate.address?.pincode,
+                        street: bookRentData.address?.street ||
+                            rentBookToUpdate.address?.street,
+                        city: bookRentData.address?.city ||
+                            rentBookToUpdate.address?.city,
+                        district: bookRentData.address?.district ||
+                            rentBookToUpdate.address?.district,
+                        state: bookRentData.address?.state ||
+                            rentBookToUpdate.address?.state,
+                        pincode: bookRentData.address?.pincode ||
+                            rentBookToUpdate.address?.pincode,
                     },
                     isRented: true,
-                    quantity: bookRentData.quantity || rentBookToUpdate.quantity,
-                    maxDistance: bookRentData.maxDistance || rentBookToUpdate.maxDistance,
-                    maxDays: bookRentData.maxDays || rentBookToUpdate.maxDays,
-                    minDays: bookRentData.minDays || rentBookToUpdate.minDays,
-                    lenderId: bookRentData.lenderId || rentBookToUpdate.lenderId,
-                    latitude: bookRentData.latitude || rentBookToUpdate.latitude,
-                    longitude: bookRentData.longitude || rentBookToUpdate.longitude,
-                }, { new: true }).exec();
+                    quantity: bookRentData.quantity ||
+                        rentBookToUpdate.quantity,
+                    maxDistance: bookRentData.maxDistance ||
+                        rentBookToUpdate.maxDistance,
+                    maxDays: bookRentData.maxDays ||
+                        rentBookToUpdate.maxDays,
+                    minDays: bookRentData.minDays ||
+                        rentBookToUpdate.minDays,
+                    lenderId: bookRentData.lenderId ||
+                        rentBookToUpdate.lenderId,
+                    latitude: bookRentData.latitude ||
+                        rentBookToUpdate.latitude,
+                    longitude: bookRentData.longitude ||
+                        rentBookToUpdate.longitude,
+                }, { new: true })
+                    .exec();
             }
         }
         catch (error) {
@@ -104,8 +127,7 @@ class BookRepository {
     }
     async findAllBooks() {
         try {
-            const bookies = await bookModel_1.books.find().sort({ updatedAt: -1 });
-            return bookies;
+            return await bookModel_1.books.find().sort({ updatedAt: -1 });
         }
         catch (error) {
             console.log("Error findAllGenres:", error);
@@ -122,15 +144,15 @@ class BookRepository {
             throw error;
         }
     }
-    async findAllGenres(userId) {
+    async findGenresWithAvailableBooks(userId) {
         try {
             const allBooks = await bookModel_1.books.find({ lenderId: { $ne: userId } });
             const allGenres = await genresModel_1.genres.find();
-            const genresWithBooks = allGenres.filter(genre => allBooks.some(book => book.genre === genre.genreName));
+            const genresWithBooks = allGenres.filter((genre) => allBooks.some((book) => book.genre === genre.genreName));
             return genresWithBooks;
         }
         catch (error) {
-            console.log("Error findAllGenres:", error);
+            console.log("Error findGenresWithAvailableBooks:", error);
             throw error;
         }
     }
@@ -186,11 +208,12 @@ class BookRepository {
                 lenderId: data.lenderId,
                 isPaid: true,
             }).save();
-            const populatedOrder = await orderModel_1.orders.findById(order._id)
-                .populate('cartId')
-                .populate('bookId')
-                .populate('userId')
-                .populate('lenderId')
+            const populatedOrder = await orderModel_1.orders
+                .findById(order._id)
+                .populate("cartId")
+                .populate("bookId")
+                .populate("userId")
+                .populate("lenderId")
                 .exec();
             return populatedOrder;
         }
@@ -204,10 +227,10 @@ class BookRepository {
             const existingOrder = await orderModel_1.orders.findOne({
                 userId: userId,
                 bookId: bookId,
-                isSuccessfull: false
+                isSuccessfull: false,
             });
             if (!existingOrder) {
-                console.log('Order is already successful or does not exist.');
+                console.log("Order is already successful or does not exist.");
                 return null;
             }
             const order = await orderModel_1.orders
@@ -228,8 +251,7 @@ class BookRepository {
     }
     async genreMatchedBooks(genreName) {
         try {
-            const allBooks = await bookModel_1.books
-                .find({ genre: genreName });
+            const allBooks = await bookModel_1.books.find({ genre: genreName });
             return allBooks;
         }
         catch (error) {
@@ -248,22 +270,6 @@ class BookRepository {
         }
         catch (error) {
             console.log("Error findOrderToShowSuccess:", error);
-            throw error;
-        }
-    }
-    async findOrders(userId) {
-        try {
-            const order = await orderModel_1.orders
-                .find({ userId: userId })
-                .populate("bookId")
-                .populate("userId")
-                .populate("cartId")
-                .populate("lenderId")
-                .sort({ createdAt: -1 });
-            return order;
-        }
-        catch (error) {
-            console.log("Error findOrders:", error);
             throw error;
         }
     }
@@ -316,13 +322,17 @@ class BookRepository {
     }
     async findUpdateOrderStatusRenter(selectedOrderId, bookStatus) {
         try {
-            const orderDetails = await orderModel_1.orders.findById({ _id: selectedOrderId }).populate('userId').populate('lenderId').populate({ path: 'cartId', select: 'totalRentalPrice  ' });
+            const orderDetails = await orderModel_1.orders
+                .findById({ _id: selectedOrderId })
+                .populate("userId")
+                .populate("lenderId")
+                .populate({ path: "cartId", select: "totalRentalPrice  " });
             if (bookStatus == "not_returned") {
                 return await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, {
                     $set: {
                         bookStatusFromRenter: `${bookStatus}`,
                         statusUpdateRenterDate: new Date(),
-                    }
+                    },
                 }, { new: true });
             }
             else if (bookStatus == "completed") {
@@ -331,7 +341,7 @@ class BookRepository {
                         bookStatusFromRenter: `${bookStatus}`,
                         bookStatusFromLender: `${bookStatus}`,
                         statusUpdateRenterDate: new Date(),
-                    }
+                    },
                 }, { new: true });
             }
             const order = await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, { bookStatusFromRenter: bookStatus }, { new: true });
@@ -344,13 +354,17 @@ class BookRepository {
     }
     async findUpdateOrderStatusLender(selectedOrderId, bookStatus) {
         try {
-            const orderDetails = await orderModel_1.orders.findById({ _id: selectedOrderId }).populate('userId').populate('lenderId').populate({ path: 'cartId', select: 'totalRentalPrice  ' });
+            const orderDetails = await orderModel_1.orders
+                .findById({ _id: selectedOrderId })
+                .populate("userId")
+                .populate("lenderId")
+                .populate({ path: "cartId", select: "totalRentalPrice  " });
             if (bookStatus == "not_returned") {
                 return await orderModel_1.orders.findByIdAndUpdate({ _id: selectedOrderId }, {
                     $set: {
                         bookStatusFromLender: `${bookStatus}`,
                         statusUpdateRenterDate: new Date(),
-                    }
+                    },
                 }, { new: true });
             }
             else if (bookStatus == "completed") {
@@ -358,7 +372,7 @@ class BookRepository {
                     $set: {
                         bookStatusFromLender: `${bookStatus}`,
                         statusUpdateRenterDate: new Date(),
-                    }
+                    },
                 }, { new: true });
                 if (updatedOrderCompleted) {
                     await walletRepository.findWalletPaymentTransfer(selectedOrderId);
@@ -371,6 +385,27 @@ class BookRepository {
         }
         catch (error) {
             console.log("Error findUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+    async findAvailableBooksForRent(userId) {
+        try {
+            const allBooks = await bookModel_1.books.find({
+                lenderId: { $ne: userId },
+                quantity: { $gt: 0 },
+            }).sort({ updatedAt: -1 })
+                .exec();
+            const availableBooks = [];
+            for (const book of allBooks) {
+                const lender = await userModel_1.user.findById({ _id: book.lenderId });
+                if (lender && !lender.isBlocked) {
+                    availableBooks.push(book);
+                }
+            }
+            return availableBooks;
+        }
+        catch (error) {
+            console.log("Error getAvailableBooksForRent:", error);
             throw error;
         }
     }

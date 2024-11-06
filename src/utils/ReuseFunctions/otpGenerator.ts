@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 import config from "../../config/config";
 
-export const otpGenerate = async (email: string) => {
+export const generateOtp = async (email: string) => {
+    let otp = Math.floor(1000 + Math.random() * 9000);
+    try{
     const transporter = nodemailer.createTransport({
         service: "gmail",
         host: "smtp.gmail.com",
@@ -13,7 +15,6 @@ export const otpGenerate = async (email: string) => {
         },
     });
 
-    let otp = Math.floor(1000 + Math.random() * 9000);
 
     const info = await transporter.sendMail({
         from: '"Book.D" <krishnamidhuna850@gmail.com>',
@@ -24,5 +25,8 @@ export const otpGenerate = async (email: string) => {
       <p>Your OTP for sign up Book.D <strong>${otp}</strong></p>`,
     });
 
+} catch (error: any) {
+    console.error("Failed to send OTP email:", error.message);
+}
     return otp;
 };

@@ -1,11 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteGenre = exports.orderDetail = exports.allOrders = exports.totalBooks = exports.totalRentedBooks = exports.unBlockUser = exports.walletTransactions = exports.blockUser = exports.updateGenre = exports.genresList = exports.getUsersList = exports.genre = exports.addGenre = exports.adminLogin = void 0;
+exports.removeGenre = exports.fetchRentalOrderDetails = exports.fetchRentalOrders = exports.fetchBooks = exports.fetchLentBooks = exports.fetchWalletTransactions = exports.unblockUserAccount = exports.blockUserAccount = exports.updateGenre = exports.fetchGenres = exports.fetchUsers = exports.fetchGenreById = exports.createGenre = exports.authenticateAdmin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
 const index_1 = require("../services/index");
 const index_2 = require("../services/index");
-const addGenre = async (req, res) => {
+const authenticateAdmin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        let admin = await index_1.adminService.getAdminByEmail(email);
+        if (!admin || !admin.password) {
+            return res
+                .status(400)
+                .json({ message: "Invalid email or password" });
+        }
+        const isPasswordValid = await (0, passwordValidation_1.comparePassword)(password, admin.password);
+        if (!isPasswordValid) {
+            return res
+                .status(401)
+                .json({ message: "Invalid email or password" });
+        }
+        const adminId = admin._id.toString();
+        const { accessToken, refreshToken } = (0, adminGenerateToken_1.generateAdminTokens)(res, {
+            adminId,
+            role: "admin",
+        });
+        const wallet = await index_2.walletService.getCreateWalletAdmin(adminId);
+        return res.status(200).json({ admin, accessToken, refreshToken });
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+exports.authenticateAdmin = authenticateAdmin;
+const createGenre = async (req, res) => {
     try {
         const { genreName } = req.body;
         const existGenre = await index_1.adminService.getGenreName(genreName);
@@ -31,37 +60,8 @@ const addGenre = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.addGenre = addGenre;
-const adminLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        let admin = await index_1.adminService.getAdminByEmail(email);
-        if (!admin || !admin.password) {
-            return res
-                .status(400)
-                .json({ message: "Invalid email or password" });
-        }
-        const isPasswordValid = await (0, passwordValidation_1.comparePassword)(password, admin.password);
-        if (!isPasswordValid) {
-            return res
-                .status(401)
-                .json({ message: "Invalid email or password" });
-        }
-        const adminId = admin._id.toString();
-        const { accessToken, refreshToken } = (0, adminGenerateToken_1.adminGenerateTokens)(res, {
-            adminId,
-            role: "admin",
-        });
-        const wallet = await index_2.walletService.getCreateWalletAdmin(adminId);
-        return res.status(200).json({ admin, accessToken, refreshToken });
-    }
-    catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-exports.adminLogin = adminLogin;
-const getUsersList = async (req, res) => {
+exports.createGenre = createGenre;
+const fetchUsers = async (req, res) => {
     try {
         const users = await index_1.adminService.getAllUsers();
         return res.status(200).json(users);
@@ -71,8 +71,8 @@ const getUsersList = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.getUsersList = getUsersList;
-const walletTransactions = async (req, res) => {
+exports.fetchUsers = fetchUsers;
+const fetchWalletTransactions = async (req, res) => {
     try {
         const wallet = await index_1.adminService.getWalletTransactionsAdmin();
         return res.status(200).json(wallet);
@@ -82,8 +82,8 @@ const walletTransactions = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.walletTransactions = walletTransactions;
-const totalRentedBooks = async (req, res) => {
+exports.fetchWalletTransactions = fetchWalletTransactions;
+const fetchLentBooks = async (req, res) => {
     try {
         const users = await index_1.adminService.getAllTotalRentedBooks();
         return res.status(200).json(users);
@@ -93,8 +93,8 @@ const totalRentedBooks = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.totalRentedBooks = totalRentedBooks;
-const totalBooks = async (req, res) => {
+exports.fetchLentBooks = fetchLentBooks;
+const fetchBooks = async (req, res) => {
     try {
         const users = await index_1.adminService.getAllTotalBooks();
         return res.status(200).json(users);
@@ -104,8 +104,8 @@ const totalBooks = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.totalBooks = totalBooks;
-const blockUser = async (req, res) => {
+exports.fetchBooks = fetchBooks;
+const blockUserAccount = async (req, res) => {
     try {
         const { _id } = req.body;
         const user = await index_1.adminService.getBlockUser(_id);
@@ -116,8 +116,8 @@ const blockUser = async (req, res) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.blockUser = blockUser;
-const unBlockUser = async (req, res) => {
+exports.blockUserAccount = blockUserAccount;
+const unblockUserAccount = async (req, res) => {
     try {
         const { _id } = req.body;
         const user = await index_1.adminService.getUnblockUser(_id);
@@ -128,8 +128,8 @@ const unBlockUser = async (req, res) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.unBlockUser = unBlockUser;
-const allOrders = async (req, res) => {
+exports.unblockUserAccount = unblockUserAccount;
+const fetchRentalOrders = async (req, res) => {
     try {
         const orders = await index_1.adminService.getAllOrders();
         return res.status(200).json(orders);
@@ -139,8 +139,8 @@ const allOrders = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.allOrders = allOrders;
-const orderDetail = async (req, res) => {
+exports.fetchRentalOrders = fetchRentalOrders;
+const fetchRentalOrderDetails = async (req, res) => {
     try {
         const { orderId } = req.params;
         if (!orderId) {
@@ -154,8 +154,8 @@ const orderDetail = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.orderDetail = orderDetail;
-const genresList = async (req, res) => {
+exports.fetchRentalOrderDetails = fetchRentalOrderDetails;
+const fetchGenres = async (req, res) => {
     try {
         const genres = await index_1.adminService.getAllGenres();
         return res.status(200).json(genres);
@@ -165,8 +165,8 @@ const genresList = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.genresList = genresList;
-const genre = async (req, res) => {
+exports.fetchGenres = fetchGenres;
+const fetchGenreById = async (req, res) => {
     try {
         const genreId = req.params.genreId;
         const genre = await index_1.adminService.getGenre(genreId);
@@ -177,7 +177,7 @@ const genre = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.genre = genre;
+exports.fetchGenreById = fetchGenreById;
 const updateGenre = async (req, res) => {
     try {
         const genreId = req.params.genreId;
@@ -206,7 +206,7 @@ const updateGenre = async (req, res) => {
     }
 };
 exports.updateGenre = updateGenre;
-const deleteGenre = async (req, res) => {
+const removeGenre = async (req, res) => {
     try {
         const { genreId } = req.body;
         const genre = await index_1.adminService.getDeleteGenre(genreId);
@@ -217,5 +217,5 @@ const deleteGenre = async (req, res) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.deleteGenre = deleteGenre;
+exports.removeGenre = removeGenre;
 //# sourceMappingURL=adminController.js.map

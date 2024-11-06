@@ -2,6 +2,7 @@ import { Cart } from "../../interfaces/data";
 import { notification } from "../../model/notificationModel";
 import { cart, ICart } from "../../model/cartModel";
 import { ICartRepository } from "./cartRepositoryInterface";
+import {books} from '../../model/bookModel'
 
 export class CartRepository implements ICartRepository {
     async findCreatCart(data: Cart): Promise<ICart | null> {
@@ -23,37 +24,20 @@ export class CartRepository implements ICartRepository {
         }
     }
 
-    async findCheckRequest(
-        userId: string,
-        bookId: string
-    ): Promise<ICart | null> {
-        try {
-            const existingRequest = await cart.findOne({
-                userId: userId,
-                bookId: bookId,
-            });
-
-            return existingRequest;
-        } catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
-    }
-
-    async findCheckAccept(userId: string, bookId: string): Promise<boolean> {
-        try {
-            const existingAccepted = await notification.find({
-                userId: userId,
-                bookId: bookId,
-                type: "Accepted",
-            });
-            return existingAccepted.length > 0;
-        } catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
-    }
-    async findCartById(cartId: string):Promise<ICart | null> {
+    // async findCheckAccept(userId: string, bookId: string): Promise<ICart | null> {
+    //     try {
+    //         const existingAccepted = await cart.find({
+    //             userId: userId,
+    //             bookId: bookId,
+    //             types: "accepted",
+    //         });
+    //         return existingAccepted
+    //     } catch (error) {
+    //         console.log("Error getCheckRequest:", error);
+    //         throw error;
+    //     }
+    // }
+    async findCartById(cartId: string): Promise<ICart | null> {
         try {
             const cartItem = await cart.findById({ _id: cartId });
             return cartItem;
@@ -63,20 +47,33 @@ export class CartRepository implements ICartRepository {
         }
     }
 
-    async findUpdateCart(cartId: string, types: string):Promise<ICart | null> {
+    async findUpdateCart(cartId: string, types: string): Promise<ICart | null> {
         try {
             const updateCart = await cart.findByIdAndUpdate(
                 { _id: cartId },
                 { types: types },
                 { new: true }
             );
+           if(updateCart?.types === 'accepted'){
+            const {bookId,quantity} = updateCart
+            console.log(bookId,'bookid')
+            console.log(quantity,'quanitu')
+            const updateQuantity = quantity!
+            console.log(updateQuantity,'updateQuantity')
+             const b = await books.findByIdAndUpdate(
+                { _id: bookId },
+                { $inc: { quantity: -updateQuantity } }, 
+                { new: true }
+            );
+          
+           }
             return updateCart;
         } catch (error) {
             console.log("Error UpdateCart:", error);
             throw error;
         }
     }
-    async findCartDetails(cartId: string):Promise<ICart | null> {
+    async findCartDetails(cartId: string): Promise<ICart | null> {
         try {
             const details = await cart
                 .findById({ _id: cartId })
@@ -89,7 +86,7 @@ export class CartRepository implements ICartRepository {
         }
     }
 
-    async findUpdateIsPaid(cartId: string):Promise<ICart | null> {
+    async findUpdateIsPaid(cartId: string): Promise<ICart | null> {
         try {
             const update = await cart.findByIdAndUpdate(
                 { _id: cartId },

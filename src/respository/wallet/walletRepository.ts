@@ -1,11 +1,11 @@
 import { IWallet, wallet } from "../../model/walletModel";
 import { orders } from "../../model/orderModel";
 import { ICart } from "../../model/cartModel";
-import { bookDWallet, IBookWalletTransaction } from "../../model/bookDWallet";
+import { bookDWallet } from "../../model/bookDWallet";
 import { IWalletRepository } from "./walletRepositoryInterface";
 
 export class WalletRepository implements IWalletRepository {
-    async findWalletTransactions(userId: string):Promise<IWallet | null> {
+    async findWalletTransactions(userId: string): Promise<IWallet | null> {
         try {
             const walletTransactions = await wallet
                 .findOne({ userId: userId })
@@ -24,7 +24,7 @@ export class WalletRepository implements IWalletRepository {
         }
     }
 
-    async findWalletPaymentTransfer(orderId: string):Promise<any>{
+    async findWalletPaymentTransfer(orderId: string): Promise<any> {
         try {
             const order = await orders
                 .findById({ _id: orderId })
@@ -33,9 +33,9 @@ export class WalletRepository implements IWalletRepository {
             if (order) {
                 const cart = order?.cartId as ICart;
 
-                const totalRentalPrice = cart.totalRentalPrice;
-                const depositAmount = cart.total_deposit_amount;
-                const totalAmount = cart.totalAmount;
+                const totalRentalPrice = cart.totalRentalPrice!;
+                const depositAmount = cart.total_deposit_amount!;
+                const totalAmount = cart.totalAmount!;
                 let lenderWallet = await wallet.findOne({
                     userId: order?.lenderId,
                 });
@@ -102,20 +102,19 @@ export class WalletRepository implements IWalletRepository {
                         return await adminWallet.save();
                     } else {
                         console.log(`Admin wallet not found.`);
-                        return null; 
+                        return null;
                     }
                 } else {
                     console.log(`Order not found.`);
-                    return null; 
+                    return null;
                 }
-        
             }
         } catch (error) {
             throw error;
         }
     }
 
-    async findWalletByAdminId(adminId: string):Promise<any> {
+    async findWalletByAdminId(adminId: string): Promise<any> {
         try {
             const walletTransactions = await bookDWallet
                 .findOne({ adminId: adminId })
@@ -134,7 +133,7 @@ export class WalletRepository implements IWalletRepository {
         }
     }
 
-    async findCreateWalletAdmin(adminId: string):Promise<any> {
+    async findCreateWalletAdmin(adminId: string): Promise<any> {
         try {
             let wallet = await bookDWallet.findOne({ adminId: adminId });
 
@@ -159,7 +158,7 @@ export class WalletRepository implements IWalletRepository {
         lenderId: string,
         totalAmount: number,
         userId: string
-    ):Promise<any> {
+    ): Promise<any> {
         try {
             const adminWallet = await bookDWallet.findOne({});
 

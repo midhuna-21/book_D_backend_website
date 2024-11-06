@@ -23,7 +23,7 @@ const cartSchema = new mongoose_1.default.Schema({
     },
     types: {
         type: String,
-        enum: ["requested", "rejected", "accepted"],
+        enum: ["requested", "rejected", "accepted", "timed-out", "cancelled"],
         required: true,
     },
     totalAmount: {
@@ -54,7 +54,17 @@ const cartSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false,
     },
+    acceptedDate: {
+        type: Date,
+        default: null,
+    },
 }, { timestamps: true });
+cartSchema.pre("save", function (next) {
+    if (this.isModified("types") && this.types === "accepted" && !this.acceptedDate) {
+        this.acceptedDate = new Date();
+    }
+    next();
+});
 const cart = mongoose_1.default.model("cart", cartSchema);
 exports.cart = cart;
 //# sourceMappingURL=cartModel.js.map

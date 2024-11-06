@@ -1,13 +1,13 @@
 import { INotification } from "../../model/notificationModel";
 import { Notification } from "../../interfaces/data";
 import { INotificationService } from "./notificationServiceInterface";
-import {INotificationRepository} from '../../respository/notification/notificationRepositoryInterface'
+import { INotificationRepository } from "../../respository/notification/notificationRepositoryInterface";
 
 export class NotificationService implements INotificationService {
     private notificationRepository: INotificationRepository;
-  
+
     constructor(notificationRepository: INotificationRepository) {
-      this.notificationRepository = notificationRepository;
+        this.notificationRepository = notificationRepository;
     }
     async getCreateNotification(
         notificationId: string,
@@ -26,14 +26,19 @@ export class NotificationService implements INotificationService {
 
     async getNotificationsByUserId(userId: string): Promise<INotification[]> {
         try {
-            return await this.notificationRepository.findNotificationsByUserId(userId);
+            return await this.notificationRepository.findNotificationsByUserId(
+                userId
+            );
         } catch (error) {
             console.log("Error getNotificationsByUserId:", error);
             throw error;
         }
     }
 
-    async getUpdateNotificationType(notificationId: string, type: string):Promise<INotification | null> {
+    async getUpdateNotificationType(
+        notificationId: string,
+        type: string
+    ): Promise<INotification | null> {
         try {
             return await this.notificationRepository.findUpdateNotificationType(
                 notificationId,
@@ -45,18 +50,24 @@ export class NotificationService implements INotificationService {
         }
     }
 
-    async getUnReadNotifications(userId: string):Promise<number> {
+    async getUnReadNotifications(userId: string): Promise<number> {
         try {
-            return await this.notificationRepository.findUnReadNotifications(userId);
+            return await this.notificationRepository.findUnReadNotifications(
+                userId
+            );
         } catch (error) {
             console.log("Error getUnReadNotifications:", error);
             throw error;
         }
     }
 
-    async getUpdateNotifications(userId: string): Promise<INotification[] | null>{
+    async getUpdateNotificationsIsread(
+        userId: string
+    ): Promise<INotification[] | null> {
         try {
-            return await this.notificationRepository.findUpdateNotifications(userId);
+            return await this.notificationRepository.findUpdateNotificationsIsread(
+                userId
+            );
         } catch (error) {
             console.log("Error getUpdateNotifications:", error);
             throw error;

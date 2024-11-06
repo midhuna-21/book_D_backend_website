@@ -30,13 +30,10 @@ const transactionSchema = new mongoose_1.Schema({
         type: String,
         enum: ["credit", "debit"],
     },
-    total_amount: { type: Number, },
+    total_amount: { type: Number },
     source: {
         type: String,
-        enum: [
-            "payment_to_lender",
-            "refund_to_user",
-        ],
+        enum: ["payment_to_lender", "refund_to_user"],
     },
     orderId: { type: mongoose_1.Schema.Types.ObjectId, ref: "orders" },
     createdAt: { type: Date, default: Date.now },

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCart = exports.saveCart = exports.checkAccept = exports.checkUserSentRequest = void 0;
+exports.updateCartItem = exports.addItemToCart = void 0;
 const index_1 = require("../services/index");
-const saveCart = async (req, res) => {
+const addItemToCart = async (req, res) => {
     try {
         const { userId, ownerId, bookId, totalDays, quantity, totalAmount, totalDepositAmount, totalRentalPrice, types, } = req.body;
         if (!userId || !ownerId || !bookId) {
@@ -29,46 +29,25 @@ const saveCart = async (req, res) => {
             .json({ message: "Internal server error at saveRequest" });
     }
 };
-exports.saveCart = saveCart;
-const checkAccept = async (req, res) => {
-    try {
-        const { userId, bookId } = req.params;
-        if (!userId || !bookId) {
-            return res
-                .status(400)
-                .json({ message: "User ID or Book ID not found in request" });
-        }
-        const isAccepted = await index_1.cartService.getCheckAccepted(userId, bookId);
-        return res.status(200).json({ isAccepted });
-    }
-    catch (error) {
-        console.log("Error checkAccept:", error);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at checkAccept" });
-    }
-};
-exports.checkAccept = checkAccept;
-const checkUserSentRequest = async (req, res) => {
-    try {
-        const { userId, bookId } = req.params;
-        if (!userId || !bookId) {
-            return res
-                .status(400)
-                .json({ message: "User ID or Book ID not found in request" });
-        }
-        const isRequested = await index_1.cartService.getCheckRequest(userId, bookId);
-        return res.status(200).json({ isRequested });
-    }
-    catch (error) {
-        console.log("Error checkUserSent:", error);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at checkUserSent" });
-    }
-};
-exports.checkUserSentRequest = checkUserSentRequest;
-const updateCart = async (req, res) => {
+exports.addItemToCart = addItemToCart;
+// const checkRentalAcceptance = async (req: Request, res: Response) => {
+//     try {
+//         const { userId, bookId } = req.params;
+//         if (!userId || !bookId) {
+//             return res
+//                 .status(400)
+//                 .json({ message: "User ID or Book ID not found in request" });
+//         }
+//         const isAccepted = await cartService.getCheckAccepted(userId, bookId);
+//         return res.status(200).json({ isAccepted });
+//     } catch (error: any) {
+//         console.log("Error checkAccept:", error);
+//         return res
+//             .status(500)
+//             .json({ message: "Internal server error at checkAccept" });
+//     }
+// };
+const updateCartItem = async (req, res) => {
     try {
         const { cartId } = req.params;
         const { types } = req.body;
@@ -89,5 +68,5 @@ const updateCart = async (req, res) => {
             .json({ message: "Internal server error at saveRequest" });
     }
 };
-exports.updateCart = updateCart;
+exports.updateCartItem = updateCartItem;
 //# sourceMappingURL=cartController.js.map

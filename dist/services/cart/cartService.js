@@ -5,15 +5,6 @@ class CartService {
     constructor(cartRepository) {
         this.cartRepository = cartRepository;
     }
-    async getCheckRequest(userId, bookId) {
-        try {
-            return await this.cartRepository.findCheckRequest(userId, bookId);
-        }
-        catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
-    }
     async getCreateCart(data) {
         try {
             return await this.cartRepository.findCreatCart(data);
@@ -23,15 +14,14 @@ class CartService {
             throw error;
         }
     }
-    async getCheckAccepted(userId, bookId) {
-        try {
-            return await this.cartRepository.findCheckAccept(userId, bookId);
-        }
-        catch (error) {
-            console.log("Error getUpdateProfileImage:", error);
-            throw error;
-        }
-    }
+    // async getCheckAccepted(userId: string, bookId: string): Promise<ICart | null> {
+    //     try {
+    //         return await this.cartRepository.findCheckAccept(userId, bookId);
+    //     } catch (error) {
+    //         console.log("Error getUpdateProfileImage:", error);
+    //         throw error;
+    //     }
+    // }
     async getCartById(cartId) {
         try {
             return await this.cartRepository.findCartById(cartId);

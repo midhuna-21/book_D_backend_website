@@ -12,7 +12,7 @@ interface IOrder extends Document {
     bookStatusFromLender: string;
     statusUpdateLenderDate?: Date;
     statusUpdateRenterDate?: Date;
-    isAmountCredited?:boolean;
+    isAmountCredited?: boolean;
     reason: string;
 }
 
@@ -37,8 +37,8 @@ const orderSchema = new Schema<IOrder>(
             default: "not_reached",
         },
         isAmountCredited: {
-          type: Boolean,
-          default: false, 
+            type: Boolean,
+            default: false,
         },
         bookStatusFromLender: {
             type: String,
@@ -54,7 +54,7 @@ const orderSchema = new Schema<IOrder>(
         statusUpdateLenderDate: { type: Date },
         statusUpdateRenterDate: { type: Schema.Types.Date },
     },
-    
+
     { timestamps: true }
 );
 

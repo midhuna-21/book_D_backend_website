@@ -7,13 +7,37 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const orderModel_1 = require("../../model/orderModel");
 const notificationModel_1 = require("../../model/notificationModel");
 const walletModel_1 = require("../../model/walletModel");
+const cartModel_1 = require("../../model/cartModel");
 const bookDWallet_1 = require("../../model/bookDWallet");
+const bookModel_1 = require("../../model/bookModel");
 node_cron_1.default.schedule("* * * * *", async () => {
     try {
+        const acceptedCarts = await cartModel_1.cart.find({
+            types: "accepted",
+            isPaid: false,
+            acceptedDate: { $ne: null },
+        });
+        for (const cartItem of acceptedCarts) {
+            const currentTime = new Date();
+            const acceptedDate = new Date(cartItem.acceptedDate);
+            const timeDifference = currentTime.getTime() - acceptedDate.getTime();
+            const timeDifferenceInHours = timeDifference / (1000 * 3600);
+            if (timeDifferenceInHours >= 24) {
+                const book = await bookModel_1.books.findOne({ _id: cartItem.bookId });
+                if (book) {
+                    book.quantity += cartItem.quantity;
+                    await book.save();
+                    cartItem.quantity = 0;
+                    cartItem.types = "timed-out";
+                    await cartItem.save();
+                }
+            }
+        }
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         const overdueOrders = await orderModel_1.orders.find({
-            bookStatusFromRenter: "not_returned", isAmountCredited: false,
+            bookStatusFromRenter: "not_returned",
+            isAmountCredited: false,
             statusUpdateRenterDate: { $lte: tenDaysAgo },
         });
         if (overdueOrders.length > 0) {
@@ -26,7 +50,6 @@ node_cron_1.default.schedule("* * * * *", async () => {
                     userId: order?.lenderId,
                 });
                 if (!lenderWallet) {
-                    console.log(`Creating a new wallet for user ${order?.lenderId}`);
                     lenderWallet = new walletModel_1.wallet({
                         userId: order?.lenderId,
                         balance: 0,
@@ -55,13 +78,13 @@ node_cron_1.default.schedule("* * * * *", async () => {
                     });
                     return await adminWallet.save();
                 }
-                console.log(`Refunded full amount ${cart.totalAmount} to user ${order?.userId}'s wallet for cancelled order ${order._id}`);
             }
         }
         const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
         const ordersToCancel = await orderModel_1.orders.find({
-            bookStatusFromRenter: "not_reached", isAmountCredited: false,
+            bookStatusFromRenter: "not_reached",
+            isAmountCredited: false,
             createdAt: { $lte: fiveDaysAgo },
         });
         if (ordersToCancel.length > 0) {
@@ -74,7 +97,6 @@ node_cron_1.default.schedule("* * * * *", async () => {
                     userId: order?.userId,
                 });
                 if (!userWallet) {
-                    console.log(`Creating a new wallet for user ${order?.userId}`);
                     userWallet = new walletModel_1.wallet({
                         userId: order?.userId,
                         balance: 0,
@@ -93,6 +115,14 @@ node_cron_1.default.schedule("* * * * *", async () => {
                 await orderModel_1.orders.findByIdAndUpdate(order._id, {
                     $set: { isAmountCredited: true },
                 });
+                const book = await bookModel_1.books.findOne({ _id: cart.bookId });
+                if (book) {
+                    book.quantity += cart.quantity;
+                    await book.save();
+                }
+                cart.quantity = 0;
+                cart.types = "cancelled";
+                await cart.save();
                 const adminWallet = await bookDWallet_1.bookDWallet.findOne({});
                 if (adminWallet) {
                     adminWallet.balance -= cart.totalAmount;
@@ -103,7 +133,6 @@ node_cron_1.default.schedule("* * * * *", async () => {
                     });
                     return await adminWallet.save();
                 }
-                console.log(`Refunded full amount ${cart.totalAmount} to user ${order?.userId}'s wallet for cancelled order ${order._id}`);
             }
         }
         const notificationsToReject = await notificationModel_1.notification.find({

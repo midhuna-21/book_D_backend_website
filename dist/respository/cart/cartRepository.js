@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartRepository = void 0;
-const notificationModel_1 = require("../../model/notificationModel");
 const cartModel_1 = require("../../model/cartModel");
+const bookModel_1 = require("../../model/bookModel");
 class CartRepository {
     async findCreatCart(data) {
         try {
@@ -23,33 +23,19 @@ class CartRepository {
             throw error;
         }
     }
-    async findCheckRequest(userId, bookId) {
-        try {
-            const existingRequest = await cartModel_1.cart.findOne({
-                userId: userId,
-                bookId: bookId,
-            });
-            return existingRequest;
-        }
-        catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
-    }
-    async findCheckAccept(userId, bookId) {
-        try {
-            const existingAccepted = await notificationModel_1.notification.find({
-                userId: userId,
-                bookId: bookId,
-                type: "Accepted",
-            });
-            return existingAccepted.length > 0;
-        }
-        catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
-    }
+    // async findCheckAccept(userId: string, bookId: string): Promise<ICart | null> {
+    //     try {
+    //         const existingAccepted = await cart.find({
+    //             userId: userId,
+    //             bookId: bookId,
+    //             types: "accepted",
+    //         });
+    //         return existingAccepted
+    //     } catch (error) {
+    //         console.log("Error getCheckRequest:", error);
+    //         throw error;
+    //     }
+    // }
     async findCartById(cartId) {
         try {
             const cartItem = await cartModel_1.cart.findById({ _id: cartId });
@@ -63,6 +49,14 @@ class CartRepository {
     async findUpdateCart(cartId, types) {
         try {
             const updateCart = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { types: types }, { new: true });
+            if (updateCart?.types === 'accepted') {
+                const { bookId, quantity } = updateCart;
+                console.log(bookId, 'bookid');
+                console.log(quantity, 'quanitu');
+                const updateQuantity = quantity;
+                console.log(updateQuantity, 'updateQuantity');
+                const b = await bookModel_1.books.findByIdAndUpdate({ _id: bookId }, { $inc: { quantity: -updateQuantity } }, { new: true });
+            }
             return updateCart;
         }
         catch (error) {

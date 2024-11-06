@@ -3,7 +3,7 @@ import { comparePassword } from "../utils/ReuseFunctions/passwordValidation";
 import { IGenre } from "../model/genresModel";
 import { IUser } from "../model/userModel";
 import { Types } from "mongoose";
-import { adminGenerateTokens } from "../utils/jwt/adminGenerateToken";
+import { generateAdminTokens } from "../utils/jwt/adminGenerateToken";
 import { adminService } from "../services/index";
 import { walletService } from "../services/index";
 
@@ -11,7 +11,36 @@ interface CustomMulterFile extends Express.Multer.File {
     location: string;
 }
 
-const addGenre = async (req: Request, res: Response) => {
+const authenticateAdmin = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body;
+        let admin = await adminService.getAdminByEmail(email);
+        if (!admin || !admin.password) {
+            return res
+                .status(400)
+                .json({ message: "Invalid email or password" });
+        }
+        const isPasswordValid = await comparePassword(password, admin.password);
+        if (!isPasswordValid) {
+            return res
+                .status(401)
+                .json({ message: "Invalid email or password" });
+        }
+        const adminId: string = (admin._id as Types.ObjectId).toString();
+        const { accessToken, refreshToken } = generateAdminTokens(res, {
+            adminId,
+            role: "admin",
+        });
+
+        const wallet = await walletService.getCreateWalletAdmin(adminId);
+
+        return res.status(200).json({ admin, accessToken, refreshToken });
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+const createGenre = async (req: Request, res: Response) => {
     try {
         const { genreName } = req.body;
         const existGenre = await adminService.getGenreName(genreName);
@@ -37,37 +66,7 @@ const addGenre = async (req: Request, res: Response) => {
     }
 };
 
-const adminLogin = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
-        let admin = await adminService.getAdminByEmail(email);
-        if (!admin || !admin.password) {
-            return res
-                .status(400)
-                .json({ message: "Invalid email or password" });
-        }
-        const isPasswordValid = await comparePassword(password, admin.password);
-        if (!isPasswordValid) {
-            return res
-                .status(401)
-                .json({ message: "Invalid email or password" });
-        }
-        const adminId: string = (admin._id as Types.ObjectId).toString();
-        const { accessToken, refreshToken } = adminGenerateTokens(res, {
-            adminId,
-            role: "admin",
-        });
-
-        const wallet = await walletService.getCreateWalletAdmin(adminId);
-
-        return res.status(200).json({ admin, accessToken, refreshToken });
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-
-const getUsersList = async (req: Request, res: Response) => {
+const fetchUsers = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllUsers();
         return res.status(200).json(users);
@@ -77,7 +76,7 @@ const getUsersList = async (req: Request, res: Response) => {
     }
 };
 
-const walletTransactions = async (req: Request, res: Response) => {
+const fetchWalletTransactions = async (req: Request, res: Response) => {
     try {
         const wallet = await adminService.getWalletTransactionsAdmin();
         return res.status(200).json(wallet);
@@ -87,7 +86,7 @@ const walletTransactions = async (req: Request, res: Response) => {
     }
 };
 
-const totalRentedBooks = async (req: Request, res: Response) => {
+const fetchLentBooks = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllTotalRentedBooks();
         return res.status(200).json(users);
@@ -96,7 +95,7 @@ const totalRentedBooks = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const totalBooks = async (req: Request, res: Response) => {
+const fetchBooks = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllTotalBooks();
         return res.status(200).json(users);
@@ -105,7 +104,7 @@ const totalBooks = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const blockUser = async (req: Request, res: Response) => {
+const blockUserAccount = async (req: Request, res: Response) => {
     try {
         const { _id } = req.body;
         const user: IUser | null = await adminService.getBlockUser(_id);
@@ -116,7 +115,7 @@ const blockUser = async (req: Request, res: Response) => {
     }
 };
 
-const unBlockUser = async (req: Request, res: Response) => {
+const unblockUserAccount = async (req: Request, res: Response) => {
     try {
         const { _id } = req.body;
         const user: IUser | null = await adminService.getUnblockUser(_id);
@@ -126,7 +125,7 @@ const unBlockUser = async (req: Request, res: Response) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-const allOrders = async (req: Request, res: Response) => {
+const fetchRentalOrders = async (req: Request, res: Response) => {
     try {
         const orders = await adminService.getAllOrders();
         return res.status(200).json(orders);
@@ -136,7 +135,7 @@ const allOrders = async (req: Request, res: Response) => {
     }
 };
 
-const orderDetail = async (req: Request, res: Response) => {
+const fetchRentalOrderDetails = async (req: Request, res: Response) => {
     try {
         const { orderId } = req.params;
         if (!orderId) {
@@ -150,7 +149,7 @@ const orderDetail = async (req: Request, res: Response) => {
     }
 };
 
-const genresList = async (req: Request, res: Response) => {
+const fetchGenres = async (req: Request, res: Response) => {
     try {
         const genres = await adminService.getAllGenres();
         return res.status(200).json(genres);
@@ -159,7 +158,7 @@ const genresList = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const genre = async (req: Request, res: Response) => {
+const fetchGenreById = async (req: Request, res: Response) => {
     try {
         const genreId = req.params.genreId;
         const genre = await adminService.getGenre(genreId);
@@ -195,7 +194,7 @@ const updateGenre = async (req: Request, res: Response) => {
     }
 };
 
-const deleteGenre = async (req: Request, res: Response) => {
+const removeGenre = async (req: Request, res: Response) => {
     try {
         const { genreId } = req.body;
         const genre = await adminService.getDeleteGenre(genreId);
@@ -206,18 +205,18 @@ const deleteGenre = async (req: Request, res: Response) => {
     }
 };
 export {
-    adminLogin,
-    addGenre,
-    genre,
-    getUsersList,
-    genresList,
+    authenticateAdmin,
+    createGenre,
+    fetchGenreById,
+    fetchUsers,
+    fetchGenres,
     updateGenre,
-    blockUser,
-    walletTransactions,
-    unBlockUser,
-    totalRentedBooks,
-    totalBooks,
-    allOrders,
-    orderDetail,
-    deleteGenre,
+    blockUserAccount,
+    unblockUserAccount,
+    fetchWalletTransactions,
+    fetchLentBooks,
+    fetchBooks,
+    fetchRentalOrders,
+    fetchRentalOrderDetails,
+    removeGenre,
 };

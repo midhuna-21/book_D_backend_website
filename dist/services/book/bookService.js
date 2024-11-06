@@ -68,9 +68,9 @@ class BookService {
             throw error;
         }
     }
-    async getAllGenres(userId) {
+    async getGenresWithAvailableBooks(userId) {
         try {
-            return await this.bookRepository.findAllGenres(userId);
+            return await this.bookRepository.findGenresWithAvailableBooks(userId);
         }
         catch (error) {
             console.log("Error getAllGenres:", error);
@@ -96,21 +96,12 @@ class BookService {
             throw error;
         }
     }
-    async getOrders(userId) {
-        try {
-            return await this.bookRepository.findOrders(userId);
-        }
-        catch (error) {
-            console.log("Error getOrders:", error);
-            throw error;
-        }
-    }
     async getRentList(userId) {
         try {
             return await this.bookRepository.findRentList(userId);
         }
         catch (error) {
-            console.log("Error getOrders:", error);
+            console.log("Error getRentList:", error);
             throw error;
         }
     }
@@ -119,7 +110,7 @@ class BookService {
             return await this.bookRepository.findLendList(userId);
         }
         catch (error) {
-            console.log("Error getOrders:", error);
+            console.log("Error getLendList:", error);
             throw error;
         }
     }
@@ -170,8 +161,17 @@ class BookService {
     }
     async getUpdateOrderStatusLender(selectedOrderId, bookStatus) {
         try {
-            const result = await this.bookRepository.findUpdateOrderStatusLender(selectedOrderId, bookStatus);
+            const result = (await this.bookRepository.findUpdateOrderStatusLender(selectedOrderId, bookStatus));
             return result || null;
+        }
+        catch (error) {
+            console.log("Error getUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+    async getAvailableBooksForRent(userId) {
+        try {
+            return await this.bookRepository.findAvailableBooksForRent(userId);
         }
         catch (error) {
             console.log("Error getUpdateOrderStatus:", error);

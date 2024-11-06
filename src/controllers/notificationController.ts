@@ -25,7 +25,10 @@ const sendNotification = async (req: Request, res: Response) => {
     }
 };
 
-const notifications = async (req: AuthenticatedRequest, res: Response) => {
+const fetchUserNotifications = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const userId: string = req.userId!;
         if (!userId) {
@@ -44,7 +47,7 @@ const notifications = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const unReadNotifications = async (req: Request, res: Response) => {
+const fetchUnreadNotifications = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         if (!userId) {
@@ -62,13 +65,16 @@ const unReadNotifications = async (req: Request, res: Response) => {
     }
 };
 
-const updateNotification = async (req: AuthenticatedRequest, res: Response) => {
+const updateUserNotificationStatusIsRead = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUpdateNotifications(
+        const notifications = await notificationService.getUpdateNotificationsIsread(
             userId
         );
         return res.status(200).json({ notifications });
@@ -82,7 +88,7 @@ const updateNotification = async (req: AuthenticatedRequest, res: Response) => {
 
 export {
     sendNotification,
-    notifications,
-    unReadNotifications,
-    updateNotification,
+    fetchUserNotifications,
+    fetchUnreadNotifications,
+    updateUserNotificationStatusIsRead,
 };

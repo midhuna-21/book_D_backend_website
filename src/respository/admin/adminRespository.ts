@@ -7,7 +7,7 @@ import { IOrder, orders } from "../../model/orderModel";
 import { bookDWallet } from "../../model/bookDWallet";
 import { IAdminRepository } from "./adminRepositoryInterface";
 
-export class AdminRepository implements IAdminRepository{
+export class AdminRepository implements IAdminRepository {
     async findAdminByEmail(email: string): Promise<IAdmin | null> {
         try {
             return await admin.findOne({ email, isAdmin: true });
@@ -36,7 +36,7 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findAllUsers():Promise<IUser[]> {
+    async findAllUsers(): Promise<IUser[]> {
         try {
             return await user.find();
         } catch (error) {
@@ -45,9 +45,9 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findWalletTransactionsAdmin():Promise<any[]>{
+    async findWalletTransactionsAdmin(): Promise<any[]> {
         try {
-            const wallet = await bookDWallet.findOne()
+            const wallet = await bookDWallet.findOne();
             return wallet ? [wallet] : [];
         } catch (error) {
             console.log("Error findWalletTransactionsAdmin:", error);
@@ -55,7 +55,7 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findAllTotalRentedBooks():Promise<IBooks[]> {
+    async findAllTotalRentedBooks(): Promise<IBooks[]> {
         try {
             return await books.find({ isRented: true });
         } catch (error) {
@@ -63,7 +63,7 @@ export class AdminRepository implements IAdminRepository{
             throw error;
         }
     }
-    async findAllTotalBooks():Promise<IBooks[]> {
+    async findAllTotalBooks(): Promise<IBooks[]> {
         try {
             return await books.find();
         } catch (error) {
@@ -104,7 +104,7 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findAllOrders():Promise<IOrder[]> {
+    async findAllOrders(): Promise<IOrder[]> {
         try {
             return await orders
                 .find()
@@ -133,17 +133,19 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findAllGenres():Promise<IGenre[]> {
+    async findAllGenres(): Promise<IGenre[]> {
         try {
-            const genre = await genres.find().sort({createdAt:-1,updatedAt:-1})
-            return genre
+            const genre = await genres
+                .find()
+                .sort({ createdAt: -1, updatedAt: -1 });
+            return genre;
         } catch (error) {
             console.log("Error findAllOrders:", error);
             throw error;
         }
     }
 
-    async findGenre(genreId: string):Promise<IGenre | null> {
+    async findGenre(genreId: string): Promise<IGenre | null> {
         try {
             return await genres.findById({ _id: genreId });
         } catch (error) {
@@ -152,7 +154,10 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findUpdateGenre(data: Genre, genreId: string):Promise<IGenre | null> {
+    async findUpdateGenre(
+        data: Genre,
+        genreId: string
+    ): Promise<IGenre | null> {
         try {
             const genre = await genres.findById({ _id: genreId });
             if (!genre) {
@@ -174,9 +179,11 @@ export class AdminRepository implements IAdminRepository{
         }
     }
 
-    async findDeleteGenre(genreId: string):Promise<IGenre | null> {
+    async findDeleteGenre(genreId: string): Promise<IGenre | null> {
         try {
-            const deletedGenre = await genres.findByIdAndDelete({ _id: genreId });
+            const deletedGenre = await genres.findByIdAndDelete({
+                _id: genreId,
+            });
             if (!deletedGenre) {
                 console.log("Genre not found for deletion");
                 return null;

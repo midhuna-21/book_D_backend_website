@@ -16,7 +16,7 @@ export class NotificationRepository {
                 const existNotificationUpdate = await notification
                     .findByIdAndUpdate(
                         { _id: id },
-                        { status: data.status,updatedAt: new Date() },
+                        { status: data.status, updatedAt: new Date() },
                         { new: true }
                     )
                     .populate("userId")
@@ -85,7 +85,10 @@ export class NotificationRepository {
         }
     }
 
-    async findUpdateNotificationType(notificationId: string, type: string):Promise<INotification | null> {
+    async findUpdateNotificationType(
+        notificationId: string,
+        type: string
+    ): Promise<INotification | null> {
         try {
             if (type == "accepted") {
                 const update = await notification.findByIdAndUpdate(
@@ -108,7 +111,7 @@ export class NotificationRepository {
         }
     }
 
-    async findUnReadNotifications(userId: string):Promise<number> {
+    async findUnReadNotifications(userId: string): Promise<number> {
         try {
             const notifications = await notification.countDocuments({
                 receiverId: userId,
@@ -121,26 +124,31 @@ export class NotificationRepository {
         }
     }
 
-    async findUpdateNotifications(userId: string): Promise<INotification[] | null> {
+    async findUpdateNotificationsIsread(
+        userId: string
+    ): Promise<INotification[] | null> {
         try {
-            const notifications = await notification.find({ receiverId: userId });
-    
+            const notifications = await notification.find({
+                receiverId: userId,
+            });
+
             if (notifications.length === 0) {
-                return null; 
+                return null;
             }
-    
+
             await notification.updateMany(
                 { receiverId: userId },
                 { isRead: true }
             );
-    
-            const notificationList: INotification[] = notifications.map((n) => n.toObject() as INotification);
-    
+
+            const notificationList: INotification[] = notifications.map(
+                (n) => n.toObject() as INotification
+            );
+
             return notificationList;
         } catch (error) {
             console.log("Error in findUpdateNotifications:", error);
             throw error;
         }
     }
-    
 }

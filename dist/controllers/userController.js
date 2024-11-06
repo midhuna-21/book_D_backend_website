@@ -3,19 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmail = exports.sendOTP = exports.userDetails = exports.calculateDistance = exports.linkGoogleAccount = exports.googleLog = exports.sendUnlinkEmail = exports.getUser = exports.deleteUserImage = exports.updateProfileImage = exports.updateUser = exports.logoutUser = exports.updatePassword = exports.verifyOtp = exports.verifyPhoneNumber = exports.loginByGoogle = exports.loginUser = exports.resendOtp = exports.signUp = void 0;
+exports.checkUserIsblock = exports.sendOtpForForgotPassword = exports.computeLocationDistance = exports.linkGoogleAccount = exports.processGoogleLogin = exports.sendEmailForUnlinking = exports.removeUserProfileImage = exports.updateUserProfileImage = exports.updateUserProfile = exports.logoutUser = exports.resetUserPassword = exports.validateOtp = exports.authenticateWithGoogle = exports.authenticateUser = exports.requestOtpResend = exports.createNewUser = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const userService_1 = require("../services/user/userService");
-const otpGenerate_1 = require("../utils/ReuseFunctions/otpGenerate");
+const otpGenerator_1 = require("../utils/ReuseFunctions/otpGenerator");
 const userGenerateToken_1 = require("../utils/jwt/userGenerateToken");
 const crypto_1 = __importDefault(require("crypto"));
 const axios_1 = __importDefault(require("axios"));
 const client_s3_1 = require("@aws-sdk/client-s3");
 const config_1 = __importDefault(require("../config/config"));
 const store_1 = require("../utils/imageFunctions/store");
-const getImageFromS3_1 = require("../utils/imageFunctions/getImageFromS3");
 const sendEmail_1 = require("../utils/ReuseFunctions/sendEmail");
-const twilio_1 = require("twilio");
 const userRepository_1 = require("../respository/user/userRepository");
 const uploadImageToS3 = async (imageBuffer, fileName) => {
     const uploadParams = {
@@ -28,31 +26,9 @@ const uploadImageToS3 = async (imageBuffer, fileName) => {
     await store_1.s3Client.send(command);
     return `https://${config_1.default.BUCKET_NAME}.s3.${config_1.default.BUCKET_REGION}.amazonaws.com/${fileName}`;
 };
-const twilioClient = new twilio_1.Twilio(config_1.default.TWILIO_ACCOUNT_SID, config_1.default.TWILIO_AUTH_TOKEN);
 const userRepository = new userRepository_1.UserRepository();
 const userService = new userService_1.UserService(userRepository);
-const sendOTP = async (req, res) => {
-    try {
-        const { phone } = req.body;
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log(otp, "otp");
-        const message = await twilioClient.messages.create({
-            body: `Your verification code is ${otp} for our Book.D website`,
-            from: "+13146280298",
-            to: phone,
-        });
-        res.cookie("otp", otp, { maxAge: 60000 });
-        return res
-            .status(200)
-            .json({ message: "OTP generated and sent successfully" });
-    }
-    catch (error) {
-        console.error("Error sending OTP:", error);
-        throw error;
-    }
-};
-exports.sendOTP = sendOTP;
-const signUp = async (req, res) => {
+const createNewUser = async (req, res) => {
     try {
         const { name, email, phone, password } = req.body;
         let existUser = await userService.getUserByEmail(email);
@@ -66,8 +42,8 @@ const signUp = async (req, res) => {
         }
         const securePassword = await (0, passwordValidation_1.hashPassword)(password);
         const user = { name, email, phone, password: securePassword };
-        const otp = await (0, otpGenerate_1.otpGenerate)(email);
-        console.log(otp, 'signup');
+        const otp = await (0, otpGenerator_1.generateOtp)(email);
+        console.log(otp, "createNewUser");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     }
@@ -76,11 +52,11 @@ const signUp = async (req, res) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.signUp = signUp;
-const resendOtp = async (req, res) => {
+exports.createNewUser = createNewUser;
+const requestOtpResend = async (req, res) => {
     try {
         const { email } = req.body;
-        let otp = await (0, otpGenerate_1.otpGenerate)(email);
+        let otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "resend");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res
@@ -92,8 +68,8 @@ const resendOtp = async (req, res) => {
         return res.status(400).json({ message: "internal s erver error" });
     }
 };
-exports.resendOtp = resendOtp;
-const verifyOtp = async (req, res) => {
+exports.requestOtpResend = requestOtpResend;
+const validateOtp = async (req, res) => {
     try {
         const { response, origin, otp } = req.body;
         const { name, email, phone, password } = response;
@@ -114,12 +90,9 @@ const verifyOtp = async (req, res) => {
                 phone,
                 password,
             });
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            }
-            else {
+            if (user) {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
+                const { accessToken, refreshToken } = (0, userGenerateToken_1.generateUserTokens)(res, {
                     userId,
                     role: "user",
                 });
@@ -141,13 +114,13 @@ const verifyOtp = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.verifyOtp = verifyOtp;
-const loginUser = async (req, res) => {
+exports.validateOtp = validateOtp;
+const authenticateUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         let user = await userService.getUserByEmail(email);
         if (!user) {
-            return res.status(400).json({ message: "Invalid email" });
+            return res.status(401).json({ message: "Invalid email" });
         }
         if (user.isBlocked) {
             return res.status(400).json({
@@ -155,17 +128,18 @@ const loginUser = async (req, res) => {
             });
         }
         if (!user.password) {
-            return res.status(400).json({ message: "Invalid password" });
+            return res.status(401).json({ message: "Invalid password" });
         }
         const isPasswordValid = await (0, passwordValidation_1.comparePassword)(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid password" });
         }
         const userId = user._id.toString();
-        const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
+        const { accessToken, refreshToken } = (0, userGenerateToken_1.generateUserTokens)(res, {
             userId,
             role: "user",
         });
+        console.log(user);
         return res.status(200).json({ user, accessToken, refreshToken });
     }
     catch (error) {
@@ -173,8 +147,8 @@ const loginUser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.loginUser = loginUser;
-const loginByGoogle = async (req, res) => {
+exports.authenticateUser = authenticateUser;
+const authenticateWithGoogle = async (req, res) => {
     try {
         const { name, email, image } = req.body;
         let existUser = await userService.getUserByEmail(email);
@@ -183,7 +157,7 @@ const loginByGoogle = async (req, res) => {
         }
         if (existUser?.isGoogle == true) {
             const userId = existUser._id.toString();
-            const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
+            const { accessToken, refreshToken } = (0, userGenerateToken_1.generateUserTokens)(res, {
                 userId,
                 role: "user",
             });
@@ -221,7 +195,7 @@ const loginByGoogle = async (req, res) => {
             }
             else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = (0, userGenerateToken_1.userGenerateTokens)(res, {
+                const { accessToken, refreshToken } = (0, userGenerateToken_1.generateUserTokens)(res, {
                     userId,
                     role: "user",
                 });
@@ -236,13 +210,14 @@ const loginByGoogle = async (req, res) => {
         }
     }
     catch (error) {
-        console.error("Error in loginByGoogle:", error);
+        console.error("Error in authenticateWithGoogle:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.loginByGoogle = loginByGoogle;
+exports.authenticateWithGoogle = authenticateWithGoogle;
 const linkGoogleAccount = async (req, res) => {
     try {
+        console.log(req.body, "bo");
         const { email, password } = req.body;
         const isUser = await userService.getUserByEmail(email);
         if (!isUser) {
@@ -261,7 +236,7 @@ const linkGoogleAccount = async (req, res) => {
     }
 };
 exports.linkGoogleAccount = linkGoogleAccount;
-const googleLog = async (req, res) => {
+const processGoogleLogin = async (req, res) => {
     try {
         const credentialResponse = req.body;
         if (!credentialResponse) {
@@ -275,12 +250,12 @@ const googleLog = async (req, res) => {
         return res.status(200).json(response.data);
     }
     catch (error) {
-        console.log("Error googleLog:", error);
+        console.log("Error processGoogleLogin:", error);
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.googleLog = googleLog;
-const updateUser = async (req, res) => {
+exports.processGoogleLogin = processGoogleLogin;
+const updateUserProfile = async (req, res) => {
     try {
         const { formData } = req.body;
         const { name, email, phone, address } = formData;
@@ -310,8 +285,8 @@ const updateUser = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.updateUser = updateUser;
-const updateProfileImage = async (req, res) => {
+exports.updateUserProfile = updateUserProfile;
+const updateUserProfileImage = async (req, res) => {
     try {
         const userId = req.userId;
         const userExist = await userService.getUserById(userId);
@@ -331,8 +306,8 @@ const updateProfileImage = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.updateProfileImage = updateProfileImage;
-const deleteUserImage = async (req, res) => {
+exports.updateUserProfileImage = updateUserProfileImage;
+const removeUserProfileImage = async (req, res) => {
     try {
         const { imageToRemove } = req.body;
         const userId = req.userId;
@@ -356,14 +331,14 @@ const deleteUserImage = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.deleteUserImage = deleteUserImage;
-const verifyEmail = async (req, res) => {
+exports.removeUserProfileImage = removeUserProfileImage;
+const sendOtpForForgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
         let isValidEmail = await userService.getUserByEmail(email);
         if (isValidEmail) {
-            const otp = await (0, otpGenerate_1.otpGenerate)(email);
-            console.log(otp, 'forgot');
+            const otp = await (0, otpGenerator_1.generateOtp)(email);
+            console.log(otp, "forgot");
             res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
         }
@@ -376,26 +351,10 @@ const verifyEmail = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.verifyEmail = verifyEmail;
-const verifyPhoneNumber = async (req, res) => {
+exports.sendOtpForForgotPassword = sendOtpForForgotPassword;
+const resetUserPassword = async (req, res) => {
     try {
-        const { phone } = req.body;
-        let isValidPhone = await userService.getUserByPhone(phone);
-        if (isValidPhone) {
-            return res.status(200).json({ isValidPhone });
-        }
-        else {
-            return res.status(401).json({ message: "Invalid Phone number" });
-        }
-    }
-    catch (error) {
-        console.log(error.message);
-        return res.status(500).json({ error: "Internal server error" });
-    }
-};
-exports.verifyPhoneNumber = verifyPhoneNumber;
-const updatePassword = async (req, res) => {
-    try {
+        console.log(req.body, "requd");
         const { resetToken, resetTokenExpiration, password, email } = req.body;
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email;
@@ -410,9 +369,6 @@ const updatePassword = async (req, res) => {
             resetTokenExpiration,
         };
         const user = await userService.getUpdatePassword(data);
-        if (user?.image) {
-            user.image = await (0, getImageFromS3_1.getSignedImageUrl)(user.image);
-        }
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -420,7 +376,7 @@ const updatePassword = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
-exports.updatePassword = updatePassword;
+exports.resetUserPassword = resetUserPassword;
 const logoutUser = async (req, res) => {
     try {
         res.clearCookie("token", { httpOnly: true, secure: true });
@@ -432,12 +388,13 @@ const logoutUser = async (req, res) => {
     }
 };
 exports.logoutUser = logoutUser;
-const sendUnlinkEmail = async (req, res) => {
+const sendEmailForUnlinking = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "user not found" });
         }
+        console.log(userId, "userId");
         const isUser = await userService.getUserById(userId);
         if (!isUser) {
             return res.status(400).json({ message: "user not found" });
@@ -454,33 +411,8 @@ const sendUnlinkEmail = async (req, res) => {
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-exports.sendUnlinkEmail = sendUnlinkEmail;
-const getUser = async (req, res) => {
-    try {
-        const { receiverId } = req.params;
-        if (!receiverId) {
-            return res
-                .status(400)
-                .json({ message: "User ID not found in request" });
-        }
-        const receiver = await userService.getUserById(receiverId);
-        if (!receiver) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        if (receiver?.image) {
-            receiver.image = await (0, getImageFromS3_1.getSignedImageUrl)(receiver?.image);
-        }
-        return res.status(200).json({ receiver });
-    }
-    catch (error) {
-        console.log(error.message);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at notifications" });
-    }
-};
-exports.getUser = getUser;
-const calculateDistance = async (req, res) => {
+exports.sendEmailForUnlinking = sendEmailForUnlinking;
+const computeLocationDistance = async (req, res) => {
     try {
         const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
         const { lat1, lng1, lat2, lng2 } = req.query;
@@ -489,14 +421,12 @@ const calculateDistance = async (req, res) => {
                 message: "Error while getting while calculating distance",
             });
         }
-        // console.log(lat1,'lat1',lat2,'lat2',lng1,'lng1',lng2,'lng2')
         const origin = `${lat1},${lng1}`;
         const destination = `${lat2},${lng2}`;
         const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${origin}&destinations=${destination}&key=${key}`;
         try {
             const response = await axios_1.default.get(url);
             const data = response.data;
-            // console.log(data,'data')
             if (data.status === "OK") {
                 const distance = data.rows[0].elements[0].distance.value;
                 const distanceResponse = distance / 1000;
@@ -519,25 +449,21 @@ const calculateDistance = async (req, res) => {
             .json({ message: "Internal server error at calculateDistance" });
     }
 };
-exports.calculateDistance = calculateDistance;
-const userDetails = async (req, res) => {
+exports.computeLocationDistance = computeLocationDistance;
+const checkUserIsblock = async (req, res) => {
     try {
-        const { lenderId } = req.params;
-        if (!lenderId) {
-            return res.status(500).json({ message: "Lender id not found" });
-        }
-        const lender = await userService.getUserById(lenderId);
-        if (lender?.image) {
-            lender.image = await (0, getImageFromS3_1.getSignedImageUrl)(lender.image);
-        }
-        return res.status(200).json({ lender });
+        const userId = req.userId;
+        const user = await userService.getUserById(userId);
+        const isBlock = user?.isBlocked;
+        console.log(isBlock, "isBlock");
+        return res.status(200).json({ isBlock });
     }
     catch (error) {
-        console.log("Error userDetails:", error);
+        console.log("Error checkUserIsblock controller:", error);
         return res
             .status(500)
-            .json({ message: "Internal server error at userDetails" });
+            .json({ message: "Internal server error at checkUserIsblock" });
     }
 };
-exports.userDetails = userDetails;
+exports.checkUserIsblock = checkUserIsblock;
 //# sourceMappingURL=userController.js.map

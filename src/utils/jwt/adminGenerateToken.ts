@@ -7,7 +7,7 @@ interface AdminTokenPayload {
     role: string;
 }
 
-const adminGenerateTokens = (
+const generateAdminTokens = (
     res: Response,
     payload: AdminTokenPayload
 ): { accessToken: string; refreshToken: string } => {
@@ -39,4 +39,4 @@ const adminGenerateTokens = (
     return { accessToken, refreshToken };
 };
 
-export { adminGenerateTokens };
+export { generateAdminTokens };

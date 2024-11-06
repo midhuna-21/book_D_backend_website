@@ -41,9 +41,9 @@ class NotificationService {
             throw error;
         }
     }
-    async getUpdateNotifications(userId) {
+    async getUpdateNotificationsIsread(userId) {
         try {
-            return await this.notificationRepository.findUpdateNotifications(userId);
+            return await this.notificationRepository.findUpdateNotificationsIsread(userId);
         }
         catch (error) {
             console.log("Error getUpdateNotifications:", error);

@@ -1,59 +1,72 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import {
-    addGenre,
-    adminLogin,
-    getUsersList,
-    genresList,
-    genre,
-    blockUser,
+    createGenre,
+    authenticateAdmin,
+    fetchUsers,
+    fetchGenres,
+    fetchGenreById,
+    blockUserAccount,
     updateGenre,
-    unBlockUser,
-    totalRentedBooks,
-    totalBooks,
-    allOrders,
-    orderDetail,
-    walletTransactions,
-    deleteGenre
+    unblockUserAccount,
+    fetchLentBooks,
+    fetchBooks,
+    fetchRentalOrders,
+    fetchRentalOrderDetails,
+    fetchWalletTransactions,
+    removeGenre,
 } from "../controllers/adminController";
 import upload from "../utils/imageFunctions/store";
 import { adminVerifyToken } from "../utils/middleware/adminAuthMiddleware";
+import {adminRefreshToken} from '../controllers/adminRefreshToken'
 
-const adminRouter = express.Router();
+const adminRoutes = express.Router();
 
-adminRouter.post("/admin-login", adminLogin);
+adminRoutes.post('/refresh-token',adminRefreshToken)
 
-adminRouter.post("/add-genre", adminVerifyToken, upload.single("file"), addGenre);
+adminRoutes.post("/login", authenticateAdmin);
 
-adminRouter.get("/genres", adminVerifyToken, genresList);
+adminRoutes.post(
+    "/genres/create",
+    adminVerifyToken,
+    upload.single("file"),
+    createGenre
+);
 
-adminRouter.get("/genre/:genreId", adminVerifyToken, genre);
+adminRoutes.get("/genres", adminVerifyToken, fetchGenres);
 
-adminRouter.post(
-    "/genre-update/:genreId",
+adminRoutes.get("/genres/:genreId", adminVerifyToken, fetchGenreById);
+
+adminRoutes.put(
+    "/genres/update/:genreId",
     adminVerifyToken,
     upload.single("file"),
     updateGenre
 );
 
-adminRouter.get("/get-users", adminVerifyToken, getUsersList);
+adminRoutes.post("/genres/remove", adminVerifyToken, removeGenre);
 
-adminRouter.post("/block-user", adminVerifyToken, blockUser);
+adminRoutes.get("/users", adminVerifyToken, fetchUsers);
 
-adminRouter.post("/unblock-user", adminVerifyToken, unBlockUser);
+adminRoutes.post("/user/block", adminVerifyToken, blockUserAccount);
 
-adminRouter.get("/total-rented-books", adminVerifyToken, totalRentedBooks);
+adminRoutes.post("/user/unblock", adminVerifyToken, unblockUserAccount);
 
-adminRouter.get("/total-books", adminVerifyToken, totalBooks);
+adminRoutes.get("/books/lent", adminVerifyToken, fetchLentBooks);
 
-adminRouter.get("/get-rental-orders", adminVerifyToken, allOrders);
+adminRoutes.get("/books", adminVerifyToken, fetchBooks);
 
-adminRouter.get("/order-detail/:orderId", adminVerifyToken, orderDetail);
+adminRoutes.get("/books/rental-orders", adminVerifyToken, fetchRentalOrders);
 
-adminRouter.get("/bookd-wallet", adminVerifyToken, walletTransactions);
+adminRoutes.get(
+    "/books/rental-order/:orderId",
+    adminVerifyToken,
+    fetchRentalOrderDetails
+);
 
-adminRouter.post('/delete-genre',adminVerifyToken,deleteGenre)
+adminRoutes.get(
+    "/wallet/transactions",
+    adminVerifyToken,
+    fetchWalletTransactions
+);
 
-// adminRouter.get("/bookd-wallet", verifyToken,walletTransactions);
-
-
-export default adminRouter;
+export default adminRoutes;

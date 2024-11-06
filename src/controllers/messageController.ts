@@ -28,7 +28,7 @@ const createChatRoom = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const updateChatRoomRead = async (req: Request, res: Response) => {
+const updateChatRoomReadStatus = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
         if (!chatRoomId) {
@@ -50,30 +50,23 @@ const updateChatRoomRead = async (req: Request, res: Response) => {
     }
 };
 
-const messageCreation = async (req: Request, res: Response) => {
-    try {
-        const { senderId, chatRoomId, content } = req.body;
-    } catch (error) {
-        console.log("Error messsageCreation", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-
-const userMessagesList = async (req: Request, res: Response) => {
+const fetchUserChatList = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-        const conversations: IChatRoom[] | null =
-            await chatService.getUserMessagesList(userId);
+        const conversations: IChatRoom[] | null = await chatService.getUserChatList(userId);
+        console.log(conversations,'con')
         return res.status(200).json({ conversations });
     } catch (error) {
-        console.log("Error messsageCreation", error);
+        console.log("Error fetchUserMessages", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
 
-const chat = async (req: Request, res: Response) => {
+const fetchChatRoom = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
+        console.log(chatRoomId,"chatRoomId");
+        
         const chat = await chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     } catch (error) {
@@ -125,9 +118,10 @@ const sendMessage = async (req: Request, res: Response) => {
     }
 };
 
-const allMessages = async (req: Request, res: Response) => {
+const fetchMessages = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
+        console.log(chatRoomId,'chatRoomId')
         if (!chatRoomId) {
             return res.status(400).json({ message: "chatroom ID not found" });
         }
@@ -141,7 +135,7 @@ const allMessages = async (req: Request, res: Response) => {
     }
 };
 
-const unReadMessages = async (req: Request, res: Response) => {
+const fetchUnreadMessages = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         if (!userId) {
@@ -159,12 +153,11 @@ const unReadMessages = async (req: Request, res: Response) => {
 };
 
 export {
-    messageCreation,
     createChatRoom,
-    updateChatRoomRead,
-    userMessagesList,
-    chat,
+    updateChatRoomReadStatus,
+    fetchUserChatList,
+    fetchChatRoom,
     sendMessage,
-    allMessages,
-    unReadMessages,
+    fetchMessages,
+    fetchUnreadMessages,
 };

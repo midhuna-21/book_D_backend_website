@@ -5,8 +5,10 @@ import Stripe from "stripe";
 import config from "../config/config";
 import { wallet } from "../model/walletModel";
 
-
-const walletTransactions = async (req: AuthenticatedRequest, res: Response) => {
+const fetchWalletTransactions = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const userId = req.userId;
         if (!userId) {
@@ -25,7 +27,7 @@ const walletTransactions = async (req: AuthenticatedRequest, res: Response) => {
 const stripeKey = config.STRIPE_KEY!;
 const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
 
-const checkWallet = async (req: AuthenticatedRequest, res: Response) => {
+const checkWalletStatus = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.userId!;
         let isWalletExist = await walletService.getWalletTransactions(userId);
@@ -46,7 +48,10 @@ const checkWallet = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const paymentWallet = async (req: AuthenticatedRequest, res: Response) => {
+const processWalletPayment = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const { amount } = req.body;
         const userId = req.userId!;
@@ -81,4 +86,4 @@ const paymentWallet = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-export { walletTransactions, paymentWallet, checkWallet };
+export { fetchWalletTransactions, processWalletPayment, checkWalletStatus };

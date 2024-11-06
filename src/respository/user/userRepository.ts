@@ -1,6 +1,6 @@
 import { user, IUser } from "../../model/userModel";
 import { User } from "../../interfaces/data";
-import {IUserRepository} from './userRepositoryInterface';
+import { IUserRepository } from "./userRepositoryInterface";
 
 export class UserRepository implements IUserRepository {
     async findUserByPhone(phone: string): Promise<IUser | null> {
@@ -101,8 +101,7 @@ export class UserRepository implements IUserRepository {
 
     async findUserById(_id: string): Promise<IUser | null> {
         try {
-            const lender = await user.findById(_id);
-            return lender;
+            return await user.findById(_id);
         } catch (error) {
             console.log("Error findUserById:", error);
             throw error;
@@ -161,7 +160,7 @@ export class UserRepository implements IUserRepository {
         }
     }
 
-    async findActiveUsers(): Promise<IUser[]>{
+    async findActiveUsers(): Promise<IUser[]> {
         try {
             const users = await user.find({ isBlocked: false });
             return users;

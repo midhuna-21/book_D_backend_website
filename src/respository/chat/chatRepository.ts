@@ -19,7 +19,7 @@ export class ChatRepository {
         }
     }
 
-    async findChatRoomById(chatRoomId: string):Promise<IChatRoom | null> {
+    async findChatRoomById(chatRoomId: string): Promise<IChatRoom | null> {
         try {
             const isChatRoom = await chatRoom.findById(chatRoomId);
             return isChatRoom;
@@ -29,10 +29,13 @@ export class ChatRepository {
         }
     }
 
-    async findUpdateChatRoomRead(chatRoomId: string):Promise<{ message: IMessage[]; chat: IChatRoom | null }>  {
+    async findUpdateChatRoomRead(
+        chatRoomId: string
+    ): Promise<{ message: IMessage[]; chat: IChatRoom | null }> {
         try {
-
-            const messages = await message.find({ chatRoomId: chatRoomId }).exec();
+            const messages = await message
+                .find({ chatRoomId: chatRoomId })
+                .exec();
 
             await message
                 .updateMany(
@@ -56,7 +59,7 @@ export class ChatRepository {
         }
     }
 
-    async findUserMessagesList(userId: string): Promise<IChatRoom[] | null> {
+    async findUserChatList(userId: string): Promise<IChatRoom[] | null> {
         try {
             const chatRooms = await chatRoom
                 .find({
@@ -65,7 +68,7 @@ export class ChatRepository {
                 .populate("receiverId", "name email image")
                 .populate("senderId", "name email image")
                 .populate("messageId")
-                .sort({updatedAt:-1})
+                .sort({ updatedAt: -1 })
                 .exec();
             const filteredChatRooms = chatRooms.filter((chatRoom) => {
                 const senderId = chatRoom.senderId;
@@ -73,18 +76,19 @@ export class ChatRepository {
 
                 return (senderId && receiverId) !== null;
             });
+            console.log(filteredChatRooms,'filteredChatRooms')
             return filteredChatRooms;
+
         } catch (error) {
-            console.log("Error MessagesList:", error);
+            console.log("Error findUserChatList:", error);
             throw error;
         }
     }
 
-
-    async findUserChat(chatRoomId: string): Promise<IChatRoom[]> {
+    async findUserChat(chatroomId: string): Promise<IChatRoom[]> {
         try {
             const chatRoomData = await chatRoom
-                .findById(chatRoomId)
+                .findById(chatroomId)
                 .populate({
                     path: "receiverId",
                     select: "name image",
@@ -96,18 +100,18 @@ export class ChatRepository {
                     match: { _id: { $exists: true } },
                 })
                 .exec();
-    
+
             if (!chatRoomData?.receiverId || !chatRoomData?.senderId) {
-                return []; 
+                return [];
             }
-    
+
             return [chatRoomData];
         } catch (error) {
             console.log("Error in findUserChat:", error);
             throw error;
         }
     }
-    
+
     // async findUserChat(chatRoomId: string):Promise<IChatRoom[]>  {
     //     try {
     //         const chatRoomData = await chatRoom
@@ -156,7 +160,10 @@ export class ChatRepository {
         }
     }
 
-    async findUpdateChatRoom(chatRoomId: string, messageId: string):Promise<IChatRoom | null>  {
+    async findUpdateChatRoom(
+        chatRoomId: string,
+        messageId: string
+    ): Promise<IChatRoom | null> {
         try {
             return await chatRoom.findByIdAndUpdate(
                 chatRoomId,
@@ -211,7 +218,7 @@ export class ChatRepository {
         }
     }
 
-    async findUnReadMessages(userId: string):Promise<number>  {
+    async findUnReadMessages(userId: string): Promise<number> {
         try {
             const messages = await message.countDocuments({
                 receiverId: userId,

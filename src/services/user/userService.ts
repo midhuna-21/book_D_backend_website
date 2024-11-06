@@ -1,20 +1,19 @@
 import { User } from "../../interfaces/data";
 import { IUser } from "../../model/userModel";
 import { IUserService } from "./userServiceInterface";
-import {IUserRepository} from '../../respository/user/userRepositoryInterface'
-
+import { IUserRepository } from "../../respository/user/userRepositoryInterface";
 
 export class UserService implements IUserService {
     private userRepository: IUserRepository;
-    
+
     constructor(userRepository: IUserRepository) {
-      this.userRepository = userRepository;
+        this.userRepository = userRepository;
     }
     async getCreateUser(data: Partial<User>): Promise<IUser | null> {
         try {
             return await this.userRepository.findCreateUser(data);
         } catch (error) {
-            console.log("Error getUserByGmail:", error);
+            console.log("Error getCreateUser:", error);
             throw error;
         }
     }
@@ -91,9 +90,9 @@ export class UserService implements IUserService {
         }
     }
 
-    async getUserById(lenderId: string): Promise<IUser | null> {
+    async getUserById(userId: string): Promise<IUser | null> {
         try {
-            return await this.userRepository.findUserById(lenderId);
+            return await this.userRepository.findUserById(userId);
         } catch (error) {
             console.log("Error getUserById:", error);
             throw error;
@@ -106,14 +105,17 @@ export class UserService implements IUserService {
     ): Promise<IUser | null> {
         try {
             console.log(filteredUser, "filterd user at service ");
-            return await this.userRepository.findUpdateUser(userId, filteredUser);
+            return await this.userRepository.findUpdateUser(
+                userId,
+                filteredUser
+            );
         } catch (error) {
             console.log("Error getUpdateUser:", error);
             throw error;
         }
     }
 
-    async getActiveUsers():Promise<IUser[]> {
+    async getActiveUsers(): Promise<IUser[]> {
         try {
             return await this.userRepository.findActiveUsers();
         } catch (error) {
@@ -127,7 +129,10 @@ export class UserService implements IUserService {
         imageUrl: string
     ): Promise<IUser | null> {
         try {
-            return await this.userRepository.findUpdateProfileImage(userId, imageUrl);
+            return await this.userRepository.findUpdateProfileImage(
+                userId,
+                imageUrl
+            );
         } catch (error) {
             console.log("Error getUpdateProfileImage:", error);
             throw error;
@@ -138,17 +143,17 @@ export class UserService implements IUserService {
         userId: string,
         resetToken: string,
         resetTokenExpiration: number
-    ):Promise<IUser | null> {
+    ): Promise<IUser | null> {
         try {
-            const result =  await this.userRepository.findSaveToken(
+            const result = await this.userRepository.findSaveToken(
                 userId,
                 resetToken,
                 resetTokenExpiration
-            )
+            );
             return result || null;
         } catch (error) {
             console.log("Error saveToken:", error);
-            return null 
+            return null;
         }
     }
 
@@ -169,4 +174,3 @@ export class UserService implements IUserService {
         }
     }
 }
-

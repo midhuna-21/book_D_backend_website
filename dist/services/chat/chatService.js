@@ -5,18 +5,18 @@ class ChatService {
     constructor(chatRepository) {
         this.chatRepository = chatRepository;
     }
-    async getUserMessagesList(userId) {
+    async getUserChatList(userId) {
         try {
-            return await this.chatRepository.findUserMessagesList(userId);
+            return await this.chatRepository.findUserChatList(userId);
         }
         catch (error) {
             console.log("Error getUserMessagesList:", error);
             throw error;
         }
     }
-    async getChatRoomById(chatRoomId) {
+    async getChatRoomById(chatroomId) {
         try {
-            return await this.chatRepository.findChatRoomById(chatRoomId);
+            return await this.chatRepository.findChatRoomById(chatroomId);
         }
         catch (error) {
             console.log("Error getChatRoomById:", error);

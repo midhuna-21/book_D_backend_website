@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateNotification = exports.unReadNotifications = exports.notifications = exports.sendNotification = void 0;
+exports.updateUserNotificationStatusIsRead = exports.fetchUnreadNotifications = exports.fetchUserNotifications = exports.sendNotification = void 0;
 const index_1 = require("../services/index");
 const sendNotification = async (req, res) => {
     try {
@@ -21,7 +21,7 @@ const sendNotification = async (req, res) => {
     }
 };
 exports.sendNotification = sendNotification;
-const notifications = async (req, res) => {
+const fetchUserNotifications = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
@@ -39,8 +39,8 @@ const notifications = async (req, res) => {
             .json({ message: "Internal server error at notifications" });
     }
 };
-exports.notifications = notifications;
-const unReadNotifications = async (req, res) => {
+exports.fetchUserNotifications = fetchUserNotifications;
+const fetchUnreadNotifications = async (req, res) => {
     try {
         const { userId } = req.params;
         if (!userId) {
@@ -56,14 +56,14 @@ const unReadNotifications = async (req, res) => {
             .json({ message: "Internal server error at unReadNotifications" });
     }
 };
-exports.unReadNotifications = unReadNotifications;
-const updateNotification = async (req, res) => {
+exports.fetchUnreadNotifications = fetchUnreadNotifications;
+const updateUserNotificationStatusIsRead = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await index_1.notificationService.getUpdateNotifications(userId);
+        const notifications = await index_1.notificationService.getUpdateNotificationsIsread(userId);
         return res.status(200).json({ notifications });
     }
     catch (error) {
@@ -73,5 +73,5 @@ const updateNotification = async (req, res) => {
             .json({ message: "Internal server error at unReadNotifications" });
     }
 };
-exports.updateNotification = updateNotification;
+exports.updateUserNotificationStatusIsRead = updateUserNotificationStatusIsRead;
 //# sourceMappingURL=notificationController.js.map

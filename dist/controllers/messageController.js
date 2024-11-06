@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unReadMessages = exports.allMessages = exports.sendMessage = exports.chat = exports.userMessagesList = exports.updateChatRoomRead = exports.createChatRoom = exports.messageCreation = void 0;
+exports.fetchUnreadMessages = exports.fetchMessages = exports.sendMessage = exports.fetchChatRoom = exports.fetchUserChatList = exports.updateChatRoomReadStatus = exports.createChatRoom = void 0;
 const index_1 = require("../services/index");
 const createChatRoom = async (req, res) => {
     try {
@@ -23,7 +23,7 @@ const createChatRoom = async (req, res) => {
     }
 };
 exports.createChatRoom = createChatRoom;
-const updateChatRoomRead = async (req, res) => {
+const updateChatRoomReadStatus = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
         if (!chatRoomId) {
@@ -42,32 +42,24 @@ const updateChatRoomRead = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.updateChatRoomRead = updateChatRoomRead;
-const messageCreation = async (req, res) => {
-    try {
-        const { senderId, chatRoomId, content } = req.body;
-    }
-    catch (error) {
-        console.log("Error messsageCreation", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
-exports.messageCreation = messageCreation;
-const userMessagesList = async (req, res) => {
+exports.updateChatRoomReadStatus = updateChatRoomReadStatus;
+const fetchUserChatList = async (req, res) => {
     try {
         const { userId } = req.params;
-        const conversations = await index_1.chatService.getUserMessagesList(userId);
+        const conversations = await index_1.chatService.getUserChatList(userId);
+        console.log(conversations, 'con');
         return res.status(200).json({ conversations });
     }
     catch (error) {
-        console.log("Error messsageCreation", error);
+        console.log("Error fetchUserMessages", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.userMessagesList = userMessagesList;
-const chat = async (req, res) => {
+exports.fetchUserChatList = fetchUserChatList;
+const fetchChatRoom = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
+        console.log(chatRoomId, "chatRoomId");
         const chat = await index_1.chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     }
@@ -76,7 +68,7 @@ const chat = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.chat = chat;
+exports.fetchChatRoom = fetchChatRoom;
 const sendMessage = async (req, res) => {
     try {
         const { senderId, receiverId, content, chatRoomId } = req.body;
@@ -105,9 +97,10 @@ const sendMessage = async (req, res) => {
     }
 };
 exports.sendMessage = sendMessage;
-const allMessages = async (req, res) => {
+const fetchMessages = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
+        console.log(chatRoomId, 'chatRoomId');
         if (!chatRoomId) {
             return res.status(400).json({ message: "chatroom ID not found" });
         }
@@ -121,8 +114,8 @@ const allMessages = async (req, res) => {
             .json({ message: "Internal server error at checkUserSent" });
     }
 };
-exports.allMessages = allMessages;
-const unReadMessages = async (req, res) => {
+exports.fetchMessages = fetchMessages;
+const fetchUnreadMessages = async (req, res) => {
     try {
         const { userId } = req.params;
         if (!userId) {
@@ -138,5 +131,5 @@ const unReadMessages = async (req, res) => {
             .json({ message: "Internal server error at checkUserSent" });
     }
 };
-exports.unReadMessages = unReadMessages;
+exports.fetchUnreadMessages = fetchUnreadMessages;
 //# sourceMappingURL=messageController.js.map

@@ -94,8 +94,7 @@ class UserRepository {
     }
     async findUserById(_id) {
         try {
-            const lender = await userModel_1.user.findById(_id);
-            return lender;
+            return await userModel_1.user.findById(_id);
         }
         catch (error) {
             console.log("Error findUserById:", error);

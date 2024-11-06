@@ -12,11 +12,11 @@ const db_1 = __importDefault(require("./config/db"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
 const adminRoute_1 = __importDefault(require("./routes/adminRoute"));
 const config_1 = __importDefault(require("./config/config"));
-const userRefreshToken_1 = require("./controllers/userRefreshToken");
-const adminRefreshToken_1 = require("./controllers/adminRefreshToken");
-const chatService_1 = require("./services/chat/chatService");
 require("./utils/ReuseFunctions/cronJob");
+const chatService_1 = require("./services/chat/chatService");
 const chatRepository_1 = require("./respository/chat/chatRepository");
+const services_1 = require("./services");
+const socket_connection_1 = require("./sockets/socket-connection");
 const chatRepository = new chatRepository_1.ChatRepository();
 const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
@@ -40,106 +40,7 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
 // app.use(morgan('dev'))
 app.use(express_1.default.static("public/"));
-const userSockets = new Map();
-let onlineUsers = new Set();
-io.on("connection", (socket) => {
-    socket.on("register", (userId) => {
-        if (userId) {
-            if (!userSockets.has(userId)) {
-                userSockets.set(userId, new Set());
-            }
-            userSockets.get(userId)?.add(socket.id);
-            io.emit("user-status", { userId, status: "online" });
-        }
-    });
-    socket.on("userConnected", (userId) => {
-        onlineUsers.add(userId);
-        io.emit("userOnline", userId);
-    });
-    socket.on("disconnect", () => {
-        for (const [userId, sockets] of userSockets.entries()) {
-            if (sockets.has(socket.id)) {
-                sockets.delete(socket.id);
-                if (sockets.size === 0) {
-                    userSockets.delete(userId);
-                    onlineUsers.delete(userId);
-                    io.emit("user-status", { userId, status: "offline" });
-                    io.emit("userOffline", userId);
-                }
-                break;
-            }
-        }
-    });
-    socket.on("typing", ({ chatId, userId }) => {
-        for (const [otherUserId, sockets] of userSockets.entries()) {
-            if (otherUserId !== userId) {
-                sockets.forEach((socketId) => {
-                    io.to(socketId).emit("typing", { userId, chatId });
-                });
-            }
-        }
-    });
-    socket.on('stop-typing', ({ chatId, userId }) => {
-        for (const [otherUserId, sockets] of userSockets.entries()) {
-            if (otherUserId !== userId) {
-                sockets.forEach((socketId) => {
-                    io.to(socketId).emit("stop-typing", { chatId, userId });
-                });
-            }
-        }
-    });
-    socket.on("send-notification", (data) => {
-        const receiverSocketIds = userSockets.get(data.receiverId);
-        console.log(receiverSocketIds, "receiverSocketIds");
-        if (receiverSocketIds) {
-            Array.from(receiverSocketIds).forEach((socketId) => {
-                io.to(socketId).emit("notification", data.notification);
-            });
-            console.log(`Notification sent to ${data.receiverId}`);
-        }
-        else {
-            console.log(`No active socket found for user ${data.receiverId}`);
-        }
-    });
-    socket.on("send-message", async (data) => {
-        try {
-            const { senderId, receiverId, content, chatRoomId } = data;
-            if (!content.trim()) {
-                return;
-            }
-            const message = {
-                senderId,
-                receiverId,
-                content,
-                chatRoomId,
-                createdAt: new Date(),
-            };
-            const chatRoom = await chatService.getChatRoom(senderId, receiverId);
-            if (!chatRoom) {
-                console.error("Chat room not found");
-                return;
-            }
-            socket.emit("receive-message", message);
-            const receiverSocketIds = userSockets.get(receiverId);
-            if (receiverSocketIds && receiverSocketIds.size > 0) {
-                receiverSocketIds.forEach((socketId) => {
-                    io.to(socketId).emit("receive-message", message);
-                });
-            }
-            else {
-                console.log(`No active socket found for user ${receiverId}`);
-            }
-        }
-        catch (error) {
-            console.error("Error handling send-message event:", error);
-        }
-    });
-});
-app.get("/api/user/:userId/online-status", (req, res) => {
-    const userId = req.params.userId;
-    const isOnline = onlineUsers.has(userId);
-    res.json({ isOnline });
-});
+(0, socket_connection_1.initializeSocket)(io, chatService, services_1.notificationService);
 app.use((req, res, next) => {
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
     res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
@@ -147,8 +48,6 @@ app.use((req, res, next) => {
 });
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
-app.post("/api/user-refresh-token", userRefreshToken_1.userRefreshTokenController);
-app.post("/api/admin-refresh-token", adminRefreshToken_1.adminRefreshTokenController);
 server.listen(config_1.default.PORT, () => {
     console.log(`Server running at ${config_1.default.PORT}`);
 });

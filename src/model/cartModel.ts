@@ -1,17 +1,18 @@
 import mongoose, { Document } from "mongoose";
 
 interface ICart extends Document {
-    userId: string;
-    ownerId: string;
-    bookId: string;
-    types: string;
-    totalAmount: number;
-    totalRentalPrice: number;
-    quantity: number;
-    totalDays: number;
-    timeStamp: Date;
-    total_deposit_amount: number;
-    isPaid: boolean;
+    userId?: string;
+    ownerId?: string;
+    bookId?: string;
+    types?: string;
+    totalAmount?: number;
+    totalRentalPrice?: number;
+    quantity?: number;
+    totalDays?: number;
+    timeStamp?: Date;
+    total_deposit_amount?: number;
+    isPaid?: boolean;
+    acceptedDate?: Date;
 }
 const cartSchema = new mongoose.Schema(
     {
@@ -32,7 +33,7 @@ const cartSchema = new mongoose.Schema(
         },
         types: {
             type: String,
-            enum: ["requested", "rejected", "accepted"],
+            enum: ["requested", "rejected", "accepted","timed-out","cancelled"],
             required: true,
         },
         totalAmount: {
@@ -63,9 +64,20 @@ const cartSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        acceptedDate: {
+            type: Date,
+            default: null,  
+        },
     },
     { timestamps: true }
 );
+
+cartSchema.pre("save", function (next) {
+    if (this.isModified("types") && this.types === "accepted" && !this.acceptedDate) {
+        this.acceptedDate = new Date();
+    }
+    next();
+});
 
 const cart = mongoose.model<ICart>("cart", cartSchema);
 

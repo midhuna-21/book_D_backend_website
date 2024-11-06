@@ -3,23 +3,11 @@ import { ICart } from "../../model/cartModel";
 import { ICartService } from "./cartServiceInterface";
 import { ICartRepository } from "../../respository/cart/cartRepositoryInterface";
 
-
-export class CartService implements ICartService{
+export class CartService implements ICartService {
     private cartRepository: ICartRepository;
-  
+
     constructor(cartRepository: ICartRepository) {
-      this.cartRepository = cartRepository;
-    }
-    async getCheckRequest(
-        userId: string,
-        bookId: string
-    ): Promise<ICart | null> {
-        try {
-            return await this.cartRepository.findCheckRequest(userId, bookId);
-        } catch (error) {
-            console.log("Error getCheckRequest:", error);
-            throw error;
-        }
+        this.cartRepository = cartRepository;
     }
     async getCreateCart(data: Cart): Promise<ICart | null> {
         try {
@@ -30,16 +18,16 @@ export class CartService implements ICartService{
         }
     }
 
-    async getCheckAccepted(userId: string, bookId: string): Promise<Boolean> {
-        try {
-            return await this.cartRepository.findCheckAccept(userId, bookId);
-        } catch (error) {
-            console.log("Error getUpdateProfileImage:", error);
-            throw error;
-        }
-    }
+    // async getCheckAccepted(userId: string, bookId: string): Promise<ICart | null> {
+    //     try {
+    //         return await this.cartRepository.findCheckAccept(userId, bookId);
+    //     } catch (error) {
+    //         console.log("Error getUpdateProfileImage:", error);
+    //         throw error;
+    //     }
+    // }
 
-    async getCartById(cartId: string):Promise<ICart | null> {
+    async getCartById(cartId: string): Promise<ICart | null> {
         try {
             return await this.cartRepository.findCartById(cartId);
         } catch (error) {
@@ -48,7 +36,7 @@ export class CartService implements ICartService{
         }
     }
 
-    async getUpdateCart(cartId: string, types: string):Promise<ICart | null>  {
+    async getUpdateCart(cartId: string, types: string): Promise<ICart | null> {
         try {
             return await this.cartRepository.findUpdateCart(cartId, types);
         } catch (error) {
@@ -57,7 +45,7 @@ export class CartService implements ICartService{
         }
     }
 
-    async getCartDetails(cartId: string):Promise<ICart | null>  {
+    async getCartDetails(cartId: string): Promise<ICart | null> {
         try {
             return await this.cartRepository.findCartDetails(cartId);
         } catch (error) {
@@ -66,7 +54,7 @@ export class CartService implements ICartService{
         }
     }
 
-    async getUpdateIsPaid(cartId: string):Promise<ICart | null>  {
+    async getUpdateIsPaid(cartId: string): Promise<ICart | null> {
         try {
             return await this.cartRepository.findUpdateIsPaid(cartId);
         } catch (error) {

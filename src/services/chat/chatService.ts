@@ -3,33 +3,33 @@ import { IMessage } from "../../model/message";
 import { IChatService } from "./chatServiceInterface";
 import { IChatRepository } from "../../respository/chat/chatRepositoryInterface";
 
-
-export class ChatService implements IChatService{
-  
+export class ChatService implements IChatService {
     private chatRepository: IChatRepository;
-  
+
     constructor(chatRepository: IChatRepository) {
-      this.chatRepository = chatRepository;
+        this.chatRepository = chatRepository;
     }
-    async getUserMessagesList(userId: string): Promise<IChatRoom[] | null> {
+    async getUserChatList(userId: string): Promise<IChatRoom[] | null> {
         try {
-            return await this.chatRepository.findUserMessagesList(userId);
+            return await this.chatRepository.findUserChatList(userId);
         } catch (error) {
             console.log("Error getUserMessagesList:", error);
             throw error;
         }
     }
 
-    async getChatRoomById(chatRoomId: string):Promise<IChatRoom | null> {
+    async getChatRoomById(chatroomId: string): Promise<IChatRoom | null> {
         try {
-            return await this.chatRepository.findChatRoomById(chatRoomId);
+            return await this.chatRepository.findChatRoomById(chatroomId);
         } catch (error) {
             console.log("Error getChatRoomById:", error);
             throw error;
         }
     }
 
-    async getUpdateChatRoomRead(chatRoomId: string):Promise<{ message: IMessage[]; chat: IChatRoom | null }>  {
+    async getUpdateChatRoomRead(
+        chatRoomId: string
+    ): Promise<{ message: IMessage[]; chat: IChatRoom | null }> {
         try {
             return await this.chatRepository.findUpdateChatRoomRead(chatRoomId);
         } catch (error) {
@@ -37,7 +37,7 @@ export class ChatService implements IChatService{
             throw error;
         }
     }
-    async getUserChat(chatRoomId: string):Promise<IChatRoom[]>  {
+    async getUserChat(chatRoomId: string): Promise<IChatRoom[]> {
         try {
             return await this.chatRepository.findUserChat(chatRoomId);
         } catch (error) {
@@ -62,16 +62,25 @@ export class ChatService implements IChatService{
         receiverId: string
     ): Promise<IChatRoom | null> {
         try {
-            return await this.chatRepository.findCreateChatRoom(senderId, receiverId);
+            return await this.chatRepository.findCreateChatRoom(
+                senderId,
+                receiverId
+            );
         } catch (error) {
             console.log("Error getAllMessage:", error);
             throw error;
         }
     }
 
-    async getUpdateChatRoom(chatRoomId: string, messageId: string):Promise<IChatRoom | null>  {
+    async getUpdateChatRoom(
+        chatRoomId: string,
+        messageId: string
+    ): Promise<IChatRoom | null> {
         try {
-            return await this.chatRepository.findUpdateChatRoom(chatRoomId, messageId);
+            return await this.chatRepository.findUpdateChatRoom(
+                chatRoomId,
+                messageId
+            );
         } catch (error) {
             console.log("Error gerUpdateChatRoom:", error);
             throw error;
@@ -115,7 +124,7 @@ export class ChatService implements IChatService{
         }
     }
 
-    async getUnReadMessages(userId: string):Promise<number> {
+    async getUnReadMessages(userId: string): Promise<number> {
         try {
             return await this.chatRepository.findUnReadMessages(userId);
         } catch (error) {

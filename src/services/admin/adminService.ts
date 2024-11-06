@@ -8,11 +8,10 @@ import { IAdminService } from "./adminServiceInterface";
 import { IAdminRepository } from "../../respository/admin/adminRepositoryInterface";
 
 export class AdminService implements IAdminService {
-
     private adminRepository: IAdminRepository;
-  
+
     constructor(adminRepository: IAdminRepository) {
-      this.adminRepository = adminRepository;
+        this.adminRepository = adminRepository;
     }
 
     async getAdminByEmail(email: string): Promise<IAdmin | null> {
@@ -40,7 +39,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getGenre(genreId: string):Promise<IGenre | null> {
+    async getGenre(genreId: string): Promise<IGenre | null> {
         try {
             return await this.adminRepository.findGenre(genreId);
         } catch (error) {
@@ -49,7 +48,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getAllUsers():Promise<IUser[]> {
+    async getAllUsers(): Promise<IUser[]> {
         try {
             return await this.adminRepository.findAllUsers();
         } catch (error) {
@@ -67,7 +66,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getAllTotalRentedBooks():Promise<IBooks[]> {
+    async getAllTotalRentedBooks(): Promise<IBooks[]> {
         try {
             return await this.adminRepository.findAllTotalRentedBooks();
         } catch (error) {
@@ -75,7 +74,7 @@ export class AdminService implements IAdminService {
             throw error;
         }
     }
-    async getAllTotalBooks():Promise<IBooks[]> {
+    async getAllTotalBooks(): Promise<IBooks[]> {
         try {
             return await this.adminRepository.findAllTotalBooks();
         } catch (error) {
@@ -107,7 +106,7 @@ export class AdminService implements IAdminService {
             throw error;
         }
     }
-    async getAllOrders():Promise<IOrder[]> {
+    async getAllOrders(): Promise<IOrder[]> {
         try {
             return await this.adminRepository.findAllOrders();
         } catch (error) {
@@ -124,7 +123,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getAllGenres():Promise<IGenre[]> {
+    async getAllGenres(): Promise<IGenre[]> {
         try {
             return await this.adminRepository.findAllGenres();
         } catch (error) {
@@ -133,7 +132,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getUpdateGenre(data: Genre, genreId: string):Promise<IGenre | null>{
+    async getUpdateGenre(data: Genre, genreId: string): Promise<IGenre | null> {
         try {
             return await this.adminRepository.findUpdateGenre(data, genreId);
         } catch (error) {
@@ -142,7 +141,7 @@ export class AdminService implements IAdminService {
         }
     }
 
-    async getDeleteGenre(genreId:string):Promise<IGenre | null>{
+    async getDeleteGenre(genreId: string): Promise<IGenre | null> {
         try {
             return await this.adminRepository.findDeleteGenre(genreId);
         } catch (error) {

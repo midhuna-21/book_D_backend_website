@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminRefreshTokenController = void 0;
+exports.adminRefreshToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
 const config_1 = __importDefault(require("../config/config"));
 const services_1 = require("../services");
-const adminRefreshTokenController = async (req, res) => {
+const adminRefreshToken = async (req, res) => {
     try {
         const role = req.body.role;
         const cookieName = "adminrefreshToken";
@@ -40,7 +40,7 @@ const adminRefreshTokenController = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
         const adminId = admin._id.toString();
-        const tokens = (0, adminGenerateToken_1.adminGenerateTokens)(res, { adminId, role });
+        const tokens = (0, adminGenerateToken_1.generateAdminTokens)(res, { adminId, role });
         return res.status(200).json({
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
@@ -51,5 +51,5 @@ const adminRefreshTokenController = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-exports.adminRefreshTokenController = adminRefreshTokenController;
+exports.adminRefreshToken = adminRefreshToken;
 //# sourceMappingURL=adminRefreshToken.js.map

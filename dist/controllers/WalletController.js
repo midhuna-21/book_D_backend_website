@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkWallet = exports.paymentWallet = exports.walletTransactions = void 0;
+exports.checkWalletStatus = exports.processWalletPayment = exports.fetchWalletTransactions = void 0;
 const index_1 = require("../services/index");
 const stripe_1 = __importDefault(require("stripe"));
 const config_1 = __importDefault(require("../config/config"));
 const walletModel_1 = require("../model/walletModel");
-const walletTransactions = async (req, res) => {
+const fetchWalletTransactions = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
@@ -24,10 +24,10 @@ const walletTransactions = async (req, res) => {
         });
     }
 };
-exports.walletTransactions = walletTransactions;
+exports.fetchWalletTransactions = fetchWalletTransactions;
 const stripeKey = config_1.default.STRIPE_KEY;
 const stripe = new stripe_1.default(stripeKey, { apiVersion: "2024-06-20" });
-const checkWallet = async (req, res) => {
+const checkWalletStatus = async (req, res) => {
     try {
         const userId = req.userId;
         let isWalletExist = await index_1.walletService.getWalletTransactions(userId);
@@ -46,8 +46,8 @@ const checkWallet = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-exports.checkWallet = checkWallet;
-const paymentWallet = async (req, res) => {
+exports.checkWalletStatus = checkWalletStatus;
+const processWalletPayment = async (req, res) => {
     try {
         const { amount } = req.body;
         const userId = req.userId;
@@ -76,5 +76,5 @@ const paymentWallet = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-exports.paymentWallet = paymentWallet;
+exports.processWalletPayment = processWalletPayment;
 //# sourceMappingURL=WalletController.js.map

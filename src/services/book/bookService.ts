@@ -5,13 +5,13 @@ import { IOrder } from "../../model/orderModel";
 import { IBookService } from "./bookServiceInterface";
 import { IBookRepository } from "../../respository/book/bookRepositoryInterface";
 
-export class BookService implements IBookService{
+export class BookService implements IBookService {
     private bookRepository: IBookRepository;
-  
+
     constructor(bookRepository: IBookRepository) {
-      this.bookRepository = bookRepository;
+        this.bookRepository = bookRepository;
     }
-    
+
     async getAddToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
             return await this.bookRepository.addToBookRent(bookRentData);
@@ -35,7 +35,7 @@ export class BookService implements IBookService{
             throw error;
         }
     }
-    async getIsOrderExist(sessionId: string):Promise<IOrder | null> {
+    async getIsOrderExist(sessionId: string): Promise<IOrder | null> {
         try {
             return await this.bookRepository.findIsOrderExist(sessionId);
         } catch (error) {
@@ -49,7 +49,10 @@ export class BookService implements IBookService{
         bookId: string
     ): Promise<IBooks | null> {
         try {
-            return await this.bookRepository.updateBookRent(bookRentData, bookId);
+            return await this.bookRepository.updateBookRent(
+                bookRentData,
+                bookId
+            );
         } catch (error) {
             console.log("Error geUpdateBookRent:", error);
             throw error;
@@ -73,7 +76,7 @@ export class BookService implements IBookService{
         }
     }
 
-    async getGenres():Promise<IGenre[]> {
+    async getGenres(): Promise<IGenre[]> {
         try {
             return await this.bookRepository.findGenres();
         } catch (error) {
@@ -82,16 +85,18 @@ export class BookService implements IBookService{
         }
     }
 
-    async getAllGenres(userId: string):Promise<IGenre[]>  {
+    async getGenresWithAvailableBooks(userId: string): Promise<IGenre[]> {
         try {
-            return await this.bookRepository.findAllGenres(userId);
+            return await this.bookRepository.findGenresWithAvailableBooks(
+                userId
+            );
         } catch (error) {
             console.log("Error getAllGenres:", error);
             throw error;
         }
     }
 
-    async getAllBooks():Promise<IBooks[]> {
+    async getAllBooks(): Promise<IBooks[]> {
         try {
             const books = await this.bookRepository.findAllBooks();
             return books;
@@ -110,33 +115,24 @@ export class BookService implements IBookService{
         }
     }
 
-    async getOrders(userId: string):Promise<IOrder[]> {
-        try {
-            return await this.bookRepository.findOrders(userId);
-        } catch (error) {
-            console.log("Error getOrders:", error);
-            throw error;
-        }
-    }
-
-    async getRentList(userId: string):Promise<IOrder[]> {
+    async getRentList(userId: string): Promise<IOrder[]> {
         try {
             return await this.bookRepository.findRentList(userId);
         } catch (error) {
-            console.log("Error getOrders:", error);
+            console.log("Error getRentList:", error);
             throw error;
         }
     }
-    async getLendList(userId: string):Promise<IOrder[]> {
+    async getLendList(userId: string): Promise<IOrder[]> {
         try {
             return await this.bookRepository.findLendList(userId);
         } catch (error) {
-            console.log("Error getOrders:", error);
+            console.log("Error getLendList:", error);
             throw error;
         }
     }
 
-    async getCreateOrder(data: Order):Promise<IOrder | null> {
+    async getCreateOrder(data: Order): Promise<IOrder | null> {
         try {
             return await this.bookRepository.findCreateOrder(data);
         } catch (error) {
@@ -144,7 +140,10 @@ export class BookService implements IBookService{
             throw error;
         }
     }
-    async getUpdateOrder(userId: string, bookId: string):Promise<IOrder | null> {
+    async getUpdateOrder(
+        userId: string,
+        bookId: string
+    ): Promise<IOrder | null> {
         try {
             return await this.bookRepository.findUpdateOrder(userId, bookId);
         } catch (error) {
@@ -153,16 +152,22 @@ export class BookService implements IBookService{
         }
     }
 
-    async getOrderToShowSuccess(userId: string, bookId: string):Promise<IOrder | null> {
+    async getOrderToShowSuccess(
+        userId: string,
+        bookId: string
+    ): Promise<IOrder | null> {
         try {
-            return await this.bookRepository.findOrderToShowSuccess(userId, bookId);
+            return await this.bookRepository.findOrderToShowSuccess(
+                userId,
+                bookId
+            );
         } catch (error) {
             console.log("Error getOrderToShowSuccess:", error);
             throw error;
         }
     }
 
-    async getSearchResult(searchQuery: string):Promise<IBooks[]> {
+    async getSearchResult(searchQuery: string): Promise<IBooks[]> {
         try {
             return await this.bookRepository.findSearchResult(searchQuery);
         } catch (error) {
@@ -174,7 +179,7 @@ export class BookService implements IBookService{
     async getUpdateOrderStatusRenter(
         selectedOrderId: string,
         bookStatus: string
-    ) :Promise<IOrder | null>{
+    ): Promise<IOrder | null> {
         try {
             return await this.bookRepository.findUpdateOrderStatusRenter(
                 selectedOrderId,
@@ -188,13 +193,26 @@ export class BookService implements IBookService{
     async getUpdateOrderStatusLender(
         selectedOrderId: string,
         bookStatus: string
-    ):Promise<IOrder | null> {
+    ): Promise<IOrder | null> {
         try {
-            const result = await this.bookRepository.findUpdateOrderStatusLender(
-                selectedOrderId,
-                bookStatus
-            ) as IOrder | null
-            return result || null
+            const result =
+                (await this.bookRepository.findUpdateOrderStatusLender(
+                    selectedOrderId,
+                    bookStatus
+                )) as IOrder | null;
+            return result || null;
+        } catch (error) {
+            console.log("Error getUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+
+    async getAvailableBooksForRent(
+       userId: string
+    ): Promise<IBooks[]> {
+        try {
+            return await this.bookRepository.findAvailableBooksForRent(userId)
+            
         } catch (error) {
             console.log("Error getUpdateOrderStatus:", error);
             throw error;

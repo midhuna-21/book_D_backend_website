@@ -1,24 +1,22 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { UserService } from "../services/user/userService";
-import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
+import { generateUserTokens } from "../utils/jwt/userGenerateToken";
 import config from "../config/config";
 import { UserRepository } from "../respository/user/userRepository";
 
-const userRepository = new UserRepository(); 
+const userRepository = new UserRepository();
 const userService = new UserService(userRepository);
 
-const userRefreshTokenController = async (req: Request, res: Response) => {
+const userRefreshToken = async (req: Request, res: Response) => {
     try {
         const role = req.body.role;
         const cookieName = "userrefreshToken";
         const cookieToken = req.cookies[cookieName];
         if (!cookieToken) {
-            return res
-                .status(401)
-                .json({
-                    message: "No token, authorization denied or token mismatch",
-                });
+            return res.status(401).json({
+                message: "No token, authorization denied or token mismatch",
+            });
         }
         let decoded: JwtPayload;
         try {
@@ -51,7 +49,7 @@ const userRefreshTokenController = async (req: Request, res: Response) => {
         }
 
         const userId = (user._id as unknown as string).toString();
-        const tokens = userGenerateTokens(res, { userId, role });
+        const tokens = generateUserTokens(res, { userId, role });
         return res.status(200).json({
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
@@ -62,4 +60,4 @@ const userRefreshTokenController = async (req: Request, res: Response) => {
     }
 };
 
-export { userRefreshTokenController };
+export { userRefreshToken };

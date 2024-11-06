@@ -1,10 +1,10 @@
-import { UserRepository } from './user/userRepository';
-import { BookRepository } from './book/bookRepository';
-import { WalletRepository } from './wallet/walletRepository';
-import { AdminRepository } from './admin/adminRespository';
-import { ChatRepository } from './chat/chatRepository';
-import { NotificationRepository } from './notification/notificationRepository';
-import { CartRepository } from './cart/cartRepository';
+import { UserRepository } from "./user/userRepository";
+import { BookRepository } from "./book/bookRepository";
+import { WalletRepository } from "./wallet/walletRepository";
+import { AdminRepository } from "./admin/adminRespository";
+import { ChatRepository } from "./chat/chatRepository";
+import { NotificationRepository } from "./notification/notificationRepository";
+import { CartRepository } from "./cart/cartRepository";
 
 const userRepository = new UserRepository();
 const bookRepository = new BookRepository();
@@ -15,11 +15,11 @@ const chatRepository = new ChatRepository();
 const cartRepository = new CartRepository();
 
 export {
-  userRepository,
-  bookRepository,
-  walletRepository,
-  adminRepository,
-  notificationRepository,
-  chatRepository,
-  cartRepository
+    userRepository,
+    bookRepository,
+    walletRepository,
+    adminRepository,
+    notificationRepository,
+    chatRepository,
+    cartRepository,
 };

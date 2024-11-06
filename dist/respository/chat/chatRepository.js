@@ -29,7 +29,9 @@ class ChatRepository {
     }
     async findUpdateChatRoomRead(chatRoomId) {
         try {
-            const messages = await message_1.message.find({ chatRoomId: chatRoomId }).exec();
+            const messages = await message_1.message
+                .find({ chatRoomId: chatRoomId })
+                .exec();
             await message_1.message
                 .updateMany({ chatRoomId: chatRoomId }, { isRead: true }, { new: true })
                 .exec();
@@ -43,7 +45,7 @@ class ChatRepository {
             throw error;
         }
     }
-    async findUserMessagesList(userId) {
+    async findUserChatList(userId) {
         try {
             const chatRooms = await chatRoom_1.chatRoom
                 .find({
@@ -59,17 +61,18 @@ class ChatRepository {
                 const receiverId = chatRoom.receiverId;
                 return (senderId && receiverId) !== null;
             });
+            console.log(filteredChatRooms, 'filteredChatRooms');
             return filteredChatRooms;
         }
         catch (error) {
-            console.log("Error MessagesList:", error);
+            console.log("Error findUserChatList:", error);
             throw error;
         }
     }
-    async findUserChat(chatRoomId) {
+    async findUserChat(chatroomId) {
         try {
             const chatRoomData = await chatRoom_1.chatRoom
-                .findById(chatRoomId)
+                .findById(chatroomId)
                 .populate({
                 path: "receiverId",
                 select: "name image",

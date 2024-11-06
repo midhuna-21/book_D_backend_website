@@ -107,9 +107,11 @@ class NotificationRepository {
             throw error;
         }
     }
-    async findUpdateNotifications(userId) {
+    async findUpdateNotificationsIsread(userId) {
         try {
-            const notifications = await notificationModel_1.notification.find({ receiverId: userId });
+            const notifications = await notificationModel_1.notification.find({
+                receiverId: userId,
+            });
             if (notifications.length === 0) {
                 return null;
             }

@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGenerateTokens = void 0;
+exports.generateAdminTokens = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config/config"));
-const adminGenerateTokens = (res, payload) => {
+const generateAdminTokens = (res, payload) => {
     const accessToken = jsonwebtoken_1.default.sign({ adminId: payload.adminId, role: payload.role }, config_1.default.JWT_SECRET, {
-        expiresIn: "1m",
+        expiresIn: "1h",
     });
     const refreshToken = jsonwebtoken_1.default.sign({ adminId: payload.adminId, role: payload.role }, config_1.default.JWT_SECRET, {
         expiresIn: "30d",
@@ -22,5 +22,5 @@ const adminGenerateTokens = (res, payload) => {
     });
     return { accessToken, refreshToken };
 };
-exports.adminGenerateTokens = adminGenerateTokens;
+exports.generateAdminTokens = generateAdminTokens;
 //# sourceMappingURL=adminGenerateToken.js.map

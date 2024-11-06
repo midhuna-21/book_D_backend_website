@@ -34,10 +34,10 @@ const transactionSchema = new mongoose.Schema(
 
 const bookDWalletSchema = new mongoose.Schema(
     {
-         adminId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "admin",
-    },
+        adminId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "admin",
+        },
         balance: {
             type: Number,
             default: 0,

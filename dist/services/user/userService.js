@@ -10,7 +10,7 @@ class UserService {
             return await this.userRepository.findCreateUser(data);
         }
         catch (error) {
-            console.log("Error getUserByGmail:", error);
+            console.log("Error getCreateUser:", error);
             throw error;
         }
     }
@@ -87,9 +87,9 @@ class UserService {
             throw error;
         }
     }
-    async getUserById(lenderId) {
+    async getUserById(userId) {
         try {
-            return await this.userRepository.findUserById(lenderId);
+            return await this.userRepository.findUserById(userId);
         }
         catch (error) {
             console.log("Error getUserById:", error);

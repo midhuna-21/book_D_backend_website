@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import { Cart } from "../interfaces/data";
 import { cartService } from "../services/index";
 
-
-const saveCart = async (req: Request, res: Response) => {
+const addItemToCart = async (req: Request, res: Response) => {
     try {
         const {
             userId,
@@ -31,7 +30,7 @@ const saveCart = async (req: Request, res: Response) => {
             totalRentalPrice,
         };
         const cart = await cartService.getCreateCart(data);
-       
+
         return res.status(200).json({ cart });
     } catch (error: any) {
         console.log("Error saveRequest:", error);
@@ -41,47 +40,27 @@ const saveCart = async (req: Request, res: Response) => {
     }
 };
 
-const checkAccept = async (req: Request, res: Response) => {
-    try {
-        const { userId, bookId } = req.params;
-        if (!userId || !bookId) {
-            return res
-                .status(400)
-                .json({ message: "User ID or Book ID not found in request" });
-        }
+// const checkRentalAcceptance = async (req: Request, res: Response) => {
+//     try {
+//         const { userId, bookId } = req.params;
+//         if (!userId || !bookId) {
+//             return res
+//                 .status(400)
+//                 .json({ message: "User ID or Book ID not found in request" });
+//         }
 
-        const isAccepted = await cartService.getCheckAccepted(userId, bookId);
+//         const isAccepted = await cartService.getCheckAccepted(userId, bookId);
 
-        return res.status(200).json({ isAccepted });
-    } catch (error: any) {
-        console.log("Error checkAccept:", error);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at checkAccept" });
-    }
-};
+//         return res.status(200).json({ isAccepted });
+//     } catch (error: any) {
+//         console.log("Error checkAccept:", error);
+//         return res
+//             .status(500)
+//             .json({ message: "Internal server error at checkAccept" });
+//     }
+// };
 
-const checkUserSentRequest = async (req: Request, res: Response) => {
-    try {
-        const { userId, bookId } = req.params;
-        if (!userId || !bookId) {
-            return res
-                .status(400)
-                .json({ message: "User ID or Book ID not found in request" });
-        }
-
-        const isRequested = await cartService.getCheckRequest(userId, bookId);
-
-        return res.status(200).json({ isRequested });
-    } catch (error: any) {
-        console.log("Error checkUserSent:", error);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at checkUserSent" });
-    }
-};
-
-const updateCart = async (req: Request, res: Response) => {
+const updateCartItem = async (req: Request, res: Response) => {
     try {
         const { cartId } = req.params;
         const { types } = req.body;
@@ -103,4 +82,4 @@ const updateCart = async (req: Request, res: Response) => {
     }
 };
 
-export { checkUserSentRequest, checkAccept, saveCart, updateCart };
+export {addItemToCart, updateCartItem };

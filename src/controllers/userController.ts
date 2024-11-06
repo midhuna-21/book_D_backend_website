@@ -4,11 +4,10 @@ import {
     hashPassword,
 } from "../utils/ReuseFunctions/passwordValidation";
 import { UserService } from "../services/user/userService";
-import { otpGenerate } from "../utils/ReuseFunctions/otpGenerate";
-import { userGenerateTokens } from "../utils/jwt/userGenerateToken";
+import { generateOtp } from "../utils/ReuseFunctions/otpGenerator";
+import { generateUserTokens } from "../utils/jwt/userGenerateToken";
 import crypto from "crypto";
 import axios from "axios";
-import sharp from "sharp";
 import {
     PutObjectCommand,
     PutObjectCommandInput,
@@ -19,12 +18,13 @@ import { s3Client } from "../utils/imageFunctions/store";
 import { IUser } from "../model/userModel";
 import { User } from "../interfaces/data";
 import { Types } from "mongoose";
-import { getSignedImageUrl } from "../utils/imageFunctions/getImageFromS3";
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
 import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
-import { Twilio } from "twilio";
 import { UserRepository } from "../respository/user/userRepository";
 
+interface CustomFile extends Express.Multer.File {
+    location?: string;
+}
 const uploadImageToS3 = async (
     imageBuffer: Buffer,
     fileName: string
@@ -42,39 +42,10 @@ const uploadImageToS3 = async (
     return `https://${config.BUCKET_NAME}.s3.${config.BUCKET_REGION}.amazonaws.com/${fileName}`;
 };
 
-const twilioClient = new Twilio(
-    config.TWILIO_ACCOUNT_SID,
-    config.TWILIO_AUTH_TOKEN
-);
-
-interface CustomFile extends Express.Multer.File {
-    location?: string;
-}
 const userRepository = new UserRepository();
 const userService = new UserService(userRepository);
 
-const sendOTP = async (req: Request, res: Response) => {
-    try {
-        const { phone } = req.body;
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log(otp, "otp");
-        const message = await twilioClient.messages.create({
-            body: `Your verification code is ${otp} for our Book.D website`,
-            from: "+13146280298",
-            to: phone,
-        });
-
-        res.cookie("otp", otp, { maxAge: 60000 });
-        return res
-            .status(200)
-            .json({ message: "OTP generated and sent successfully" });
-    } catch (error) {
-        console.error("Error sending OTP:", error);
-        throw error;
-    }
-};
-
-const signUp = async (req: Request, res: Response) => {
+const createNewUser = async (req: Request, res: Response) => {
     try {
         const { name, email, phone, password } = req.body;
 
@@ -89,8 +60,8 @@ const signUp = async (req: Request, res: Response) => {
         }
         const securePassword = await hashPassword(password);
         const user: User = { name, email, phone, password: securePassword };
-        const otp = await otpGenerate(email);
-        console.log(otp, "signup");
+        const otp = await generateOtp(email);
+        console.log(otp, "createNewUser");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     } catch (error: any) {
@@ -99,10 +70,10 @@ const signUp = async (req: Request, res: Response) => {
     }
 };
 
-const resendOtp = async (req: Request, res: Response) => {
+const requestOtpResend = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
-        let otp = await otpGenerate(email);
+        let otp = await generateOtp(email);
         console.log(otp, "resend");
         res.cookie("otp", otp, { maxAge: 60000 });
         return res
@@ -114,7 +85,7 @@ const resendOtp = async (req: Request, res: Response) => {
     }
 };
 
-const verifyOtp = async (req: Request, res: Response) => {
+const validateOtp = async (req: Request, res: Response) => {
     try {
         const { response, origin, otp } = req.body;
         const { name, email, phone, password } = response;
@@ -136,11 +107,9 @@ const verifyOtp = async (req: Request, res: Response) => {
                 phone,
                 password,
             });
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            } else {
-                const userId = user._id.toString();
-                const { accessToken, refreshToken } = userGenerateTokens(res, {
+            if (user) {
+                const userId = user._id.toString()!;
+                const { accessToken, refreshToken } = generateUserTokens(res, {
                     userId,
                     role: "user",
                 });
@@ -161,12 +130,12 @@ const verifyOtp = async (req: Request, res: Response) => {
     }
 };
 
-const loginUser = async (req: Request, res: Response) => {
+const authenticateUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
         let user: IUser | null = await userService.getUserByEmail(email);
         if (!user) {
-            return res.status(400).json({ message: "Invalid email" });
+            return res.status(401).json({ message: "Invalid email" });
         }
         if (user.isBlocked) {
             return res.status(400).json({
@@ -175,7 +144,7 @@ const loginUser = async (req: Request, res: Response) => {
             });
         }
         if (!user.password) {
-            return res.status(400).json({ message: "Invalid password" });
+            return res.status(401).json({ message: "Invalid password" });
         }
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
@@ -183,10 +152,11 @@ const loginUser = async (req: Request, res: Response) => {
         }
 
         const userId: string = (user._id as Types.ObjectId).toString();
-        const { accessToken, refreshToken } = userGenerateTokens(res, {
+        const { accessToken, refreshToken } = generateUserTokens(res, {
             userId,
             role: "user",
         });
+        console.log(user);
         return res.status(200).json({ user, accessToken, refreshToken });
     } catch (error: any) {
         console.error(error.message);
@@ -194,7 +164,7 @@ const loginUser = async (req: Request, res: Response) => {
     }
 };
 
-const loginByGoogle = async (req: Request, res: Response) => {
+const authenticateWithGoogle = async (req: Request, res: Response) => {
     try {
         const { name, email, image } = req.body;
         let existUser = await userService.getUserByEmail(email);
@@ -203,7 +173,7 @@ const loginByGoogle = async (req: Request, res: Response) => {
         }
         if (existUser?.isGoogle == true) {
             const userId = existUser._id.toString();
-            const { accessToken, refreshToken } = userGenerateTokens(res, {
+            const { accessToken, refreshToken } = generateUserTokens(res, {
                 userId,
                 role: "user",
             });
@@ -245,7 +215,7 @@ const loginByGoogle = async (req: Request, res: Response) => {
                 return res.status(400).json({ message: "user is not created" });
             } else {
                 const userId = user._id.toString();
-                const { accessToken, refreshToken } = userGenerateTokens(res, {
+                const { accessToken, refreshToken } = generateUserTokens(res, {
                     userId,
                     role: "user",
                 });
@@ -260,13 +230,14 @@ const loginByGoogle = async (req: Request, res: Response) => {
             }
         }
     } catch (error: any) {
-        console.error("Error in loginByGoogle:", error);
+        console.error("Error in authenticateWithGoogle:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
 
 const linkGoogleAccount = async (req: Request, res: Response) => {
     try {
+        console.log(req.body, "bo");
         const { email, password } = req.body;
         const isUser = await userService.getUserByEmail(email);
         if (!isUser) {
@@ -288,7 +259,7 @@ const linkGoogleAccount = async (req: Request, res: Response) => {
     }
 };
 
-const googleLog = async (req: Request, res: Response) => {
+const processGoogleLogin = async (req: Request, res: Response) => {
     try {
         const credentialResponse = req.body;
 
@@ -306,11 +277,11 @@ const googleLog = async (req: Request, res: Response) => {
         );
         return res.status(200).json(response.data);
     } catch (error) {
-        console.log("Error googleLog:", error);
+        console.log("Error processGoogleLogin:", error);
         return res.status(400).json({ message: "Internal server error" });
     }
 };
-const updateUser = async (req: AuthenticatedRequest, res: Response) => {
+const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { formData } = req.body;
         const { name, email, phone, address } = formData;
@@ -341,7 +312,10 @@ const updateUser = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
+const updateUserProfileImage = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const userId = req.userId!;
         const userExist: IUser | null = await userService.getUserById(userId);
@@ -364,7 +338,10 @@ const updateProfileImage = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const deleteUserImage = async (req: AuthenticatedRequest, res: Response) => {
+const removeUserProfileImage = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const { imageToRemove } = req.body;
         const userId = req.userId;
@@ -389,14 +366,14 @@ const deleteUserImage = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const verifyEmail = async (req: Request, res: Response) => {
+const sendOtpForForgotPassword = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
         let isValidEmail: IUser | null = await userService.getUserByEmail(
             email
         );
         if (isValidEmail) {
-            const otp = await otpGenerate(email);
+            const otp = await generateOtp(email);
             console.log(otp, "forgot");
             res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
@@ -409,25 +386,9 @@ const verifyEmail = async (req: Request, res: Response) => {
     }
 };
 
-const verifyPhoneNumber = async (req: Request, res: Response) => {
+const resetUserPassword = async (req: Request, res: Response) => {
     try {
-        const { phone } = req.body;
-        let isValidPhone: IUser | null = await userService.getUserByPhone(
-            phone
-        );
-        if (isValidPhone) {
-            return res.status(200).json({ isValidPhone });
-        } else {
-            return res.status(401).json({ message: "Invalid Phone number" });
-        }
-    } catch (error: any) {
-        console.log(error.message);
-        return res.status(500).json({ error: "Internal server error" });
-    }
-};
-
-const updatePassword = async (req: Request, res: Response) => {
-    try {
+        console.log(req.body, "requd");
         const { resetToken, resetTokenExpiration, password, email } = req.body;
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email!;
@@ -446,10 +407,6 @@ const updatePassword = async (req: Request, res: Response) => {
             resetTokenExpiration,
         };
         const user: IUser | null = await userService.getUpdatePassword(data);
-
-        if (user?.image) {
-            user.image = await getSignedImageUrl(user.image);
-        }
         return res.status(200).json({ user });
     } catch (error: any) {
         console.log(error.message);
@@ -467,12 +424,16 @@ const logoutUser = async (req: Request, res: Response) => {
     }
 };
 
-const sendUnlinkEmail = async (req: AuthenticatedRequest, res: Response) => {
+const sendEmailForUnlinking = async (
+    req: AuthenticatedRequest,
+    res: Response
+) => {
     try {
         const userId = req.userId;
         if (!userId) {
             return res.status(400).json({ message: "user not found" });
         }
+        console.log(userId, "userId");
         const isUser = await userService.getUserById(userId);
         if (!isUser) {
             return res.status(400).json({ message: "user not found" });
@@ -498,31 +459,7 @@ const sendUnlinkEmail = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-const getUser = async (req: Request, res: Response) => {
-    try {
-        const { receiverId } = req.params;
-        if (!receiverId) {
-            return res
-                .status(400)
-                .json({ message: "User ID not found in request" });
-        }
-
-        const receiver = await userService.getUserById(receiverId);
-        if (!receiver) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        if (receiver?.image) {
-            receiver.image = await getSignedImageUrl(receiver?.image);
-        }
-        return res.status(200).json({ receiver });
-    } catch (error: any) {
-        console.log(error.message);
-        return res
-            .status(500)
-            .json({ message: "Internal server error at notifications" });
-    }
-};
-const calculateDistance = async (req: Request, res: Response) => {
+const computeLocationDistance = async (req: Request, res: Response) => {
     try {
         const key = "AIzaSyD06G78Q2_d18EkXbsYsyg7qb2O-WWUU-Q";
         const { lat1, lng1, lat2, lng2 } = req.query;
@@ -531,7 +468,6 @@ const calculateDistance = async (req: Request, res: Response) => {
                 message: "Error while getting while calculating distance",
             });
         }
-        // console.log(lat1,'lat1',lat2,'lat2',lng1,'lng1',lng2,'lng2')
         const origin = `${lat1},${lng1}`;
         const destination = `${lat2},${lng2}`;
 
@@ -539,7 +475,6 @@ const calculateDistance = async (req: Request, res: Response) => {
         try {
             const response = await axios.get(url);
             const data = response.data;
-            // console.log(data,'data')
             if (data.status === "OK") {
                 const distance = data.rows[0].elements[0].distance.value;
                 const distanceResponse = distance / 1000;
@@ -563,43 +498,36 @@ const calculateDistance = async (req: Request, res: Response) => {
     }
 };
 
-const userDetails = async (req: Request, res: Response) => {
+const checkUserIsblock = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const { lenderId } = req.params;
-        if (!lenderId) {
-            return res.status(500).json({ message: "Lender id not found" });
-        }
-        const lender = await userService.getUserById(lenderId);
-        if (lender?.image) {
-            lender.image = await getSignedImageUrl(lender.image);
-        }
-        return res.status(200).json({ lender });
+        const userId = req.userId;
+        const user = await userService.getUserById(userId!);
+        const isBlock = user?.isBlocked;
+        console.log(isBlock, "isBlock");
+        return res.status(200).json({ isBlock });
     } catch (error: any) {
-        console.log("Error userDetails:", error);
+        console.log("Error checkUserIsblock controller:", error);
         return res
             .status(500)
-            .json({ message: "Internal server error at userDetails" });
+            .json({ message: "Internal server error at checkUserIsblock" });
     }
 };
 
 export {
-    signUp,
-    resendOtp,
-    loginUser,
-    loginByGoogle,
-    verifyPhoneNumber,
-    verifyOtp,
-    updatePassword,
+    createNewUser,
+    requestOtpResend,
+    authenticateUser,
+    authenticateWithGoogle,
+    validateOtp,
+    resetUserPassword,
     logoutUser,
-    updateUser,
-    updateProfileImage,
-    deleteUserImage,
-    getUser,
-    sendUnlinkEmail,
-    googleLog,
+    updateUserProfile,
+    updateUserProfileImage,
+    removeUserProfileImage,
+    sendEmailForUnlinking,
+    processGoogleLogin,
     linkGoogleAccount,
-    calculateDistance,
-    userDetails,
-    sendOTP,
-    verifyEmail,
+    computeLocationDistance,
+    sendOtpForForgotPassword,
+    checkUserIsblock,
 };

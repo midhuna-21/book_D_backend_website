@@ -4,11 +4,11 @@ import { IWalletRepository } from "../../respository/wallet/walletRepositoryInte
 
 export class WalletService implements IWalletService {
     private walletRepository: IWalletRepository;
-  
+
     constructor(walletRepository: IWalletRepository) {
-      this.walletRepository = walletRepository;
+        this.walletRepository = walletRepository;
     }
-    async getWalletTransactions(userId: string):Promise<IWallet | null> {
+    async getWalletTransactions(userId: string): Promise<IWallet | null> {
         try {
             return await this.walletRepository.findWalletTransactions(userId);
         } catch (error) {
@@ -17,7 +17,7 @@ export class WalletService implements IWalletService {
         }
     }
 
-    async getWalletByAdminId(adminId: string):Promise<any> {
+    async getWalletByAdminId(adminId: string): Promise<any> {
         try {
             return await this.walletRepository.findWalletByAdminId(adminId);
         } catch (error) {
@@ -26,7 +26,7 @@ export class WalletService implements IWalletService {
         }
     }
 
-    async getCreateWalletAdmin(adminId: string):Promise<IWallet | null> {
+    async getCreateWalletAdmin(adminId: string): Promise<IWallet | null> {
         try {
             return await this.walletRepository.findCreateWalletAdmin(adminId);
         } catch (error) {
@@ -35,9 +35,17 @@ export class WalletService implements IWalletService {
         }
     }
 
-    async getUpdateBookWallet(lenderId:string,totalAmount:number,userId:string):Promise<IWallet | null> {
+    async getUpdateBookWallet(
+        lenderId: string,
+        totalAmount: number,
+        userId: string
+    ): Promise<IWallet | null> {
         try {
-            return await this.walletRepository.findUpdateBookWallet(lenderId,totalAmount,userId);
+            return await this.walletRepository.findUpdateBookWallet(
+                lenderId,
+                totalAmount,
+                userId
+            );
         } catch (error) {
             console.error("Error createWallet:", error);
             throw error;

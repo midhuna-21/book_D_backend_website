@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { adminGenerateTokens } from "../utils/jwt/adminGenerateToken";
+import { generateAdminTokens } from "../utils/jwt/adminGenerateToken";
 import config from "../config/config";
 import { adminService } from "../services";
 
-
-const adminRefreshTokenController = async (req: Request, res: Response) => {
+const adminRefreshToken = async (req: Request, res: Response) => {
     try {
         const role = req.body.role;
         const cookieName = "adminrefreshToken";
@@ -44,7 +43,7 @@ const adminRefreshTokenController = async (req: Request, res: Response) => {
         }
 
         const adminId = (admin._id as unknown as string).toString();
-        const tokens = adminGenerateTokens(res, { adminId, role });
+        const tokens = generateAdminTokens(res, { adminId, role });
 
         return res.status(200).json({
             accessToken: tokens.accessToken,
@@ -56,4 +55,4 @@ const adminRefreshTokenController = async (req: Request, res: Response) => {
     }
 };
 
-export { adminRefreshTokenController };
+export { adminRefreshToken };

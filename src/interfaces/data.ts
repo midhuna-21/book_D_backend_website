@@ -76,10 +76,10 @@ export type ChatRoom = {
 };
 
 export type Cart = {
-    userId: string;
-    ownerId: string;
-    bookId: string;
-    types: string;
+    userId?: string;
+    ownerId?: string;
+    bookId?: string;
+    types?: string;
     totalDays?: number;
     totalAmount?: number;
     total_deposit_amount?: number;
