@@ -220,7 +220,7 @@ const authenticateWithGoogle = async (req: Request, res: Response) => {
                     role: "user",
                 });
 
-                return res.status(200).json({
+                return res.status(200).json({success:true,
                     user: {
                         ...user.toObject(),
                         accessToken,
