@@ -21,15 +21,17 @@ const app = express();
 
 const corsOptions = {
     origin: config.API,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
 };
+
 app.use(cors(corsOptions));
 
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: config.API,
-        methods: ["GET", "POST", "PUT"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
     },
 });
