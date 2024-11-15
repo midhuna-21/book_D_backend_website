@@ -6,14 +6,23 @@ interface IOrder extends Document {
     bookId: string;
     userId: string;
     lenderId: string;
-    sessionId: string;
+    sessionId?: string;
     isPaid?: boolean;
     bookStatusFromRenter: string;
     bookStatusFromLender: string;
     statusUpdateLenderDate?: Date;
     statusUpdateRenterDate?: Date;
     isAmountCredited?: boolean;
+    bookTitle:string;
+    bookAddress:string;
     reason: string;
+    bookStatus:string;
+    pickupCode: string;
+    returnCode: string;
+    rentedOn: Date;
+    dueDate:Date;
+    checkoutDate:Date;
+
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -22,37 +31,36 @@ const orderSchema = new Schema<IOrder>(
         bookId: { type: String, ref: "books" },
         userId: { type: String, ref: "user" },
         lenderId: { type: String, ref: "user" },
+        bookTitle:{type:String},
+        bookAddress:{type:String},
         sessionId: { type: String },
         isPaid: { type: Boolean, default: false },
         reason: { types: String },
-        bookStatusFromRenter: {
-            type: String,
-            enum: [
-                "not_reached",
-                "not_returned",
-                "completed",
-                "cancelled",
-                "overdue",
-            ],
-            default: "not_reached",
-        },
+       
         isAmountCredited: {
             type: Boolean,
             default: false,
         },
-        bookStatusFromLender: {
+        
+        bookStatus: {
             type: String,
             enum: [
-                "not_reached",
+                "not_picked_up",
                 "not_returned",
                 "completed",
                 "cancelled",
                 "overdue",
             ],
-            default: "not_reached",
+            default: "not_picked_up",
         },
         statusUpdateLenderDate: { type: Date },
         statusUpdateRenterDate: { type: Schema.Types.Date },
+        pickupCode: { type: String, required: true },
+        returnCode: { type: String, required: true },
+        rentedOn: { type: Date },
+        dueDate: { type: Date },
+        checkoutDate: { type: Date },
+
     },
 
     { timestamps: true }

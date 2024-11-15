@@ -62,4 +62,14 @@ export class CartService implements ICartService {
             throw error;
         }
     }
+
+    async getIsOrderExistByCart(cartId: string): Promise<ICart | null>{
+        try {
+            return await this.cartRepository.findIsOrderExistByCart(cartId);
+        } catch (error) {
+            console.log("Error getIsOrderExistByCart:", error);
+            throw error;
+        }
+    }
 }
+

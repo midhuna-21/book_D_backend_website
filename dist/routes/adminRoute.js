@@ -21,6 +21,7 @@ adminRoutes.post("/user/block", adminAuthMiddleware_1.adminVerifyToken, adminCon
 adminRoutes.post("/user/unblock", adminAuthMiddleware_1.adminVerifyToken, adminController_1.unblockUserAccount);
 adminRoutes.get("/books/lent", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchLentBooks);
 adminRoutes.get("/books", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchBooks);
+adminRoutes.get("/orders", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchOrders);
 adminRoutes.get("/books/rental-orders", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchRentalOrders);
 adminRoutes.get("/books/rental-order/:orderId", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchRentalOrderDetails);
 adminRoutes.get("/wallet/transactions", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchWalletTransactions);

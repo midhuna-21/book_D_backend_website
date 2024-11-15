@@ -6,6 +6,7 @@ interface ITransaction extends Document {
     source: string;
     orderId?: Types.ObjectId;
     createdAt: Date;
+    updatedAt?: Date;
 }
 
 interface IWallet extends Document {

@@ -14,6 +14,7 @@ const cartController_1 = require("../controllers/cartController");
 const userAuthMiddleware_1 = require("../utils/middleware/userAuthMiddleware");
 const userRefreshToken_1 = require("../controllers/userRefreshToken");
 const checkUserBlock_1 = require("../utils/middleware/checkUserBlock");
+const cartController_2 = require("../controllers/cartController");
 const userRoutes = express_1.default.Router();
 userRoutes.post('/refresh-token', userRefreshToken_1.userRefreshToken);
 userRoutes.post("/register", userController_1.createNewUser);
@@ -40,6 +41,9 @@ userRoutes.get("/books/details/:id", userAuthMiddleware_1.userVerifyToken, check
 userRoutes.get("/books/lent-books", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.fetchUserLentBooks);
 userRoutes.get("/books/search/:searchQuery", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.fetchBooksBySearch);
 userRoutes.put("/books/lent/update/:bookId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, store_1.default.array("images", 10), bookController_1.updateLentBookDetails);
+userRoutes.post("/books/archive", userAuthMiddleware_1.userVerifyToken, bookController_1.archiveBook);
+userRoutes.post("/books/unarchive", userAuthMiddleware_1.userVerifyToken, bookController_1.unArchiveBook);
+userRoutes.delete("/books/remove/:bookId", userAuthMiddleware_1.userVerifyToken, bookController_1.removeBook);
 //notifications
 userRoutes.post("/notifications/send-notification", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, notificationController_1.sendNotification);
 userRoutes.get("/notifications", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, notificationController_1.fetchUserNotifications);
@@ -77,9 +81,14 @@ userRoutes.get("/genres", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1
 //orders
 userRoutes.put("/books/rental-orders/status/update/:selectedOrderId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.updateOrderStatusByRenter);
 userRoutes.put("/books/lent-orders/lender/status/update/:selectedOrderId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.updateOrderStatusByLender);
+//confirmation of updating pickupcode 
+userRoutes.put("/books/lend-orders/lender/confirm/pickup/:orderId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.updateConfirmPickupByLender);
+userRoutes.put("/books/rental-orders/renter/confirm/return/:orderId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.updateConfirmReturnByRenter);
 //wallet
 userRoutes.get("/wallet/transactions", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, WalletController_1.fetchWalletTransactions);
-userRoutes.patch("/wallet/payment", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, WalletController_1.processWalletPayment);
-userRoutes.patch("/wallet/check", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, WalletController_1.checkWalletStatus);
+userRoutes.post("/wallet/payment", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, WalletController_1.createRentalOrderByWallet);
+userRoutes.post("/wallet/check", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, WalletController_1.checkWalletStatus);
+userRoutes.get("/orders/is-exist/:cartId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, cartController_2.checkIsOrderExist);
+userRoutes.get("/order/:orderId", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.checkIsOrderExistByOrderId);
 exports.default = userRoutes;
 //# sourceMappingURL=userRoute.js.map

@@ -30,37 +30,33 @@ const orderSchema = new mongoose_1.Schema({
     bookId: { type: String, ref: "books" },
     userId: { type: String, ref: "user" },
     lenderId: { type: String, ref: "user" },
+    bookTitle: { type: String },
+    bookAddress: { type: String },
     sessionId: { type: String },
     isPaid: { type: Boolean, default: false },
     reason: { types: String },
-    bookStatusFromRenter: {
-        type: String,
-        enum: [
-            "not_reached",
-            "not_returned",
-            "completed",
-            "cancelled",
-            "overdue",
-        ],
-        default: "not_reached",
-    },
     isAmountCredited: {
         type: Boolean,
         default: false,
     },
-    bookStatusFromLender: {
+    bookStatus: {
         type: String,
         enum: [
-            "not_reached",
+            "not_picked_up",
             "not_returned",
             "completed",
             "cancelled",
             "overdue",
         ],
-        default: "not_reached",
+        default: "not_picked_up",
     },
     statusUpdateLenderDate: { type: Date },
     statusUpdateRenterDate: { type: mongoose_1.Schema.Types.Date },
+    pickupCode: { type: String, required: true },
+    returnCode: { type: String, required: true },
+    rentedOn: { type: Date },
+    dueDate: { type: Date },
+    checkoutDate: { type: Date },
 }, { timestamps: true });
 const orders = mongoose_1.default.model("orders", orderSchema);
 exports.orders = orders;

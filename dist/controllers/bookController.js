@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchBooksByGenre = exports.updateOrderStatusByLender = exports.updateOrderStatusByRenter = exports.fetchSuccessfullRentalOrders = exports.fetchBooksBySearch = exports.fetchLentBooks = exports.fetchRentalOrders = exports.createRentalOrder = exports.createRentalCheckout = exports.rentalProcess = exports.soldBooks = exports.fetchUserLentBooks = exports.updateLentBookDetails = exports.createBookLend = exports.fetchBookDetails = exports.fetchGenresWithAvailableBooks = exports.fetchAvailableBooksForRent = exports.fetchGenres = void 0;
+exports.checkIsOrderExistByOrderId = exports.updateConfirmReturnByRenter = exports.updateConfirmPickupByLender = exports.removeBook = exports.unArchiveBook = exports.archiveBook = exports.fetchBooksByGenre = exports.updateOrderStatusByLender = exports.updateOrderStatusByRenter = exports.fetchSuccessfullRentalOrders = exports.fetchBooksBySearch = exports.fetchLentBooks = exports.fetchRentalOrders = exports.createRentalOrder = exports.createRentalCheckout = exports.rentalProcess = exports.soldBooks = exports.fetchUserLentBooks = exports.updateLentBookDetails = exports.createBookLend = exports.fetchBookDetails = exports.fetchGenresWithAvailableBooks = exports.fetchAvailableBooksForRent = exports.fetchGenres = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const crypto_1 = __importDefault(require("crypto"));
 const config_1 = __importDefault(require("../config/config"));
@@ -312,6 +312,7 @@ const createRentalCheckout = async (req, res) => {
     }
 };
 exports.createRentalCheckout = createRentalCheckout;
+const generateRandomCode = () => crypto_1.default.randomBytes(4).toString("hex");
 const createRentalOrder = async (req, res) => {
     try {
         const { userId, bookId, cartId, sessionId } = req.body;
@@ -329,6 +330,8 @@ const createRentalOrder = async (req, res) => {
             console.log("cart is not found");
         }
         else {
+            const pickupCode = generateRandomCode();
+            const returnCode = generateRandomCode();
             const orderData = {
                 sessionId,
                 cartId: cartId,
@@ -337,20 +340,13 @@ const createRentalOrder = async (req, res) => {
                     ? cartData.ownerId
                     : "",
                 bookId: typeof cartData?.bookId === "string" ? cartData.bookId : "",
+                returnCode,
+                pickupCode,
             };
             const order = await index_1.bookService.getCreateOrder(orderData);
             const cart = await index_2.cartService.getUpdateIsPaid(cartId);
-            // const selectedQuantity = cart?.quantity!;
-            // const book = await bookService.getBookById(bookId);
-            // if (book) {
-            //     const updatedQuantity = book.quantity - selectedQuantity;
-            //     await bookService.getUpdateBookQuantity(
-            //         bookId,
-            //         updatedQuantity
-            //     );
-            // } 
             const totalAmount = Number(cart?.totalAmount);
-            await index_4.walletService.getUpdateBookWallet(orderData.lenderId, totalAmount, userId);
+            const wallet = await index_4.walletService.getUpdateBookWallet(orderData.lenderId, totalAmount, userId);
             return res.status(200).json({ order });
         }
     }
@@ -468,4 +464,115 @@ const fetchSuccessfullRentalOrders = async (req, res) => {
     }
 };
 exports.fetchSuccessfullRentalOrders = fetchSuccessfullRentalOrders;
+const archiveBook = async (req, res) => {
+    try {
+        const { bookId } = req.body;
+        const book = await index_1.bookService.getArchiveBook(bookId);
+        return res.status(200).json({ book });
+    }
+    catch (error) {
+        console.log(error.message);
+        return res
+            .status(400)
+            .json({ message: "Internal server error at archiveBook" });
+    }
+};
+exports.archiveBook = archiveBook;
+const unArchiveBook = async (req, res) => {
+    try {
+        const { bookId } = req.body;
+        const book = await index_1.bookService.getUnArchiveBook(bookId);
+        return res.status(200).json({ book });
+    }
+    catch (error) {
+        console.log(error.message);
+        return res
+            .status(400)
+            .json({ message: "Internal server error at unArchiveBook" });
+    }
+};
+exports.unArchiveBook = unArchiveBook;
+const removeBook = async (req, res) => {
+    try {
+        const bookId = req.params.bookId;
+        const remove = await index_1.bookService.getRemoveBook(bookId);
+        return res.status(200).json({ remove });
+    }
+    catch (error) {
+        console.log(error.message);
+        return res
+            .status(400)
+            .json({ message: "Internal server error while removing book" });
+    }
+};
+exports.removeBook = removeBook;
+const updateConfirmPickupByLender = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { pickupCode } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ message: "Order ID is missing" });
+        }
+        const isOrder = await index_1.bookService.getOrderById(orderId);
+        if (isOrder?.pickupCode === pickupCode) {
+            const order = await index_1.bookService.getConfirmPickupLender(orderId);
+            res.status(200).json({ order });
+        }
+        else {
+            return res
+                .status(200)
+                .json({ success: false, message: "Incorrect pickup code." });
+        }
+    }
+    catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({
+            error: "An error occurred updating the order status.",
+        });
+    }
+};
+exports.updateConfirmPickupByLender = updateConfirmPickupByLender;
+const updateConfirmReturnByRenter = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { returnCode } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ message: "Order ID is missing" });
+        }
+        const isOrder = await index_1.bookService.getOrderById(orderId);
+        if (isOrder?.returnCode === returnCode) {
+            const order = await index_1.bookService.getConfirmReturnRenter(orderId);
+            res.status(200).json({ order });
+        }
+        else {
+            return res
+                .status(200)
+                .json({ success: false, message: "Incorrect pickup code." });
+        }
+    }
+    catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({
+            error: "An error occurred updating the order status.",
+        });
+    }
+};
+exports.updateConfirmReturnByRenter = updateConfirmReturnByRenter;
+const checkIsOrderExistByOrderId = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        if (!orderId) {
+            return res.status(400).json({ message: "Order ID is missing" });
+        }
+        const order = await index_1.bookService.getOrderById(orderId);
+        return res.status(200).json({ order });
+    }
+    catch (error) {
+        console.error("Error checkIsOrderExistByOrderId:", error);
+        res.status(500).json({
+            error: "An error occurred try again later.",
+        });
+    }
+};
+exports.checkIsOrderExistByOrderId = checkIsOrderExistByOrderId;
 //# sourceMappingURL=bookController.js.map

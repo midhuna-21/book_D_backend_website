@@ -8,4 +8,5 @@ export interface ICartService {
     getUpdateCart(cartId: string, types: string): Promise<ICart | null>;
     getCartDetails(cartId: string): Promise<ICart | null>;
     getUpdateIsPaid(cartId: string): Promise<ICart | null>;
+    getIsOrderExistByCart(cartId: string): Promise<ICart | null>
 }

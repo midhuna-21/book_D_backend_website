@@ -7,8 +7,10 @@ const bookDWallet_1 = require("../../model/bookDWallet");
 class WalletRepository {
     async findWalletTransactions(userId) {
         try {
+            // Find the wallet for the given userId and populate orderId with bookId
             const walletTransactions = await walletModel_1.wallet
                 .findOne({ userId: userId })
+                .select({ balance: 1, transactions: 1 }) // Select only needed fields
                 .populate({
                 path: "transactions.orderId",
                 populate: {
@@ -17,13 +19,43 @@ class WalletRepository {
                 },
                 strictPopulate: false,
             });
+            if (!walletTransactions) {
+                console.log("No wallet found for this user.");
+                return null;
+            }
+            // Sort transactions based on `updatedAt` in descending order (newest first)
+            walletTransactions.transactions.sort((a, b) => {
+                const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(0).getTime();
+                const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(0).getTime();
+                return dateB - dateA; // Sort in descending order (most recent first)
+            });
+            console.log(walletTransactions, "Sorted Wallet Transactions");
             return walletTransactions;
         }
         catch (error) {
-            console.log("Error createWallet:", error);
+            console.log("Error in findWalletTransactions:", error);
             throw error;
         }
     }
+    // async findWalletTransactions(userId: string): Promise<IWallet | null> {
+    //     try {
+    //         const walletTransactions = await wallet
+    //             .findOne({ userId: userId })
+    //             .populate({
+    //                 path: "transactions.orderId",
+    //                 populate: {
+    //                     path: "bookId",
+    //                     model: "books",
+    //                 },
+    //                 strictPopulate: false,
+    //             });
+    //             console.log(walletTransactions,'walletTransactions')
+    //         return walletTransactions;
+    //     } catch (error) {
+    //         console.log("Error createWallet:", error);
+    //         throw error;
+    //     }
+    // }
     async findWalletPaymentTransfer(orderId) {
         try {
             const order = await orderModel_1.orders
@@ -67,6 +99,7 @@ class WalletRepository {
                         });
                     }
                     renterWallet.balance += depositAmount;
+                    console.log('why it is i not changing');
                     renterWallet.transactions.push({
                         total_amount: depositAmount,
                         source: "refund_to_user",
@@ -131,6 +164,7 @@ class WalletRepository {
                     balance: 0,
                     transactions: [],
                 });
+                console.log('');
                 await wallet.save();
             }
             return wallet;

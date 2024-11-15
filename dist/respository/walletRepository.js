@@ -69,7 +69,7 @@ class WalletRepository {
                     renterWallet.balance += depositAmount;
                     renterWallet.transactions.push({
                         total_amount: depositAmount,
-                        source: "refund_to_user",
+                        source: "refund",
                         orderId: order._id,
                         type: "credit",
                         createdAt: new Date(),

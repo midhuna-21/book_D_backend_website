@@ -36,14 +36,14 @@ node_cron_1.default.schedule("* * * * *", async () => {
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         const overdueOrders = await orderModel_1.orders.find({
-            bookStatusFromRenter: "not_returned",
+            bookStatus: "not_returned",
             isAmountCredited: false,
             statusUpdateRenterDate: { $lte: tenDaysAgo },
         });
         if (overdueOrders.length > 0) {
             for (const order of overdueOrders) {
                 await orderModel_1.orders.findByIdAndUpdate(order._id, {
-                    $set: { bookStatusFromRenter: "overdue" },
+                    $set: { bookStatus: "overdue" },
                 });
                 const cart = order?.cartId;
                 let lenderWallet = await walletModel_1.wallet.findOne({
@@ -83,14 +83,14 @@ node_cron_1.default.schedule("* * * * *", async () => {
         const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
         const ordersToCancel = await orderModel_1.orders.find({
-            bookStatusFromRenter: "not_reached",
+            bookStatus: "not_picked_up",
             isAmountCredited: false,
             createdAt: { $lte: fiveDaysAgo },
         });
         if (ordersToCancel.length > 0) {
             for (const order of ordersToCancel) {
                 await orderModel_1.orders.findByIdAndUpdate(order._id, {
-                    $set: { bookStatusFromRenter: "cancelled" },
+                    $set: { bookStatus: "cancelled" },
                 });
                 const cart = order?.cartId;
                 let userWallet = await walletModel_1.wallet.findOne({

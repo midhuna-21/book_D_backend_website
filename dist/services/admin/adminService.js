@@ -77,6 +77,16 @@ class AdminService {
             throw error;
         }
     }
+    async getAllTotalOrders() {
+        try {
+            const orders = await this.adminRepository.findAllTotalOrders();
+            return orders;
+        }
+        catch (error) {
+            console.log("Error getAllTotalOrders:", error);
+            throw error;
+        }
+    }
     async getBlockUser(_id) {
         try {
             return await this.adminRepository.findBlockUser(_id);

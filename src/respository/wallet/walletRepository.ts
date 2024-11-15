@@ -5,10 +5,13 @@ import { bookDWallet } from "../../model/bookDWallet";
 import { IWalletRepository } from "./walletRepositoryInterface";
 
 export class WalletRepository implements IWalletRepository {
+
     async findWalletTransactions(userId: string): Promise<IWallet | null> {
         try {
+            // Find the wallet for the given userId and populate orderId with bookId
             const walletTransactions = await wallet
-                .findOne({ userId: userId })
+                .findOne({ userId:userId })
+                .select({ balance: 1, transactions: 1 }) // Select only needed fields
                 .populate({
                     path: "transactions.orderId",
                     populate: {
@@ -17,12 +20,45 @@ export class WalletRepository implements IWalletRepository {
                     },
                     strictPopulate: false,
                 });
+    
+            if (!walletTransactions) {
+                console.log("No wallet found for this user.");
+                return null;
+            }
+    
+            // Sort transactions based on `updatedAt` in descending order (newest first)
+            walletTransactions.transactions.sort((a, b) => {
+                const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(0).getTime();
+                const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(0).getTime();
+                return dateB - dateA; // Sort in descending order (most recent first)
+            });
+            
+            console.log(walletTransactions, "Sorted Wallet Transactions");
             return walletTransactions;
         } catch (error) {
-            console.log("Error createWallet:", error);
+            console.log("Error in findWalletTransactions:", error);
             throw error;
         }
     }
+    // async findWalletTransactions(userId: string): Promise<IWallet | null> {
+    //     try {
+    //         const walletTransactions = await wallet
+    //             .findOne({ userId: userId })
+    //             .populate({
+    //                 path: "transactions.orderId",
+    //                 populate: {
+    //                     path: "bookId",
+    //                     model: "books",
+    //                 },
+    //                 strictPopulate: false,
+    //             });
+    //             console.log(walletTransactions,'walletTransactions')
+    //         return walletTransactions;
+    //     } catch (error) {
+    //         console.log("Error createWallet:", error);
+    //         throw error;
+    //     }
+    // }
 
     async findWalletPaymentTransfer(orderId: string): Promise<any> {
         try {
@@ -76,7 +112,7 @@ export class WalletRepository implements IWalletRepository {
                         });
                     }
                     renterWallet.balance += depositAmount;
-
+console.log('why it is i not changing')
                     renterWallet.transactions.push({
                         total_amount: depositAmount,
                         source: "refund_to_user",
@@ -136,14 +172,13 @@ export class WalletRepository implements IWalletRepository {
     async findCreateWalletAdmin(adminId: string): Promise<any> {
         try {
             let wallet = await bookDWallet.findOne({ adminId: adminId });
-
             if (!wallet) {
                 wallet = new bookDWallet({
                     adminId,
                     balance: 0,
                     transactions: [],
                 });
-
+                console.log('')
                 await wallet.save();
             }
 
@@ -161,7 +196,6 @@ export class WalletRepository implements IWalletRepository {
     ): Promise<any> {
         try {
             const adminWallet = await bookDWallet.findOne({});
-
             if (adminWallet) {
                 adminWallet.balance += totalAmount;
                 adminWallet.transactions.push({

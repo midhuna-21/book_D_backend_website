@@ -56,10 +56,7 @@ export class CartRepository implements ICartRepository {
             );
            if(updateCart?.types === 'accepted'){
             const {bookId,quantity} = updateCart
-            console.log(bookId,'bookid')
-            console.log(quantity,'quanitu')
             const updateQuantity = quantity!
-            console.log(updateQuantity,'updateQuantity')
              const b = await books.findByIdAndUpdate(
                 { _id: bookId },
                 { $inc: { quantity: -updateQuantity } }, 
@@ -100,4 +97,18 @@ export class CartRepository implements ICartRepository {
             throw error;
         }
     }
+
+    async  findIsOrderExistByCart(cartId: string): Promise<ICart | null> {
+        try {
+            return await cart.findById(
+                { _id: cartId },
+                { isPaid: true },
+            );
+
+        } catch (error) {
+            console.log("Error findIsOrderExistByCart:", error);
+            throw error;
+        }
+    }
+
 }

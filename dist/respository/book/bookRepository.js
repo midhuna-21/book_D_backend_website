@@ -14,7 +14,7 @@ class BookRepository {
             return updateBook;
         }
         catch (error) {
-            console.log("Error findCreateOrder:", error);
+            console.log("Error findUpdateBookQuantity:", error);
             throw error;
         }
     }
@@ -24,7 +24,7 @@ class BookRepository {
             return isOrderExist;
         }
         catch (error) {
-            console.log("Error findCreateOrder:", error);
+            console.log("Error findIsOrderExist:", error);
             throw error;
         }
     }
@@ -187,7 +187,9 @@ class BookRepository {
     }
     async findBook(bookId) {
         try {
-            const book = await bookModel_1.books.findById({ _id: bookId });
+            const book = await bookModel_1.books
+                .findById({ _id: bookId })
+                .populate("lenderId");
             if (!book) {
                 return null;
             }
@@ -200,13 +202,19 @@ class BookRepository {
     }
     async findCreateOrder(data) {
         try {
+            const book = await bookModel_1.books.findById({ _id: data.bookId });
+            const bookAddress = `${book?.address?.street}${book?.address?.city}${book?.address?.district}${book?.address?.state}${book?.address?.pincode}`;
             const order = await new orderModel_1.orders({
                 sessionId: data.sessionId,
                 cartId: data.cartId,
                 bookId: data.bookId,
+                bookTitle: book?.bookTitle,
+                bookAddress: bookAddress,
                 userId: data.userId,
                 lenderId: data.lenderId,
                 isPaid: true,
+                pickupCode: data.pickupCode,
+                returnCode: data.returnCode,
             }).save();
             const populatedOrder = await orderModel_1.orders
                 .findById(order._id)
@@ -218,7 +226,7 @@ class BookRepository {
             return populatedOrder;
         }
         catch (error) {
-            console.log("Error findCreateOrderProcess:", error);
+            console.log("Error findCreateOrder:", error);
             throw error;
         }
     }
@@ -245,7 +253,7 @@ class BookRepository {
             return order;
         }
         catch (error) {
-            console.log("Error findCreateOrder:", error);
+            console.log("Error findUpdateOrder:", error);
             throw error;
         }
     }
@@ -348,7 +356,7 @@ class BookRepository {
             return order;
         }
         catch (error) {
-            console.log("Error findUpdateOrderStatus:", error);
+            console.log("Error findUpdateOrderStatusRenter:", error);
             throw error;
         }
     }
@@ -384,16 +392,19 @@ class BookRepository {
             return order;
         }
         catch (error) {
-            console.log("Error findUpdateOrderStatus:", error);
+            console.log("Error findUpdateOrderStatusLender:", error);
             throw error;
         }
     }
     async findAvailableBooksForRent(userId) {
         try {
-            const allBooks = await bookModel_1.books.find({
+            const allBooks = await bookModel_1.books
+                .find({
                 lenderId: { $ne: userId },
                 quantity: { $gt: 0 },
-            }).sort({ updatedAt: -1 })
+                isArchived: false,
+            })
+                .sort({ updatedAt: -1 })
                 .exec();
             const availableBooks = [];
             for (const book of allBooks) {
@@ -406,6 +417,96 @@ class BookRepository {
         }
         catch (error) {
             console.log("Error getAvailableBooksForRent:", error);
+            throw error;
+        }
+    }
+    async findArchiveBook(bookId) {
+        try {
+            return await bookModel_1.books
+                .findByIdAndUpdate({ _id: bookId }, { isArchived: true }, { new: true })
+                .populate("lenderId");
+        }
+        catch (error) {
+            console.log("Error blockUser:", error);
+            throw error;
+        }
+    }
+    async findUnArchiveBook(bookId) {
+        try {
+            return await bookModel_1.books
+                .findByIdAndUpdate({ _id: bookId }, { isArchived: false }, { new: true })
+                .populate("lenderId");
+        }
+        catch (error) {
+            console.log("Error unBlockUser:", error);
+            throw error;
+        }
+    }
+    async findRemoveBook(bookId) {
+        try {
+            return await bookModel_1.books.findByIdAndDelete({ _id: bookId });
+        }
+        catch (error) {
+            console.log("Error findRemoveBook", error);
+            throw error;
+        }
+    }
+    async findOrderById(orderId) {
+        try {
+            const order = await orderModel_1.orders.findById({ _id: orderId }).populate('userId');
+            return order;
+        }
+        catch (error) {
+            console.log("Error findOrderById:", error);
+            throw error;
+        }
+    }
+    async findVerifyingPickup(orderId, pickupCode) {
+        try {
+            return await orderModel_1.orders.findById({ _id: orderId }, { pickupCode: pickupCode });
+        }
+        catch (error) {
+            console.log("Error findVerifyingPickup:", error);
+            throw error;
+        }
+    }
+    async findConfirmPickupLender(orderId) {
+        try {
+            const order = await orderModel_1.orders
+                .findById({ _id: orderId })
+                .populate("cartId");
+            const totalDays = order?.cartId?.totalDays;
+            const rentedOn = new Date();
+            const dueDate = new Date(rentedOn.getTime() + totalDays * 24 * 60 * 60 * 1000);
+            return await orderModel_1.orders.findByIdAndUpdate({ _id: orderId }, {
+                $set: {
+                    rentedOn,
+                    dueDate,
+                    bookStatus: 'not_returned'
+                },
+            }, { new: true });
+        }
+        catch (error) {
+            console.log("Error findConfirmPickupLender:", error);
+            throw error;
+        }
+    }
+    async findConfirmReturnRenter(orderId) {
+        try {
+            const updatedOrderCompleted = await orderModel_1.orders.findByIdAndUpdate(orderId, {
+                $set: {
+                    checkoutDate: new Date(),
+                    bookStatus: 'completed'
+                },
+            }, { new: true });
+            if (updatedOrderCompleted) {
+                await walletRepository.findWalletPaymentTransfer(orderId);
+                return updatedOrderCompleted;
+            }
+            return null;
+        }
+        catch (error) {
+            console.log("Error findConfirmReturnRenter:", error);
             throw error;
         }
     }

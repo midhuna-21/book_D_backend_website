@@ -58,6 +58,15 @@ class CartService {
             throw error;
         }
     }
+    async getIsOrderExistByCart(cartId) {
+        try {
+            return await this.cartRepository.findIsOrderExistByCart(cartId);
+        }
+        catch (error) {
+            console.log("Error getIsOrderExistByCart:", error);
+            throw error;
+        }
+    }
 }
 exports.CartService = CartService;
 //# sourceMappingURL=cartService.js.map

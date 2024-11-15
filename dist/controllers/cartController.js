@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateCartItem = exports.addItemToCart = void 0;
+exports.updateCartItem = exports.checkIsOrderExist = exports.addItemToCart = void 0;
 const index_1 = require("../services/index");
 const addItemToCart = async (req, res) => {
     try {
@@ -65,8 +65,27 @@ const updateCartItem = async (req, res) => {
         console.log("Error updateRequest:", error);
         return res
             .status(500)
-            .json({ message: "Internal server error at saveRequest" });
+            .json({ message: "Internal server error at updateCartItem" });
     }
 };
 exports.updateCartItem = updateCartItem;
+const checkIsOrderExist = async (req, res) => {
+    try {
+        const { cartId } = req.params;
+        console.log(cartId, 'carti');
+        if (!cartId) {
+            return res.status(500).json({ message: "cartId is missing" });
+        }
+        const isOrderExist = await index_1.cartService.getIsOrderExistByCart(cartId);
+        console.log(isOrderExist, 'isorder');
+        return res.status(200).json({ isOrderExist });
+    }
+    catch (error) {
+        console.log("Error updateRequest:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkIsOrderExist" });
+    }
+};
+exports.checkIsOrderExist = checkIsOrderExist;
 //# sourceMappingURL=cartController.js.map

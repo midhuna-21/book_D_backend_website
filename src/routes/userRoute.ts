@@ -37,11 +37,18 @@ import {
     updateOrderStatusByRenter,
     updateOrderStatusByLender,
     fetchLentBooks,
+    archiveBook,
+    unArchiveBook,
+    removeBook,
+    updateConfirmPickupByLender,
+    updateConfirmReturnByRenter,
+    checkIsOrderExistByOrderId
 } from "../controllers/bookController";
 import {
     fetchWalletTransactions,
     processWalletPayment,
     checkWalletStatus,
+    createRentalOrderByWallet,
 } from "../controllers/WalletController";
 import {
     fetchUserNotifications,
@@ -65,6 +72,7 @@ import {
 import { userVerifyToken } from "../utils/middleware/userAuthMiddleware";
 import { userRefreshToken } from "../controllers/userRefreshToken";
 import { checkBlocked } from "../utils/middleware/checkUserBlock";
+import {checkIsOrderExist} from '../controllers/cartController'
 
 const userRoutes = express.Router();
 
@@ -144,6 +152,12 @@ userRoutes.put(
     upload.array("images", 10),
     updateLentBookDetails
 );
+
+userRoutes.post("/books/archive", userVerifyToken, archiveBook);
+
+userRoutes.post("/books/unarchive", userVerifyToken, unArchiveBook);
+
+userRoutes.delete("/books/remove/:bookId", userVerifyToken, removeBook);
 
 //notifications
 userRoutes.post(
@@ -252,6 +266,21 @@ userRoutes.put(
     updateOrderStatusByLender
 );
 
+
+//confirmation of updating pickupcode 
+userRoutes.put(
+    "/books/lend-orders/lender/confirm/pickup/:orderId",
+    userVerifyToken,checkBlocked,
+    updateConfirmPickupByLender
+);
+
+userRoutes.put(
+    "/books/rental-orders/renter/confirm/return/:orderId",
+    userVerifyToken,checkBlocked,
+    updateConfirmReturnByRenter
+);
+
+
 //wallet
 userRoutes.get(
     "/wallet/transactions",
@@ -259,8 +288,12 @@ userRoutes.get(
     fetchWalletTransactions
 );
 
-userRoutes.patch("/wallet/payment", userVerifyToken,checkBlocked, processWalletPayment);
+userRoutes.post("/wallet/payment", userVerifyToken,checkBlocked, createRentalOrderByWallet);
 
-userRoutes.patch("/wallet/check", userVerifyToken,checkBlocked, checkWalletStatus);
+userRoutes.post("/wallet/check", userVerifyToken,checkBlocked, checkWalletStatus);
+
+userRoutes.get("/orders/is-exist/:cartId", userVerifyToken,checkBlocked, checkIsOrderExist);
+
+userRoutes.get("/order/:orderId", userVerifyToken,checkBlocked, checkIsOrderExistByOrderId);
 
 export default userRoutes;

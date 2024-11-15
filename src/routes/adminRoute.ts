@@ -14,6 +14,7 @@ import {
     fetchRentalOrderDetails,
     fetchWalletTransactions,
     removeGenre,
+    fetchOrders,
 } from "../controllers/adminController";
 import upload from "../utils/imageFunctions/store";
 import { adminVerifyToken } from "../utils/middleware/adminAuthMiddleware";
@@ -54,6 +55,8 @@ adminRoutes.post("/user/unblock", adminVerifyToken, unblockUserAccount);
 adminRoutes.get("/books/lent", adminVerifyToken, fetchLentBooks);
 
 adminRoutes.get("/books", adminVerifyToken, fetchBooks);
+
+adminRoutes.get("/orders", adminVerifyToken, fetchOrders);
 
 adminRoutes.get("/books/rental-orders", adminVerifyToken, fetchRentalOrders);
 

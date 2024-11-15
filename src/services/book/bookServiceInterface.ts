@@ -40,4 +40,15 @@ export interface IBookService {
         bookStatus: string
     ): Promise<IOrder | null>;
     getAvailableBooksForRent(userId:string):Promise<IBooks[]>
+    getArchiveBook(bookId:string):Promise<IBooks | null>
+    getUnArchiveBook(bookId:string):Promise<IBooks | null>
+    getRemoveBook(bookId:string):Promise<IBooks | null>
+    getVerifyingPickupCode (orderId: string,pickupCode:string): Promise<IOrder | null>
+    getOrderById(orderId:string):Promise<IOrder | null>
+    getConfirmPickupLender(
+        orderId: string,
+    ): Promise<IOrder | null>
+    getConfirmReturnRenter(
+        orderId: string,
+    ): Promise<IOrder | null>
 }

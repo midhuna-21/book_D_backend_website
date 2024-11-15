@@ -102,7 +102,7 @@ const validateOtp = async (req, res) => {
             }
         }
         else {
-            let user = await userService.getUserByPhone(phone);
+            let user = await userService.getUserByEmail(email);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -199,7 +199,7 @@ const authenticateWithGoogle = async (req, res) => {
                     userId,
                     role: "user",
                 });
-                return res.status(200).json({
+                return res.status(200).json({ success: true,
                     user: {
                         ...user.toObject(),
                         accessToken,
@@ -217,7 +217,6 @@ const authenticateWithGoogle = async (req, res) => {
 exports.authenticateWithGoogle = authenticateWithGoogle;
 const linkGoogleAccount = async (req, res) => {
     try {
-        console.log(req.body, "bo");
         const { email, password } = req.body;
         const isUser = await userService.getUserByEmail(email);
         if (!isUser) {
@@ -354,7 +353,6 @@ const sendOtpForForgotPassword = async (req, res) => {
 exports.sendOtpForForgotPassword = sendOtpForForgotPassword;
 const resetUserPassword = async (req, res) => {
     try {
-        console.log(req.body, "requd");
         const { resetToken, resetTokenExpiration, password, email } = req.body;
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email;
@@ -394,7 +392,6 @@ const sendEmailForUnlinking = async (req, res) => {
         if (!userId) {
             return res.status(400).json({ message: "user not found" });
         }
-        console.log(userId, "userId");
         const isUser = await userService.getUserById(userId);
         if (!isUser) {
             return res.status(400).json({ message: "user not found" });

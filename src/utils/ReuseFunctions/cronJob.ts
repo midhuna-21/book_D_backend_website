@@ -38,7 +38,7 @@ cron.schedule("* * * * *", async () => {
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
 
         const overdueOrders = await orders.find({
-            bookStatusFromRenter: "not_returned",
+            bookStatus: "not_returned",
             isAmountCredited: false,
             statusUpdateRenterDate: { $lte: tenDaysAgo },
         });
@@ -46,7 +46,7 @@ cron.schedule("* * * * *", async () => {
         if (overdueOrders.length > 0) {
             for (const order of overdueOrders) {
                 await orders.findByIdAndUpdate(order._id, {
-                    $set: { bookStatusFromRenter: "overdue" },
+                    $set: { bookStatus: "overdue" },
                 });
                 const cart = order?.cartId as ICart;
                 let lenderWallet = await wallet.findOne({
@@ -94,7 +94,7 @@ cron.schedule("* * * * *", async () => {
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
 
         const ordersToCancel = await orders.find({
-            bookStatusFromRenter: "not_reached",
+            bookStatus: "not_picked_up",
             isAmountCredited: false,
             createdAt: { $lte: fiveDaysAgo },
         });
@@ -102,7 +102,7 @@ cron.schedule("* * * * *", async () => {
         if (ordersToCancel.length > 0) {
             for (const order of ordersToCancel) {
                 await orders.findByIdAndUpdate(order._id, {
-                    $set: { bookStatusFromRenter: "cancelled" },
+                    $set: { bookStatus: "cancelled" },
                 });
 
                 const cart = order?.cartId as ICart;

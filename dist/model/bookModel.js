@@ -69,9 +69,10 @@ const bookSchema = new mongoose_1.default.Schema({
         type: String,
         ref: "user",
     },
-    // location:{
-    //    type:String,
-    // }
+    isArchived: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 const books = mongoose_1.default.model("books", bookSchema);
 exports.books = books;

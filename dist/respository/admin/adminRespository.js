@@ -75,6 +75,15 @@ class AdminRepository {
             throw error;
         }
     }
+    async findAllTotalOrders() {
+        try {
+            return await orderModel_1.orders.find().sort({ updatedAt: -1 });
+        }
+        catch (error) {
+            console.log("Error findAllGenres:", error);
+            throw error;
+        }
+    }
     async findBlockUser(_id) {
         try {
             return await userModel_1.user.findByIdAndUpdate(_id, { isBlocked: true }, { new: true });

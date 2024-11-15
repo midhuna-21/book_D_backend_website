@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeGenre = exports.fetchRentalOrderDetails = exports.fetchRentalOrders = exports.fetchBooks = exports.fetchLentBooks = exports.fetchWalletTransactions = exports.unblockUserAccount = exports.blockUserAccount = exports.updateGenre = exports.fetchGenres = exports.fetchUsers = exports.fetchGenreById = exports.createGenre = exports.authenticateAdmin = void 0;
+exports.removeGenre = exports.fetchRentalOrderDetails = exports.fetchRentalOrders = exports.fetchOrders = exports.fetchBooks = exports.fetchLentBooks = exports.fetchWalletTransactions = exports.unblockUserAccount = exports.blockUserAccount = exports.updateGenre = exports.fetchGenres = exports.fetchUsers = exports.fetchGenreById = exports.createGenre = exports.authenticateAdmin = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const adminGenerateToken_1 = require("../utils/jwt/adminGenerateToken");
 const index_1 = require("../services/index");
@@ -94,6 +94,17 @@ const fetchLentBooks = async (req, res) => {
     }
 };
 exports.fetchLentBooks = fetchLentBooks;
+const fetchOrders = async (req, res) => {
+    try {
+        const users = await index_1.adminService.getAllTotalOrders();
+        return res.status(200).json(users);
+    }
+    catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+exports.fetchOrders = fetchOrders;
 const fetchBooks = async (req, res) => {
     try {
         const users = await index_1.adminService.getAllTotalBooks();

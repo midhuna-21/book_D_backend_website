@@ -95,6 +95,17 @@ const fetchLentBooks = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+const fetchOrders = async (req: Request, res: Response) => {
+    try {
+        const users = await adminService.getAllTotalOrders();
+        return res.status(200).json(users);
+    } catch (error: any) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 const fetchBooks = async (req: Request, res: Response) => {
     try {
         const users = await adminService.getAllTotalBooks();
@@ -104,6 +115,7 @@ const fetchBooks = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 const blockUserAccount = async (req: Request, res: Response) => {
     try {
         const { _id } = req.body;
@@ -216,6 +228,7 @@ export {
     fetchWalletTransactions,
     fetchLentBooks,
     fetchBooks,
+    fetchOrders,
     fetchRentalOrders,
     fetchRentalOrderDetails,
     removeGenre,

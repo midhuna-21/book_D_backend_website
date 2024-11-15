@@ -115,6 +115,14 @@ export class BookService implements IBookService {
         }
     }
 
+    async getRemoveBook(bookId:string):Promise<IBooks | null>{
+        try{
+            return await this.bookRepository.findRemoveBook(bookId)
+        }catch(error:any){
+            console.log("Error getRemoveBook",error)
+            throw error;
+        }
+    }
     async getRentList(userId: string): Promise<IOrder[]> {
         try {
             return await this.bookRepository.findRentList(userId);
@@ -215,6 +223,60 @@ export class BookService implements IBookService {
             
         } catch (error) {
             console.log("Error getUpdateOrderStatus:", error);
+            throw error;
+        }
+    }
+
+    async getArchiveBook(bookId: string): Promise<IBooks | null> {
+        try {
+            return await this.bookRepository.findArchiveBook(bookId);
+        } catch (error) {
+            console.log("Error getArchiveBook:", error);
+            throw error;
+        }
+    }
+    async getUnArchiveBook(bookId: string): Promise<IBooks | null> {
+        try {
+            return await this.bookRepository.findUnArchiveBook(bookId);
+        } catch (error) {
+            console.log("Error getUnArchiveBook:", error);
+            throw error;
+        }
+    }
+
+    async getVerifyingPickupCode (orderId: string,pickupCode:string): Promise<IOrder | null> {
+        try {
+            return await this.bookRepository.findVerifyingPickup(orderId,pickupCode);
+        } catch (error) {
+            console.log("Error getUnArchiveBook:", error);
+            throw error;
+        }
+    }
+
+    async getOrderById(orderId:string):Promise<IOrder | null>{
+        try{
+            return await this.bookRepository.findOrderById(orderId)
+        }catch(error){
+            console.log("Error getOrderById:",error)
+            throw error;
+        }
+    }
+
+    async getConfirmPickupLender(orderId: string): Promise<IOrder | null> {
+        try{
+            return await this.bookRepository.findConfirmPickupLender(orderId)
+        }catch(error){
+            console.log("Error getConfirmPickupStatusRenter:",error)
+            throw error;
+        }
+    }
+
+
+    async getConfirmReturnRenter(orderId: string): Promise<IOrder | null> {
+        try{
+            return await this.bookRepository.findConfirmReturnRenter(orderId)
+        }catch(error){
+            console.log("Error getConfirmPickupStatusRenter:",error)
             throw error;
         }
     }

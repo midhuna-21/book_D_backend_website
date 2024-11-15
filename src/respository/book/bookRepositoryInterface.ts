@@ -37,4 +37,19 @@ export interface IBookRepository {
         bookStatus: string
     ): Promise<IOrder | null>;
     findAvailableBooksForRent(userId:string):Promise<IBooks[]>
+    findArchiveBook(bookId: string): Promise<IBooks | null>
+    findUnArchiveBook(bookId: string): Promise<IBooks | null>
+    findRemoveBook(bookId:string):Promise<IBooks | null>
+     findVerifyingPickup(
+        orderId: string,
+        pickupCode:string
+    ): Promise<IOrder | null>
+    findOrderById(orderId:string):Promise<IOrder | null>
+    findConfirmPickupLender(
+        orderId: string,
+    ): Promise<IOrder | null>
+    findConfirmReturnRenter(
+        orderId: string,
+    ): Promise<IOrder | null>
+
 }

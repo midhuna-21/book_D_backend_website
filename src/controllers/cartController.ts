@@ -78,8 +78,26 @@ const updateCartItem = async (req: Request, res: Response) => {
         console.log("Error updateRequest:", error);
         return res
             .status(500)
-            .json({ message: "Internal server error at saveRequest" });
+            .json({ message: "Internal server error at updateCartItem" });
     }
+}
+    const checkIsOrderExist= async (req: Request, res: Response) => {
+        try {
+            const { cartId } = req.params;
+            console.log(cartId,'carti')
+            if (!cartId) {
+                return res.status(500).json({ message: "cartId is missing" });
+            }
+            const isOrderExist = await cartService.getIsOrderExistByCart(cartId)
+            console.log(isOrderExist,'isorder')
+            return res.status(200).json({ isOrderExist });
+        } catch (error: any) {
+            console.log("Error updateRequest:", error);
+            return res
+                .status(500)
+                .json({ message: "Internal server error at checkIsOrderExist" });
+        }
+       
 };
 
-export {addItemToCart, updateCartItem };
+export {addItemToCart,checkIsOrderExist, updateCartItem };

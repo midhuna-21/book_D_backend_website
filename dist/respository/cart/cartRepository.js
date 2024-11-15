@@ -51,10 +51,7 @@ class CartRepository {
             const updateCart = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { types: types }, { new: true });
             if (updateCart?.types === 'accepted') {
                 const { bookId, quantity } = updateCart;
-                console.log(bookId, 'bookid');
-                console.log(quantity, 'quanitu');
                 const updateQuantity = quantity;
-                console.log(updateQuantity, 'updateQuantity');
                 const b = await bookModel_1.books.findByIdAndUpdate({ _id: bookId }, { $inc: { quantity: -updateQuantity } }, { new: true });
             }
             return updateCart;
@@ -84,6 +81,15 @@ class CartRepository {
         }
         catch (error) {
             console.log("Error findUpdateIsPaid:", error);
+            throw error;
+        }
+    }
+    async findIsOrderExistByCart(cartId) {
+        try {
+            return await cartModel_1.cart.findById({ _id: cartId }, { isPaid: true });
+        }
+        catch (error) {
+            console.log("Error findIsOrderExistByCart:", error);
             throw error;
         }
     }

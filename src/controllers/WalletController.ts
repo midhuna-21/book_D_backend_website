@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
-import { walletService } from "../services/index";
+import { bookService, cartService, walletService } from "../services/index";
 import Stripe from "stripe";
+import crypto from "crypto";
 import config from "../config/config";
 import { wallet } from "../model/walletModel";
+import { bookDWallet } from "../model/bookDWallet";
 
 const fetchWalletTransactions = async (
     req: AuthenticatedRequest,
@@ -15,6 +17,7 @@ const fetchWalletTransactions = async (
             return res.status(400).json({ message: "user id is missing" });
         }
         const wallet = await walletService.getWalletTransactions(userId);
+        console.log(wallet,'wallet controller')
         res.status(200).json({ wallet });
     } catch (error) {
         console.error("Error updating order status:", error);
@@ -31,7 +34,6 @@ const checkWalletStatus = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const userId = req.userId!;
         let isWalletExist = await walletService.getWalletTransactions(userId);
-
         if (!isWalletExist) {
             isWalletExist = new wallet({
                 userId: userId,
@@ -42,19 +44,74 @@ const checkWalletStatus = async (req: AuthenticatedRequest, res: Response) => {
         }
         res.status(200).json({ isWalletExist });
     } catch (error: any) {
-        console.error("Error withdrawAmount :", error);
+        console.error("Error checkWalletStatus :", error);
 
         res.status(500).json({ error: error.message });
     }
 };
 
-const processWalletPayment = async (
-    req: AuthenticatedRequest,
-    res: Response
-) => {
+const generateRandomCode = () => crypto.randomBytes(4).toString("hex");
+const createRentalOrderByWallet = async (req: Request, res: Response) => {
     try {
-        const { amount } = req.body;
-        const userId = req.userId!;
+        const { userId, bookId, cartId } = req.body;
+        if (!userId || !bookId) {
+            return res
+                .status(400)
+                .json({ message: "user or book id is missing" });
+        }
+
+        const existOrder = await cartService.getIsOrderExistByCart(cartId);
+        console.log(existOrder,'ordeerr')
+        if (existOrder?.isPaid==true) {
+            return res.status(200).json({ order: existOrder });
+        }
+        const cartData = await cartService.getCartById(cartId);
+        if (!cartData) {
+            console.log("cart is not found");
+        } else {
+            const pickupCode = generateRandomCode();
+            const returnCode = generateRandomCode();
+            const orderData = {
+                cartId: cartId,
+                userId:
+                    typeof cartData?.userId === "string" ? cartData.userId : "",
+                lenderId:
+                    typeof cartData?.ownerId === "string"
+                        ? cartData.ownerId
+                        : "",
+                bookId:
+                    typeof cartData?.bookId === "string" ? cartData.bookId : "",
+                returnCode,
+                pickupCode,
+            };
+
+            const order = await bookService.getCreateOrder(orderData)
+           if(order){
+            const objectOrderId = order._id!;
+            const orderId = objectOrderId.toString();
+            const cart = await cartService.getUpdateIsPaid(cartId);
+            const totalAmount = Number(cart?.totalAmount);
+            const lenderWallet = await processWalletPayment(totalAmount,userId,orderId)
+            const wallet = await walletService.getUpdateBookWallet(
+                orderData.lenderId,
+                totalAmount,
+                userId
+            );
+            console.log(lenderWallet,'lenderWallet')
+           }
+           
+            return res.status(200).json({ order });
+        }
+    } catch (error) {
+        console.error("Error createOrder:", error);
+        res.status(500).json({
+            error: "An error occurred while create Order.",
+        });
+    }
+};
+
+const processWalletPayment = async (totalAmount:number,userId:string,orderId:string) => {
+    try {
         let isWalletExist = await walletService.getWalletTransactions(userId);
 
         if (!isWalletExist) {
@@ -66,24 +123,82 @@ const processWalletPayment = async (
             await isWalletExist.save();
         }
 
-        isWalletExist.balance -= amount;
-
+        isWalletExist.balance -= totalAmount;
+       
         const transaction = {
-            total_amount: amount,
+            total_amount: totalAmount,
             source: "payment_to_lender",
+            orderId: orderId,
             type: "debit",
             createdAt: new Date(),
         };
         isWalletExist.transactions.push(transaction);
 
         await isWalletExist.save();
+        const adminWallet = await bookDWallet.findOne({});
 
-        res.status(200).json({ message: "Payment successful", wallet });
+        if (adminWallet) {
+            adminWallet.balance += totalAmount;
+            adminWallet.transactions.push({
+                source: "Payment received",
+                status: "credit",
+                total_amount: totalAmount,
+            });
+            await adminWallet.save();
+        }
+        console.log('adminWallet',adminWallet)
+        return isWalletExist
     } catch (error: any) {
-        console.error("Error withdrawAmount :", error);
-
-        res.status(500).json({ error: error.message });
+        console.error("Error processWalletPayment :", error);
+        throw new Error(error.message || "Failed to process wallet payment");
     }
 };
+// const processWalletPayment = async (
+//     req: Request,
+//     res: Response
+// ) => {
+//     try {
+//         const { totalPrice } = req.body;
+        
+//         const {userId} = req.params;
+//         let isWalletExist = await walletService.getWalletTransactions(userId);
 
-export { fetchWalletTransactions, processWalletPayment, checkWalletStatus };
+//         if (!isWalletExist) {
+//             isWalletExist = new wallet({
+//                 userId: userId,
+//                 balance: 0,
+//                 transactions: [],
+//             });
+//             await isWalletExist.save();
+//         }
+
+//         isWalletExist.balance -= totalPrice;
+//         const transaction = {
+//             total_amount: totalPrice,
+//             source: "payment_to_lender",
+//             type: "debit",
+//             createdAt: new Date(),
+//         };
+//         isWalletExist.transactions.push(transaction);
+
+//         await isWalletExist.save();
+//         const adminWallet = await bookDWallet.findOne({});
+
+//         if (adminWallet) {
+//             adminWallet.balance += totalPrice;
+//             adminWallet.transactions.push({
+//                 source: "Payment received",
+//                 status: "credit",
+//                 total_amount: totalPrice,
+//             });
+//             await adminWallet.save();
+//         }
+//         res.status(200).json({ message: "Payment successful", wallet });
+//     } catch (error: any) {
+//         console.error("Error processWalletPayment :", error);
+
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
+export { fetchWalletTransactions, createRentalOrderByWallet,processWalletPayment, checkWalletStatus };

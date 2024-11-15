@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeChatSocket = initializeChatSocket;
-const userSockets = new Map();
-let onlineUsers = new Set();
 function initializeChatSocket(socket, io, userSockets, chatService) {
     socket.on("typing", ({ chatId, userId }) => {
         for (const [otherUserId, sockets] of userSockets.entries()) {

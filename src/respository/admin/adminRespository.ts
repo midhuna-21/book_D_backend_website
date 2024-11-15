@@ -71,6 +71,16 @@ export class AdminRepository implements IAdminRepository {
             throw error;
         }
     }
+    
+    async findAllTotalOrders(): Promise<IOrder[]> {
+        try {
+            return await orders.find().sort({ updatedAt: -1 });
+        } catch (error) {
+            console.log("Error findAllGenres:", error);
+            throw error;
+        }
+    }
+
     async findBlockUser(_id: string): Promise<IUser | null> {
         try {
             return await user.findByIdAndUpdate(

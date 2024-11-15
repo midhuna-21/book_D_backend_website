@@ -54,7 +54,6 @@ const fetchUserChatList = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
         const conversations: IChatRoom[] | null = await chatService.getUserChatList(userId);
-        console.log(conversations,'con')
         return res.status(200).json({ conversations });
     } catch (error) {
         console.log("Error fetchUserMessages", error);
@@ -121,7 +120,6 @@ const sendMessage = async (req: Request, res: Response) => {
 const fetchMessages = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
-        console.log(chatRoomId,'chatRoomId')
         if (!chatRoomId) {
             return res.status(400).json({ message: "chatroom ID not found" });
         }

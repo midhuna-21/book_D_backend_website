@@ -27,6 +27,7 @@ interface IBooks extends Document {
     minDays?: number;
     latitude: number;
     longitude: number;
+    isArchived: boolean;
 }
 
 const bookSchema = new mongoose.Schema(
@@ -94,10 +95,10 @@ const bookSchema = new mongoose.Schema(
             type: String,
             ref: "user",
         },
-        // location:{
-        //    type:String,
-
-        // }
+        isArchived: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );

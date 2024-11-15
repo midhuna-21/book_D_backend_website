@@ -1,10 +1,5 @@
 import { Server, Socket } from "socket.io";
 import { ChatService } from "../services/chat/chatService";
-import { Notification } from "../interfaces/data";
-import { notificationService } from "../services";
-
-const userSockets = new Map<string, Set<string>>();
-let onlineUsers = new Set();
 
 export function initializeChatSocket(
     socket: Socket,
@@ -44,7 +39,6 @@ export function initializeChatSocket(
                 if (!content.trim()) {
                     return;
                 }
-
                 const message = {
                     senderId,
                     receiverId,
