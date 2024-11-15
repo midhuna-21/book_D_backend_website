@@ -45,13 +45,13 @@ const createGenre = async (req: Request, res: Response) => {
         const { genreName } = req.body;
         const existGenre = await adminService.getGenreName(genreName);
         if (existGenre) {
-            return res.status(400).json({ message: "Genre is already exist" });
+            return res.status(200).json({success:false, message: "Genre is already exist" });
         }
-        if (!genreName) {
-            return res
-                .status(400)
-                .json({ message: "Please provide a genre name" });
-        }
+        // if (!genreName) {
+        //     return res
+        //         .status(200)
+        //         .json({ message: "Please provide a genre name" });
+        // }
         const file = req.file as CustomMulterFile;
         if (!file) {
             return res.status(400).json({ message: "Please provide image" });
