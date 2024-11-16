@@ -62,7 +62,13 @@ const createNewUser = async (req: Request, res: Response) => {
         const user: User = { name, email, phone, password: securePassword };
         const otp = await generateOtp(email);
         console.log(otp, "createNewUser");
-        res.cookie("otp", otp, { maxAge: 60000 });
+        res.cookie('otp', otp, {
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'none', 
+            maxAge: 60 * 1000,
+        });
+        // res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error(error.message);
@@ -92,7 +98,7 @@ const validateOtp = async (req: Request, res: Response) => {
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
         }
-
+       
         const otpFromCookie = req.cookies.otp;
         console.log(otpFromCookie,'otpFromCookie')
         if (!otpFromCookie) {
@@ -375,7 +381,14 @@ const sendOtpForForgotPassword = async (req: Request, res: Response) => {
         if (isValidEmail) {
             const otp = await generateOtp(email);
             console.log(otp, "forgot");
-            res.cookie("otp", otp, { maxAge: 60000 });
+
+            res.cookie('otp', otp, {
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'none', 
+                maxAge: 60 * 1000,
+            });
+            // res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
         } else {
             return res.status(401).json({ message: "Invalid email id" });
