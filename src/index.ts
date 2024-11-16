@@ -54,7 +54,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-app.use("/api/user", userRoutes);
+app.use("/api/user", userRoutes);  
 app.use("/api/admin", adminRoutes);
 
 
