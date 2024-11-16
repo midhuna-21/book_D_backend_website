@@ -32,10 +32,12 @@ const io = new Server(server, {
     cors: {
         origin: config.API,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+           allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
     },
 });
 
+app.options("*", cors(corsOptions));
 app.set("io", io);
 
 dbConnect();
@@ -47,12 +49,6 @@ app.use(cookieParser());
 app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-    next();
-});
 
 app.use("/api/user", userRoutes);  
 app.use("/api/admin", adminRoutes);

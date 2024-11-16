@@ -31,9 +31,11 @@ const io = new socket_io_1.Server(server, {
     cors: {
         origin: config_1.default.API,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
     },
 });
+app.options("*", (0, cors_1.default)(corsOptions));
 app.set("io", io);
 (0, db_1.default)();
 app.use(express_1.default.json());
@@ -42,11 +44,6 @@ app.use((0, cookie_parser_1.default)());
 // app.use(morgan('dev'))
 app.use(express_1.default.static("public/"));
 (0, socket_connection_1.initializeSocket)(io, chatService, services_1.notificationService);
-app.use((req, res, next) => {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-    next();
-});
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
 server.listen(config_1.default.PORT, () => {
