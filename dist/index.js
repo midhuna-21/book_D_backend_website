@@ -22,6 +22,7 @@ const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
 const corsOptions = {
     origin: config_1.default.API,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
@@ -29,7 +30,7 @@ const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: config_1.default.API,
-        methods: ["GET", "POST", "PUT"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
     },
 });

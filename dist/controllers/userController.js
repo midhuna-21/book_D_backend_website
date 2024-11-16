@@ -77,6 +77,7 @@ const validateOtp = async (req, res) => {
             return res.status(400).json({ message: "please enter otp" });
         }
         const otpFromCookie = req.cookies.otp;
+        console.log(otpFromCookie, 'otpFromCookie');
         if (!otpFromCookie) {
             return res.status(400).json({ message: "please click Resend OTP" });
         }
