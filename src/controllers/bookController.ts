@@ -378,7 +378,7 @@ const createRentalCheckout = async (req: Request, res: Response) => {
             line_items: [
                 {
                     price_data: {
-                        currency: "usd",
+                        currency: "inr",
                         product_data: {
                             name: bookTitle,
                         },
