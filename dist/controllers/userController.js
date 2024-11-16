@@ -44,7 +44,13 @@ const createNewUser = async (req, res) => {
         const user = { name, email, phone, password: securePassword };
         const otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "createNewUser");
-        res.cookie("otp", otp, { maxAge: 60000 });
+        res.cookie('otp', otp, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'none',
+            maxAge: 60 * 1000,
+        });
+        // res.cookie("otp", otp, { maxAge: 60000 });
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -339,7 +345,13 @@ const sendOtpForForgotPassword = async (req, res) => {
         if (isValidEmail) {
             const otp = await (0, otpGenerator_1.generateOtp)(email);
             console.log(otp, "forgot");
-            res.cookie("otp", otp, { maxAge: 60000 });
+            res.cookie('otp', otp, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'none',
+                maxAge: 60 * 1000,
+            });
+            // res.cookie("otp", otp, { maxAge: 60000 });
             return res.status(200).json({ isValidEmail });
         }
         else {
