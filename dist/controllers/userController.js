@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkUserIsblock = exports.sendOtpForForgotPassword = exports.computeLocationDistance = exports.linkGoogleAccount = exports.processGoogleLogin = exports.sendEmailForUnlinking = exports.removeUserProfileImage = exports.updateUserProfileImage = exports.updateUserProfile = exports.logoutUser = exports.resetUserPassword = exports.validateOtp = exports.authenticateWithGoogle = exports.authenticateUser = exports.requestOtpResend = exports.createNewUser = void 0;
+exports.updateUserProfilePassword = exports.checkIsCurrentPassword = exports.checkUserIsblock = exports.sendOtpForForgotPassword = exports.computeLocationDistance = exports.linkGoogleAccount = exports.processGoogleLogin = exports.sendEmailForUnlinking = exports.removeUserProfileImage = exports.updateUserProfileImage = exports.updateUserProfile = exports.logoutUser = exports.resetUserPassword = exports.validateOtp = exports.authenticateWithGoogle = exports.authenticateUser = exports.requestOtpResend = exports.createNewUser = void 0;
 const passwordValidation_1 = require("../utils/ReuseFunctions/passwordValidation");
 const userService_1 = require("../services/user/userService");
 const otpGenerator_1 = require("../utils/ReuseFunctions/otpGenerator");
@@ -15,6 +15,7 @@ const config_1 = __importDefault(require("../config/config"));
 const store_1 = require("../utils/imageFunctions/store");
 const sendEmail_1 = require("../utils/ReuseFunctions/sendEmail");
 const userRepository_1 = require("../respository/user/userRepository");
+const userModel_1 = require("../model/userModel");
 const uploadImageToS3 = async (imageBuffer, fileName) => {
     const uploadParams = {
         Bucket: config_1.default.BUCKET_NAME,
@@ -31,7 +32,7 @@ const userService = new userService_1.UserService(userRepository);
 const createNewUser = async (req, res) => {
     try {
         const { name, email, phone, password } = req.body;
-        let existUser = await userService.getUserByEmail(email);
+        let existUser = await userService.getUserIsVerified(email);
         if (existUser) {
             return res.status(400).json({ message: "Email already exist" });
         }
@@ -41,17 +42,21 @@ const createNewUser = async (req, res) => {
             });
         }
         const securePassword = await (0, passwordValidation_1.hashPassword)(password);
-        const user = { name, email, phone, password: securePassword };
+        // const user: User = { name, email, phone, password: securePassword };
         const otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "createNewUser");
-        res.cookie('otp', otp, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
-            maxAge: 60 * 1000,
+        const userCreated = await userService.getCreateUser({
+            name,
+            email,
+            phone,
+            password: securePassword,
+            otp,
         });
-        // res.cookie("otp", otp, { maxAge: 60000 });
-        return res.status(200).json({ user });
+        const userId = userCreated?._id;
+        setTimeout(async () => {
+            await userModel_1.user.updateOne({ _id: userId }, { $unset: { otp: 1 } });
+        }, 60000);
+        return res.status(200).json({ user: userCreated });
     }
     catch (error) {
         console.error(error.message);
@@ -61,10 +66,13 @@ const createNewUser = async (req, res) => {
 exports.createNewUser = createNewUser;
 const requestOtpResend = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, userId } = req.body;
         let otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "resend");
-        res.cookie("otp", otp, { maxAge: 60000 });
+        const otpUpdate = await userService.getUpdateUserOtp(userId, otp);
+        setTimeout(async () => {
+            await userModel_1.user.updateOne({ email: email }, { $unset: { otp: 1 } });
+        }, 60000);
         return res
             .status(200)
             .json({ message: "OTP generated and sent successfully" });
@@ -77,26 +85,21 @@ const requestOtpResend = async (req, res) => {
 exports.requestOtpResend = requestOtpResend;
 const validateOtp = async (req, res) => {
     try {
-        const { response, origin, otp } = req.body;
+        const { userId, response, origin } = req.body;
+        const otp = Number(req.body.otp);
         const { name, email, phone, password } = response;
+        const isUser = await userService.getUserNotVerified(userId);
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
         }
-        const otpFromCookie = req.cookies.otp;
-        console.log(otpFromCookie, 'otpFromCookie');
-        if (!otpFromCookie) {
+        if (!isUser?.otp) {
             return res.status(400).json({ message: "please click Resend OTP" });
         }
-        if (otp !== otpFromCookie) {
+        if (otp !== isUser?.otp) {
             return res.status(400).json({ message: "Invalid OTP" });
         }
         if (origin === "sign-up") {
-            const user = await userService.getCreateUser({
-                name,
-                email,
-                phone,
-                password,
-            });
+            const user = await userService.getUpdateUserIsVerified(isUser?._id.toString());
             if (user) {
                 const userId = user._id.toString();
                 const { accessToken, refreshToken } = (0, userGenerateToken_1.generateUserTokens)(res, {
@@ -206,7 +209,8 @@ const authenticateWithGoogle = async (req, res) => {
                     userId,
                     role: "user",
                 });
-                return res.status(200).json({ success: true,
+                return res.status(200).json({
+                    success: true,
                     user: {
                         ...user.toObject(),
                         accessToken,
@@ -323,17 +327,28 @@ const removeUserProfileImage = async (req, res) => {
         if (!imageToRemove) {
             return res.status(500).json({ messag: "Image is required." });
         }
-        const deleteParams = {
-            Bucket: config_1.default.BUCKET_NAME,
-            Key: imageToRemove,
-        };
-        const command = new client_s3_1.DeleteObjectCommand(deleteParams);
-        await store_1.s3Client.send(command);
+        const userExist = await userService.getUserById(userId);
+        if (userExist?.image) {
+            const imageKey = userExist.image.split("/").pop();
+            if (imageKey) {
+                const deleteParams = {
+                    Bucket: config_1.default.BUCKET_NAME,
+                    Key: imageKey,
+                };
+                const deleteCommand = new client_s3_1.DeleteObjectCommand(deleteParams);
+                try {
+                    await store_1.s3Client.send(deleteCommand);
+                }
+                catch (deleteError) {
+                    console.error("Error removing image:", deleteError);
+                }
+            }
+        }
         const user = await userService.getDeleteUserImage(userId);
         return res.status(200).json({ user });
     }
     catch (error) {
-        console.log("Error deleteUserImage:", error);
+        console.log("Error removeUserProfileImage:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -344,14 +359,12 @@ const sendOtpForForgotPassword = async (req, res) => {
         let isValidEmail = await userService.getUserByEmail(email);
         if (isValidEmail) {
             const otp = await (0, otpGenerator_1.generateOtp)(email);
+            const userId = isValidEmail?._id.toString();
             console.log(otp, "forgot");
-            res.cookie('otp', otp, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none',
-                maxAge: 60 * 1000,
-            });
-            // res.cookie("otp", otp, { maxAge: 60000 });
+            await userService.getUpdateUserOtp(userId, otp);
+            setTimeout(async () => {
+                await userModel_1.user.updateOne({ _id: userId }, { $unset: { otp: 1 } });
+            }, 60000);
             return res.status(200).json({ isValidEmail });
         }
         else {
@@ -476,4 +489,37 @@ const checkUserIsblock = async (req, res) => {
     }
 };
 exports.checkUserIsblock = checkUserIsblock;
+const checkIsCurrentPassword = async (req, res) => {
+    try {
+        const { userId, currentPassword } = req.params;
+        const user = await userService.getUserById(userId);
+        const password = user?.password;
+        const compare = await (0, passwordValidation_1.comparePassword)(currentPassword, password);
+        return res.status(200).json({ compare });
+    }
+    catch (error) {
+        console.log("Error checkUserIsblock controller:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkUserIsblock" });
+    }
+};
+exports.checkIsCurrentPassword = checkIsCurrentPassword;
+const updateUserProfilePassword = async (req, res) => {
+    try {
+        const { userId, newPassword } = req.body;
+        const user = await userService.getUserById(userId);
+        const securePassword = await (0, passwordValidation_1.hashPassword)(newPassword);
+        const password = securePassword;
+        const updatedUser = await userService.getUpdateProfilePassword(userId, password);
+        return res.status(200).json({ user: updatedUser });
+    }
+    catch (error) {
+        console.log("Error checkUserIsblock controller:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkUserIsblock" });
+    }
+};
+exports.updateUserProfilePassword = updateUserProfilePassword;
 //# sourceMappingURL=userController.js.map

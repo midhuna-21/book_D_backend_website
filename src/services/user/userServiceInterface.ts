@@ -5,7 +5,6 @@ export interface IUserService {
     getCreateUser(data: User): Promise<IUser | null>;
     getDeleteUserImage(userID: string): Promise<IUser | null>;
     getUserByEmail(email: string): Promise<IUser | null>;
-    getUserByPhone(phone: string): Promise<IUser | null>;
     getUserByGmail(email: string): Promise<IUser | null>;
     getUpdateIsGoogleTrue(email: string): Promise<IUser | null>;
     getCreateUserByGoogle(data: User): Promise<IUser | null>;
@@ -22,6 +21,12 @@ export interface IUserService {
         resetToken: string,
         resetTokenExpiration: number
     ): Promise<IUser | null>;
-    getUserByPhone(phone: string): Promise<IUser | null>;
-    getUserByPhone(phone: string): Promise<IUser | null>;
+    getUserNotVerified(userId: string): Promise<IUser | null>;
+    getUpdateUserIsVerified(userId: string): Promise<IUser | null>;
+    getUserIsVerified(email: string): Promise<IUser | null>;
+    getUpdateUserOtp(userId: string, otp: number): Promise<IUser | null>;
+    getUpdateProfilePassword(
+        userId: string,
+        password: string
+    ): Promise<IUser | null>;
 }

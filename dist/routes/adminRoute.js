@@ -9,7 +9,7 @@ const store_1 = __importDefault(require("../utils/imageFunctions/store"));
 const adminAuthMiddleware_1 = require("../utils/middleware/adminAuthMiddleware");
 const adminRefreshToken_1 = require("../controllers/adminRefreshToken");
 const adminRoutes = express_1.default.Router();
-adminRoutes.post('/refresh-token', adminRefreshToken_1.adminRefreshToken);
+adminRoutes.post("/refresh-token", adminRefreshToken_1.adminRefreshToken);
 adminRoutes.post("/login", adminController_1.authenticateAdmin);
 adminRoutes.post("/genres/create", adminAuthMiddleware_1.adminVerifyToken, store_1.default.single("file"), adminController_1.createGenre);
 adminRoutes.get("/genres", adminAuthMiddleware_1.adminVerifyToken, adminController_1.fetchGenres);

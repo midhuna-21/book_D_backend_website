@@ -2,7 +2,7 @@ import { Cart } from "../../interfaces/data";
 import { notification } from "../../model/notificationModel";
 import { cart, ICart } from "../../model/cartModel";
 import { ICartRepository } from "./cartRepositoryInterface";
-import {books} from '../../model/bookModel'
+import { books } from "../../model/bookModel";
 
 export class CartRepository implements ICartRepository {
     async findCreatCart(data: Cart): Promise<ICart | null> {
@@ -54,16 +54,15 @@ export class CartRepository implements ICartRepository {
                 { types: types },
                 { new: true }
             );
-           if(updateCart?.types === 'accepted'){
-            const {bookId,quantity} = updateCart
-            const updateQuantity = quantity!
-             const b = await books.findByIdAndUpdate(
-                { _id: bookId },
-                { $inc: { quantity: -updateQuantity } }, 
-                { new: true }
-            );
-          
-           }
+            if (updateCart?.types === "accepted") {
+                const { bookId, quantity } = updateCart;
+                const updateQuantity = quantity!;
+                const b = await books.findByIdAndUpdate(
+                    { _id: bookId },
+                    { $inc: { quantity: -updateQuantity } },
+                    { new: true }
+                );
+            }
             return updateCart;
         } catch (error) {
             console.log("Error UpdateCart:", error);
@@ -98,17 +97,12 @@ export class CartRepository implements ICartRepository {
         }
     }
 
-    async  findIsOrderExistByCart(cartId: string): Promise<ICart | null> {
+    async findIsOrderExistByCart(cartId: string): Promise<ICart | null> {
         try {
-            return await cart.findById(
-                { _id: cartId },
-                { isPaid: true },
-            );
-
+            return await cart.findById({ _id: cartId }, { isPaid: true });
         } catch (error) {
             console.log("Error findIsOrderExistByCart:", error);
             throw error;
         }
     }
-
 }

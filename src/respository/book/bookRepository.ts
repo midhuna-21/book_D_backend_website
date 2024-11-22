@@ -7,6 +7,13 @@ import { WalletRepository } from "../wallet/walletRepository";
 import { user } from "../../model/userModel";
 import { ICart } from "../../model/cartModel";
 
+interface PaginatedBooks {
+    books: IBooks[];
+    currentPage: number;
+    totalPages: number;
+    totalBooks: number;
+}
+
 const walletRepository = new WalletRepository();
 export class BookRepository {
     async findUpdateBookQuantity(
@@ -163,7 +170,7 @@ export class BookRepository {
             throw error;
         }
     }
-    
+
     async findGenres(): Promise<IGenre[]> {
         try {
             const allGenres = await genres.find().sort({ updatedAt: -1 });
@@ -175,7 +182,11 @@ export class BookRepository {
     }
     async findGenresWithAvailableBooks(userId: string): Promise<IGenre[]> {
         try {
-            const allBooks = await books.find({ lenderId: { $ne: userId } });
+            const allBooks = await books.find({
+                lenderId: { $ne: userId },
+                isArchived: false,
+                quantity: { $gt: 0 },
+            });
             const allGenres = await genres.find();
             const genresWithBooks = allGenres.filter((genre) =>
                 allBooks.some((book) => book.genre === genre.genreName)
@@ -469,25 +480,55 @@ export class BookRepository {
         }
     }
 
-    async findAvailableBooksForRent(userId: string): Promise<IBooks[]> {
+    async escapeRegExp(string: string) {
+        return string.replace(/[.,'*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    async findAvailableBooksForRent(
+        userId: string,
+        page: number,
+        limit: number,
+        searchQuery: string,
+        genreName: string
+    ): Promise<PaginatedBooks> {
         try {
-            const allBooks = await books
-                .find({
-                    lenderId: { $ne: userId },
-                    quantity: { $gt: 0 },
-                    isArchived: false,
-                })
-                .sort({ updatedAt: -1 })
-                .exec();
-            const availableBooks: IBooks[] = [];
+            const sanitizedQuery = await this.escapeRegExp(searchQuery);
+            const searchRegex = new RegExp(sanitizedQuery, "i");
 
-            for (const book of allBooks) {
-                const lender = await user.findById({ _id: book.lenderId });
-                if (lender && !lender.isBlocked) {
-                    availableBooks.push(book);
-                }
+            const genreFilter = genreName ? { genre: genreName } : {};
+            const queryFilter: any = {
+                ...genreFilter,
+                lenderId: { $ne: userId },
+            };
+
+            if (searchQuery) {
+                queryFilter.$or = [
+                    { bookTitle: searchRegex },
+                    { author: searchRegex },
+                    { publisher: searchRegex },
+                    { genre: searchRegex },
+                    { "address.city": searchRegex },
+                    { "address.district": searchRegex },
+                    { "address.state": searchRegex },
+                ];
             }
-            return availableBooks;
+
+            const pageNumber = Math.max(page, 1);
+            const limitNumber = Math.max(limit, 1);
+
+            const totalBooks = await books.countDocuments(queryFilter);
+            const bookList = await books
+                .find(queryFilter)
+                .lean()
+                .skip((pageNumber - 1) * limitNumber)
+                .limit(limitNumber)
+                .sort({ updatedAt: -1 });
+
+            return {
+                books: bookList,
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalBooks / limitNumber),
+                totalBooks,
+            };
         } catch (error) {
             console.log("Error getAvailableBooksForRent:", error);
             throw error;
@@ -532,34 +573,34 @@ export class BookRepository {
         }
     }
 
-
-    async findOrderById(orderId:string):Promise<IOrder | null>{
-        try{
-
-            const order= await orders.findById({_id:orderId}).populate('userId')
-            return order
-        
+    async findOrderById(orderId: string): Promise<IOrder | null> {
+        try {
+            const order = await orders
+                .findById({ _id: orderId })
+                .populate("userId");
+            return order;
         } catch (error) {
             console.log("Error findOrderById:", error);
             throw error;
         }
     }
-    
+
     async findVerifyingPickup(
         orderId: string,
-        pickupCode:string
+        pickupCode: string
     ): Promise<IOrder | null> {
         try {
-           return await orders.findById({ _id: orderId },{pickupCode:pickupCode})
+            return await orders.findById(
+                { _id: orderId },
+                { pickupCode: pickupCode }
+            );
         } catch (error) {
             console.log("Error findVerifyingPickup:", error);
             throw error;
         }
     }
-    
-    async findConfirmPickupLender(
-        orderId: string,
-    ): Promise<IOrder | null> {
+
+    async findConfirmPickupLender(orderId: string): Promise<IOrder | null> {
         try {
             const order = await orders
                 .findById({ _id: orderId })
@@ -576,7 +617,7 @@ export class BookRepository {
                     $set: {
                         rentedOn,
                         dueDate,
-                        bookStatus:'not_returned'
+                        bookStatus: "not_returned",
                     },
                 },
                 { new: true }
@@ -590,26 +631,25 @@ export class BookRepository {
     async findConfirmReturnRenter(orderId: string): Promise<IOrder | null> {
         try {
             const updatedOrderCompleted = await orders.findByIdAndUpdate(
-                orderId, 
+                orderId,
                 {
                     $set: {
                         checkoutDate: new Date(),
-                        bookStatus: 'completed'
+                        bookStatus: "completed",
                     },
                 },
                 { new: true }
             );
-    
+
             if (updatedOrderCompleted) {
                 await walletRepository.findWalletPaymentTransfer(orderId);
                 return updatedOrderCompleted;
             }
-    
+
             return null;
         } catch (error) {
             console.log("Error findConfirmReturnRenter:", error);
             throw error;
         }
     }
-    
 }

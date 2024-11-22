@@ -23,5 +23,5 @@ export interface IAdminRepository {
     findAllGenres(): Promise<IGenre[]>;
     findGenre(genreId: string): Promise<IGenre | null>;
     findDeleteGenre(genreId: string): Promise<IGenre | null>;
-    findAllTotalOrders(): Promise<IOrder[]>
+    findAllTotalOrders(): Promise<IOrder[]>;
 }

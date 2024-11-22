@@ -5,6 +5,13 @@ import { IAdmin } from "../../model/adminModel";
 import { IOrder } from "../../model/orderModel";
 import { Books, Order } from "../../interfaces/data";
 
+interface PaginatedBooks {
+    books: IBooks[];
+    currentPage: number;
+    totalPages: number;
+    totalBooks: number;
+}
+
 export interface IBookRepository {
     findUpdateBookQuantity(
         bookId: string,
@@ -36,20 +43,21 @@ export interface IBookRepository {
         selectedOrderId: string,
         bookStatus: string
     ): Promise<IOrder | null>;
-    findAvailableBooksForRent(userId:string):Promise<IBooks[]>
-    findArchiveBook(bookId: string): Promise<IBooks | null>
-    findUnArchiveBook(bookId: string): Promise<IBooks | null>
-    findRemoveBook(bookId:string):Promise<IBooks | null>
-     findVerifyingPickup(
+    findAvailableBooksForRent(
+        userId: string,
+        page: number,
+        limit: number,
+        searchQuery: string,
+        genreName: string
+    ): Promise<PaginatedBooks>;
+    findArchiveBook(bookId: string): Promise<IBooks | null>;
+    findUnArchiveBook(bookId: string): Promise<IBooks | null>;
+    findRemoveBook(bookId: string): Promise<IBooks | null>;
+    findVerifyingPickup(
         orderId: string,
-        pickupCode:string
-    ): Promise<IOrder | null>
-    findOrderById(orderId:string):Promise<IOrder | null>
-    findConfirmPickupLender(
-        orderId: string,
-    ): Promise<IOrder | null>
-    findConfirmReturnRenter(
-        orderId: string,
-    ): Promise<IOrder | null>
-
+        pickupCode: string
+    ): Promise<IOrder | null>;
+    findOrderById(orderId: string): Promise<IOrder | null>;
+    findConfirmPickupLender(orderId: string): Promise<IOrder | null>;
+    findConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
 }

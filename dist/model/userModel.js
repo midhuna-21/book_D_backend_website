@@ -11,7 +11,6 @@ const userSchema = new mongoose_1.default.Schema({
     },
     email: {
         type: String,
-        unique: true,
     },
     image: {
         type: String,
@@ -45,6 +44,13 @@ const userSchema = new mongoose_1.default.Schema({
         type: String,
     },
     resetTokenExpiration: {
+        type: Number,
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    otp: {
         type: Number,
     },
 }, { timestamps: true });

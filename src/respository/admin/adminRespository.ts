@@ -38,7 +38,7 @@ export class AdminRepository implements IAdminRepository {
 
     async findAllUsers(): Promise<IUser[]> {
         try {
-            return await user.find();
+            return await user.find({ isEmailVerified: true });
         } catch (error) {
             console.log("Error findAllUsers:", error);
             throw error;
@@ -71,7 +71,7 @@ export class AdminRepository implements IAdminRepository {
             throw error;
         }
     }
-    
+
     async findAllTotalOrders(): Promise<IOrder[]> {
         try {
             return await orders.find().sort({ updatedAt: -1 });

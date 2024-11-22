@@ -14,6 +14,42 @@ class UserService {
             throw error;
         }
     }
+    async getUserNotVerified(userId) {
+        try {
+            return await this.userRepository.findUserNotVerified(userId);
+        }
+        catch (error) {
+            console.log("Error getCreateUser:", error);
+            throw error;
+        }
+    }
+    async getUserIsVerified(email) {
+        try {
+            return await this.userRepository.findUserIsVerified(email);
+        }
+        catch (error) {
+            console.log("Error getUserIsVerified:", error);
+            throw error;
+        }
+    }
+    async getUpdateUserIsVerified(userId) {
+        try {
+            return await this.userRepository.findUpdateUserIsVerified(userId);
+        }
+        catch (error) {
+            console.log("Error getUpdateUserIsVerified:", error);
+            throw error;
+        }
+    }
+    async getUpdateUserOtp(userId, otp) {
+        try {
+            return await this.userRepository.findUpdateUserOtp(userId, otp);
+        }
+        catch (error) {
+            console.log("Error getUpdateUserOtp:", error);
+            throw error;
+        }
+    }
     async getDeleteUserImage(userId) {
         try {
             const user = await this.userRepository.findDeleteUserImage(userId);
@@ -33,15 +69,6 @@ class UserService {
             throw error;
         }
     }
-    async getUserByPhone(phone) {
-        try {
-            return await this.userRepository.findUserByPhone(phone);
-        }
-        catch (error) {
-            console.log("Error getUserByPhone:", error);
-            throw error;
-        }
-    }
     async getUserByGmail(email) {
         try {
             return await this.userRepository.findByGmail(email);
@@ -57,15 +84,6 @@ class UserService {
         }
         catch (error) {
             console.log("Error getUpdateIsGoogleTrue:", error);
-            throw error;
-        }
-    }
-    async getUserByName(name) {
-        try {
-            return await this.userRepository.findByUserName(name);
-        }
-        catch (error) {
-            console.log("Error getUserByName:", error);
             throw error;
         }
     }
@@ -137,6 +155,15 @@ class UserService {
     async getUpdateIsGoogle(gmail, resetToken, resetTokenExpiration) {
         try {
             return await this.userRepository.findUpdateIsGoogle(gmail, resetToken, resetTokenExpiration);
+        }
+        catch (error) {
+            console.log("Error getUpdateIsGoogle:", error);
+            throw error;
+        }
+    }
+    async getUpdateProfilePassword(userId, password) {
+        try {
+            return await this.userRepository.findUpdateProfilePassword(userId, password);
         }
         catch (error) {
             console.log("Error getUpdateIsGoogle:", error);

@@ -15,7 +15,8 @@ import {
     computeLocationDistance,
     sendOtpForForgotPassword,
     checkUserIsblock,
-    
+    checkIsCurrentPassword,
+    updateUserProfilePassword,
 } from "../controllers/userController";
 import express from "express";
 import upload from "../utils/imageFunctions/store";
@@ -42,7 +43,7 @@ import {
     removeBook,
     updateConfirmPickupByLender,
     updateConfirmReturnByRenter,
-    checkIsOrderExistByOrderId
+    checkIsOrderExistByOrderId,
 } from "../controllers/bookController";
 import {
     fetchWalletTransactions,
@@ -65,18 +66,15 @@ import {
     updateChatRoomReadStatus,
     fetchUnreadMessages,
 } from "../controllers/messageController";
-import {
-    updateCartItem,
-    addItemToCart,
-} from "../controllers/cartController";
+import { updateCartItem, addItemToCart } from "../controllers/cartController";
 import { userVerifyToken } from "../utils/middleware/userAuthMiddleware";
 import { userRefreshToken } from "../controllers/userRefreshToken";
 import { checkBlocked } from "../utils/middleware/checkUserBlock";
-import {checkIsOrderExist} from '../controllers/cartController'
+import { checkIsOrderExist } from "../controllers/cartController";
 
 const userRoutes = express.Router();
 
-userRoutes.post('/refresh-token',userRefreshToken)
+userRoutes.post("/refresh-token", userRefreshToken);
 
 userRoutes.post("/register", createNewUser);
 
@@ -100,11 +98,31 @@ userRoutes.post("/update-password", resetUserPassword);
 
 userRoutes.post("/email/unlink", userVerifyToken, sendEmailForUnlinking);
 
-userRoutes.put("/profile/update", userVerifyToken,checkBlocked, updateUserProfile);
+userRoutes.put(
+    "/profile/update",
+    userVerifyToken,
+    checkBlocked,
+    updateUserProfile
+);
+
+userRoutes.put(
+    "/profile/update-password",
+    userVerifyToken,
+    checkBlocked,
+    updateUserProfilePassword
+);
+
+userRoutes.get(
+    "/user/check-current-password/:userId/:currentPassword",
+    userVerifyToken,
+    checkBlocked,
+    checkIsCurrentPassword
+);
 
 userRoutes.put(
     "/profile/update-image",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     upload.single("selectedImage"),
     updateUserProfileImage
 );
@@ -113,42 +131,66 @@ userRoutes.post("/logout", logoutUser);
 
 userRoutes.delete(
     "/profile/remove-image",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     removeUserProfileImage
 );
 
-userRoutes.get("/user/check/isBlock", userVerifyToken,checkBlocked, checkUserIsblock);
+userRoutes.get(
+    "/user/check/isBlock",
+    userVerifyToken,
+    checkBlocked,
+    checkUserIsblock
+);
 
 //books
 userRoutes.post(
     "/books/lend-book",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     upload.array("images", 10),
     createBookLend
 );
 
-
-userRoutes.get("/books/genres", userVerifyToken,checkBlocked, fetchGenresWithAvailableBooks);
+userRoutes.get(
+    "/books/genres",
+    userVerifyToken,
+    checkBlocked,
+    fetchGenresWithAvailableBooks
+);
 
 userRoutes.get(
     "/books/available-for-rent",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchAvailableBooksForRent
 );
 
-userRoutes.get("/books/details/:id", userVerifyToken,checkBlocked, fetchBookDetails);
+userRoutes.get(
+    "/books/details/:id",
+    userVerifyToken,
+    checkBlocked,
+    fetchBookDetails
+);
 
-userRoutes.get("/books/lent-books", userVerifyToken,checkBlocked, fetchUserLentBooks);
+userRoutes.get(
+    "/books/lent-books",
+    userVerifyToken,
+    checkBlocked,
+    fetchUserLentBooks
+);
 
 userRoutes.get(
     "/books/search/:searchQuery",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchBooksBySearch
 );
 
 userRoutes.put(
     "/books/lent/update/:bookId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     upload.array("images", 10),
     updateLentBookDetails
 );
@@ -162,45 +204,80 @@ userRoutes.delete("/books/remove/:bookId", userVerifyToken, removeBook);
 //notifications
 userRoutes.post(
     "/notifications/send-notification",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     sendNotification
 );
 
-userRoutes.get("/notifications", userVerifyToken,checkBlocked, fetchUserNotifications);
+userRoutes.get(
+    "/notifications",
+    userVerifyToken,
+    checkBlocked,
+    fetchUserNotifications
+);
 
 userRoutes.put(
     "/notifications/update-status",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateUserNotificationStatusIsRead
 );
 
 userRoutes.get(
     "/notifications/unread/:userId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchUnreadNotifications
 );
 
 //messages
 
-userRoutes.get("/chats/:userId", userVerifyToken,checkBlocked, fetchUserChatList);
+userRoutes.get(
+    "/chats/:userId",
+    userVerifyToken,
+    checkBlocked,
+    fetchUserChatList
+);
 
-userRoutes.post("/chat-room/create", userVerifyToken,checkBlocked, createChatRoom);
+userRoutes.post(
+    "/chat-room/create",
+    userVerifyToken,
+    checkBlocked,
+    createChatRoom
+);
 
-userRoutes.get("/chat-room/:chatRoomId", userVerifyToken,checkBlocked, fetchChatRoom);
+userRoutes.get(
+    "/chat-room/:chatRoomId",
+    userVerifyToken,
+    checkBlocked,
+    fetchChatRoom
+);
 
-userRoutes.post("/messages/send-message", userVerifyToken, checkBlocked,sendMessage);
+userRoutes.post(
+    "/messages/send-message",
+    userVerifyToken,
+    checkBlocked,
+    sendMessage
+);
 
-userRoutes.get("/messages/:chatRoomId", userVerifyToken,checkBlocked, fetchMessages);
+userRoutes.get(
+    "/messages/:chatRoomId",
+    userVerifyToken,
+    checkBlocked,
+    fetchMessages
+);
 
 userRoutes.get(
     "/messages/unread/:userId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchUnreadMessages
 );
 
 userRoutes.put(
     "/chatrooms/read-status/:chatRoomId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateChatRoomReadStatus
 );
 
@@ -211,32 +288,50 @@ userRoutes.put(
 //     checkRentalAcceptance
 // );
 
-userRoutes.post("/cart/add", userVerifyToken, checkBlocked,addItemToCart);
+userRoutes.post("/cart/add", userVerifyToken, checkBlocked, addItemToCart);
 
-userRoutes.put("/cart/update-item/:cartId", userVerifyToken,checkBlocked, updateCartItem);
+userRoutes.put(
+    "/cart/update-item/:cartId",
+    userVerifyToken,
+    checkBlocked,
+    updateCartItem
+);
 
 //goolge location
 userRoutes.get(
     "/google/locations/distance",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     computeLocationDistance
 );
 
 //payment
 userRoutes.get(
     "/payments/rental-details/:cartId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     rentalProcess
 );
 
-userRoutes.post("/payments/checkout", userVerifyToken, checkBlocked,createRentalCheckout);
+userRoutes.post(
+    "/payments/checkout",
+    userVerifyToken,
+    checkBlocked,
+    createRentalCheckout
+);
 
 //rent
-userRoutes.post("/books/rent/create-order", userVerifyToken,checkBlocked, createRentalOrder);
+userRoutes.post(
+    "/books/rent/create-order",
+    userVerifyToken,
+    checkBlocked,
+    createRentalOrder
+);
 
 userRoutes.get(
     "/books/rentals/success",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchSuccessfullRentalOrders
 );
 
@@ -246,54 +341,87 @@ userRoutes.get(
     fetchRentalOrders
 );
 
-userRoutes.get("/books/lent/:userId", userVerifyToken,checkBlocked, fetchLentBooks);
+userRoutes.get(
+    "/books/lent/:userId",
+    userVerifyToken,
+    checkBlocked,
+    fetchLentBooks
+);
 
 //genres
-userRoutes.get("/genres/books/:genreName", userVerifyToken,checkBlocked, fetchBooksByGenre);
+userRoutes.get(
+    "/genres/books/:genreName",
+    userVerifyToken,
+    checkBlocked,
+    fetchBooksByGenre
+);
 
-userRoutes.get("/genres", userVerifyToken,checkBlocked, fetchGenres);
+userRoutes.get("/genres", userVerifyToken, checkBlocked, fetchGenres);
 
 //orders
 userRoutes.put(
     "/books/rental-orders/status/update/:selectedOrderId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateOrderStatusByRenter
 );
 
 userRoutes.put(
     "/books/lent-orders/lender/status/update/:selectedOrderId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateOrderStatusByLender
 );
 
-
-//confirmation of updating pickupcode 
+//confirmation of updating pickupcode
 userRoutes.put(
     "/books/lend-orders/lender/confirm/pickup/:orderId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateConfirmPickupByLender
 );
 
 userRoutes.put(
     "/books/rental-orders/renter/confirm/return/:orderId",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     updateConfirmReturnByRenter
 );
-
 
 //wallet
 userRoutes.get(
     "/wallet/transactions",
-    userVerifyToken,checkBlocked,
+    userVerifyToken,
+    checkBlocked,
     fetchWalletTransactions
 );
 
-userRoutes.post("/wallet/payment", userVerifyToken,checkBlocked, createRentalOrderByWallet);
+userRoutes.post(
+    "/wallet/payment",
+    userVerifyToken,
+    checkBlocked,
+    createRentalOrderByWallet
+);
 
-userRoutes.post("/wallet/check", userVerifyToken,checkBlocked, checkWalletStatus);
+userRoutes.post(
+    "/wallet/check",
+    userVerifyToken,
+    checkBlocked,
+    checkWalletStatus
+);
 
-userRoutes.get("/orders/is-exist/:cartId", userVerifyToken,checkBlocked, checkIsOrderExist);
+userRoutes.get(
+    "/orders/is-exist/:cartId",
+    userVerifyToken,
+    checkBlocked,
+    checkIsOrderExist
+);
 
-userRoutes.get("/order/:orderId", userVerifyToken,checkBlocked, checkIsOrderExistByOrderId);
+userRoutes.get(
+    "/order/:orderId",
+    userVerifyToken,
+    checkBlocked,
+    checkIsOrderExistByOrderId
+);
 
 export default userRoutes;

@@ -17,7 +17,6 @@ const fetchWalletTransactions = async (req, res) => {
             return res.status(400).json({ message: "user id is missing" });
         }
         const wallet = await index_1.walletService.getWalletTransactions(userId);
-        console.log(wallet, 'wallet controller');
         res.status(200).json({ wallet });
     }
     catch (error) {
@@ -60,7 +59,7 @@ const createRentalOrderByWallet = async (req, res) => {
                 .json({ message: "user or book id is missing" });
         }
         const existOrder = await index_1.cartService.getIsOrderExistByCart(cartId);
-        console.log(existOrder, 'ordeerr');
+        console.log(existOrder, "ordeerr");
         if (existOrder?.isPaid == true) {
             return res.status(200).json({ order: existOrder });
         }
@@ -89,7 +88,7 @@ const createRentalOrderByWallet = async (req, res) => {
                 const totalAmount = Number(cart?.totalAmount);
                 const lenderWallet = await processWalletPayment(totalAmount, userId, orderId);
                 const wallet = await index_1.walletService.getUpdateBookWallet(orderData.lenderId, totalAmount, userId);
-                console.log(lenderWallet, 'lenderWallet');
+                console.log(lenderWallet, "lenderWallet");
             }
             return res.status(200).json({ order });
         }
@@ -133,7 +132,7 @@ const processWalletPayment = async (totalAmount, userId, orderId) => {
             });
             await adminWallet.save();
         }
-        console.log('adminWallet', adminWallet);
+        console.log("adminWallet", adminWallet);
         return isWalletExist;
     }
     catch (error) {

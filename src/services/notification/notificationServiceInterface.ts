@@ -12,5 +12,7 @@ export interface INotificationService {
         type: string
     ): Promise<INotification | null>;
     getUnReadNotifications(userId: string): Promise<number>;
-    getUpdateNotificationsIsread(userId: string): Promise<INotification[] | null>;
+    getUpdateNotificationsIsread(
+        userId: string
+    ): Promise<INotification[] | null>;
 }

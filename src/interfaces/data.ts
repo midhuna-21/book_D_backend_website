@@ -19,6 +19,8 @@ export interface User {
     isGoogle?: boolean;
     resetToken?: string;
     resetTokenExpiration?: number;
+    isEmailVerified?: boolean;
+    otp?: number;
 }
 
 export interface Books {
@@ -97,6 +99,6 @@ export type Order = {
     isMoneyTransactionStatus?: string;
     isTransaction?: string;
     isSuccessfull?: boolean;
-    pickupCode:string;
-    returnCode:string;
+    pickupCode: string;
+    returnCode: string;
 };

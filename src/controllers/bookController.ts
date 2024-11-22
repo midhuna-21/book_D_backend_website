@@ -5,7 +5,7 @@ import crypto from "crypto";
 import config from "../config/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Books } from "../interfaces/data";
-import { IBooks } from "../model/bookModel";
+import { books, IBooks } from "../model/bookModel";
 import rentBookValidation from "../utils/ReuseFunctions/rentBookValidation";
 import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
 import { s3Client } from "../utils/imageFunctions/store";
@@ -48,18 +48,99 @@ const fetchGenresWithAvailableBooks = async (
 const fetchAvailableBooksForRent = async (
     req: AuthenticatedRequest,
     res: Response
-): Promise<Response> => {
+) => {
     try {
-        const userId = req.userId;
-        const books: IBooks[] = await bookService.getAvailableBooksForRent(
-            userId!
+        const {
+            page = 1,
+            limit = 10,
+            searchQuery = "",
+            genreName = "",
+        } = req.query;
+        const userId = req.userId!;
+
+        const data = await bookService.getAvailableBooksForRent(
+            userId,
+            +page,
+            +limit,
+            searchQuery as string,
+            genreName as string
         );
-        return res.status(200).json(books);
+
+        res.status(200).json({
+            books: data?.books,
+            currentPage: data?.currentPage,
+            totalPages: data?.totalPages,
+            totalBooks: data?.totalBooks,
+        });
     } catch (error: any) {
-        console.log(error.message, "fetchBooks");
+        console.error(error.message, "fetchBooks");
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+// const fetchAvailableBooksForRent = async (
+//     req: AuthenticatedRequest,
+//     res: Response
+// ) => {
+//     try {
+//         const { page = 1, limit = 10, searchQuery = "", genreName = "" } = req.query;
+//         const userId = req.userId;
+//         const sanitizedQuery = escapeRegExp(searchQuery as string);
+//         const searchRegex = new RegExp(sanitizedQuery, "i");
+//         const genreFilter = genreName ? { genre: genreName } : {};
+//         const queryFilter: any = {
+//             ...genreFilter,
+//         };
+//         if (searchQuery) {
+//             queryFilter.$or = [
+//                 { bookTitle: searchRegex },
+//                 { author: searchRegex },
+//                 { publisher: searchRegex },
+//                 { genre: searchRegex },
+//                 { "address.city": searchRegex },
+//                 { "address.district": searchRegex },
+//                 { "address.state": searchRegex },
+//             ];
+//         }
+
+//         console.log("Query Filter:", JSON.stringify(queryFilter, null, 2));
+
+//         const pageNumber = Math.max(+page, 1);
+//         const limitNumber = Math.max(+limit, 1);
+
+//         const totalBooks = await books.countDocuments(queryFilter);
+//         console.log(totalBooks,'totalBooks')
+//         const bookss = await books
+//             .find(queryFilter)
+//             .skip((pageNumber - 1) * limitNumber)
+//             .limit(limitNumber);
+
+//             console.log(bookss,'books')
+//         res.status(200).json({
+//             books:bookss,
+//             currentPage: pageNumber,
+//             totalPages: Math.ceil(totalBooks / limitNumber),
+//             totalBooks,
+//         });
+//     } catch (error: any) {
+//         console.error(error.message, "fetchBooks");
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
+// const fetchAvailableBooksForRent = async (
+//     req: AuthenticatedRequest,
+//     res: Response
+// ): Promise<Response> => {
+//     try {
+//         const userId = req.userId;
+//         const books: IBooks[] = await bookService.getAvailableBooksForRent(
+//             userId!
+//         );
+//         return res.status(200).json(books);
+//     } catch (error: any) {
+//         console.log(error.message, "fetchBooks");
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
 
 const fetchBooksByGenre = async (
     req: AuthenticatedRequest,
@@ -475,9 +556,7 @@ const fetchLentBooks = async (req: Request, res: Response) => {
         if (!userId) {
             return res.status(400).json({ message: "user is missing" });
         }
-
         const orders = await bookService.getLendList(userId);
-
         res.status(200).json({ orders });
     } catch (error) {
         console.error("Error createOrder:", error);

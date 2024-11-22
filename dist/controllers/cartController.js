@@ -72,12 +72,12 @@ exports.updateCartItem = updateCartItem;
 const checkIsOrderExist = async (req, res) => {
     try {
         const { cartId } = req.params;
-        console.log(cartId, 'carti');
+        console.log(cartId, "carti");
         if (!cartId) {
             return res.status(500).json({ message: "cartId is missing" });
         }
         const isOrderExist = await index_1.cartService.getIsOrderExistByCart(cartId);
-        console.log(isOrderExist, 'isorder');
+        console.log(isOrderExist, "isorder");
         return res.status(200).json({ isOrderExist });
     }
     catch (error) {

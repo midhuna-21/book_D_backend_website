@@ -137,9 +137,9 @@ cron.schedule("* * * * *", async () => {
                     book.quantity += cart.quantity!;
                     await book.save();
                 }
-        
+
                 cart.quantity = 0;
-                cart.types = "cancelled"; 
+                cart.types = "cancelled";
                 await cart.save();
                 const adminWallet = await bookDWallet.findOne({});
 

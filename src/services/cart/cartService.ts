@@ -63,7 +63,7 @@ export class CartService implements ICartService {
         }
     }
 
-    async getIsOrderExistByCart(cartId: string): Promise<ICart | null>{
+    async getIsOrderExistByCart(cartId: string): Promise<ICart | null> {
         try {
             return await this.cartRepository.findIsOrderExistByCart(cartId);
         } catch (error) {
@@ -72,4 +72,3 @@ export class CartService implements ICartService {
         }
     }
 }
-

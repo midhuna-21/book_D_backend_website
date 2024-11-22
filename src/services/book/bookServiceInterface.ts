@@ -5,6 +5,13 @@ import { IGenre } from "../../model/genresModel";
 import { IBooks } from "../../model/bookModel";
 import { IOrder } from "../../model/orderModel";
 
+interface PaginatedBooks {
+    books: IBooks[];
+    currentPage: number;
+    totalPages: number;
+    totalBooks: number;
+}
+
 export interface IBookService {
     getAddToBookRent(bookRentData: Books): Promise<IBooks | null>;
     getUpdateBookQuantity(
@@ -39,16 +46,21 @@ export interface IBookService {
         selectedOrderId: string,
         bookStatus: string
     ): Promise<IOrder | null>;
-    getAvailableBooksForRent(userId:string):Promise<IBooks[]>
-    getArchiveBook(bookId:string):Promise<IBooks | null>
-    getUnArchiveBook(bookId:string):Promise<IBooks | null>
-    getRemoveBook(bookId:string):Promise<IBooks | null>
-    getVerifyingPickupCode (orderId: string,pickupCode:string): Promise<IOrder | null>
-    getOrderById(orderId:string):Promise<IOrder | null>
-    getConfirmPickupLender(
+    getAvailableBooksForRent(
+        userId: string,
+        page: number,
+        limit: number,
+        searchQuery: string,
+        genreName: string
+    ): Promise<PaginatedBooks>;
+    getArchiveBook(bookId: string): Promise<IBooks | null>;
+    getUnArchiveBook(bookId: string): Promise<IBooks | null>;
+    getRemoveBook(bookId: string): Promise<IBooks | null>;
+    getVerifyingPickupCode(
         orderId: string,
-    ): Promise<IOrder | null>
-    getConfirmReturnRenter(
-        orderId: string,
-    ): Promise<IOrder | null>
+        pickupCode: string
+    ): Promise<IOrder | null>;
+    getOrderById(orderId: string): Promise<IOrder | null>;
+    getConfirmPickupLender(orderId: string): Promise<IOrder | null>;
+    getConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
 }

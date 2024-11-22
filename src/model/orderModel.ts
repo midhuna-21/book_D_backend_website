@@ -13,16 +13,15 @@ interface IOrder extends Document {
     statusUpdateLenderDate?: Date;
     statusUpdateRenterDate?: Date;
     isAmountCredited?: boolean;
-    bookTitle:string;
-    bookAddress:string;
+    bookTitle: string;
+    bookAddress: string;
     reason: string;
-    bookStatus:string;
+    bookStatus: string;
     pickupCode: string;
     returnCode: string;
     rentedOn: Date;
-    dueDate:Date;
-    checkoutDate:Date;
-
+    dueDate: Date;
+    checkoutDate: Date;
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -31,17 +30,17 @@ const orderSchema = new Schema<IOrder>(
         bookId: { type: String, ref: "books" },
         userId: { type: String, ref: "user" },
         lenderId: { type: String, ref: "user" },
-        bookTitle:{type:String},
-        bookAddress:{type:String},
+        bookTitle: { type: String },
+        bookAddress: { type: String },
         sessionId: { type: String },
         isPaid: { type: Boolean, default: false },
         reason: { types: String },
-       
+
         isAmountCredited: {
             type: Boolean,
             default: false,
         },
-        
+
         bookStatus: {
             type: String,
             enum: [
@@ -60,7 +59,6 @@ const orderSchema = new Schema<IOrder>(
         rentedOn: { type: Date },
         dueDate: { type: Date },
         checkoutDate: { type: Date },
-
     },
 
     { timestamps: true }

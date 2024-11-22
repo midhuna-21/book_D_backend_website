@@ -8,5 +8,5 @@ export interface ICartRepository {
     findUpdateCart(cartId: string, types: string): Promise<ICart | null>;
     findCartDetails(cartId: string): Promise<ICart | null>;
     findUpdateIsPaid(cartId: string): Promise<ICart | null>;
-    findIsOrderExistByCart(cartId: string): Promise<ICart | null>
+    findIsOrderExistByCart(cartId: string): Promise<ICart | null>;
 }

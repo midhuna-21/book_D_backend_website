@@ -49,7 +49,7 @@ class CartRepository {
     async findUpdateCart(cartId, types) {
         try {
             const updateCart = await cartModel_1.cart.findByIdAndUpdate({ _id: cartId }, { types: types }, { new: true });
-            if (updateCart?.types === 'accepted') {
+            if (updateCart?.types === "accepted") {
                 const { bookId, quantity } = updateCart;
                 const updateQuantity = quantity;
                 const b = await bookModel_1.books.findByIdAndUpdate({ _id: bookId }, { $inc: { quantity: -updateQuantity } }, { new: true });

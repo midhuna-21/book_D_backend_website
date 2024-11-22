@@ -53,7 +53,8 @@ const updateChatRoomReadStatus = async (req: Request, res: Response) => {
 const fetchUserChatList = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-        const conversations: IChatRoom[] | null = await chatService.getUserChatList(userId);
+        const conversations: IChatRoom[] | null =
+            await chatService.getUserChatList(userId);
         return res.status(200).json({ conversations });
     } catch (error) {
         console.log("Error fetchUserMessages", error);
@@ -64,8 +65,8 @@ const fetchUserChatList = async (req: Request, res: Response) => {
 const fetchChatRoom = async (req: Request, res: Response) => {
     try {
         const { chatRoomId } = req.params;
-        console.log(chatRoomId,"chatRoomId");
-        
+        console.log(chatRoomId, "chatRoomId");
+
         const chat = await chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     } catch (error) {

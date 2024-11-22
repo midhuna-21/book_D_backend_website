@@ -3,19 +3,45 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
 const userModel_1 = require("../../model/userModel");
 class UserRepository {
-    async findUserByPhone(phone) {
+    async findUserNotVerified(userId) {
         try {
-            const phoneNumber = await userModel_1.user.findOne({ phone: phone });
-            return phoneNumber;
+            return await userModel_1.user.findById({ _id: userId, isEmailVerified: false });
         }
         catch (error) {
-            console.log("Error findUserByPhone:", error);
+            console.log("Error findUserNotVerified:", error);
+            throw error;
+        }
+    }
+    async findUserIsVerified(email) {
+        try {
+            return await userModel_1.user.findOne({ email: email, isEmailVerified: true });
+        }
+        catch (error) {
+            console.log("Error findUserNotVerified:", error);
+            throw error;
+        }
+    }
+    async findUpdateUserIsVerified(userId) {
+        try {
+            return await userModel_1.user.findByIdAndUpdate({ _id: userId }, { isEmailVerified: true });
+        }
+        catch (error) {
+            console.log("Error findUpdateUserIsVerified:", error);
+            throw error;
+        }
+    }
+    async findUpdateUserOtp(userId, otp) {
+        try {
+            return await userModel_1.user.findByIdAndUpdate({ _id: userId }, { otp: otp });
+        }
+        catch (error) {
+            console.log("Error findUpdateUserOtp:", error);
             throw error;
         }
     }
     async findUserByEmail(email) {
         try {
-            return await userModel_1.user.findOne({ email });
+            return await userModel_1.user.findOne({ email, isEmailVerified: true });
         }
         catch (error) {
             console.log("Error findUserByEmail:", error);
@@ -47,19 +73,11 @@ class UserRepository {
                 email: data.email,
                 phone: data.phone,
                 password: data.password,
+                otp: data.otp,
             }).save();
         }
         catch (error) {
             console.log("Error createUser:", error);
-            throw error;
-        }
-    }
-    async findByUserName(name) {
-        try {
-            return userModel_1.user.findOne({ name });
-        }
-        catch (error) {
-            console.log("Error findByUserName:", error);
             throw error;
         }
     }
@@ -70,6 +88,7 @@ class UserRepository {
                 email: data.email,
                 image: data.image,
                 isGoogle: true,
+                isEmailVerified: true,
             }).save();
         }
         catch (error) {
@@ -84,6 +103,19 @@ class UserRepository {
                     password: data.password,
                     resetToken: undefined,
                     resetTokenExpiration: undefined,
+                },
+            });
+        }
+        catch (error) {
+            console.log("Error updatePassword:", error);
+            throw error;
+        }
+    }
+    async findUpdateProfilePassword(userId, password) {
+        try {
+            return await userModel_1.user.findOneAndUpdate({ _id: userId }, {
+                $set: {
+                    password: password,
                 },
             });
         }
@@ -141,7 +173,10 @@ class UserRepository {
     }
     async findActiveUsers() {
         try {
-            const users = await userModel_1.user.find({ isBlocked: false });
+            const users = await userModel_1.user.find({
+                isBlocked: false,
+                isEmailVerified: true,
+            });
             return users;
         }
         catch (error) {
@@ -163,7 +198,7 @@ class UserRepository {
             return await userModel_1.user.findByIdAndUpdate(userId, { $unset: { image: "" } }, { new: true });
         }
         catch (error) {
-            console.log("Error deleteUserImage:", error);
+            console.log("Error findDeleteUserImage:", error);
             throw error;
         }
     }

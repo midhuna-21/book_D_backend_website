@@ -24,16 +24,23 @@ const corsOptions = {
     origin: config_1.default.API,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
 };
+const apiOrigin = config_1.default.API ?? "*";
 app.use((0, cors_1.default)(corsOptions));
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", apiOrigin);
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+});
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
-    cors: {
-        origin: config_1.default.API,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    },
+    cors: corsOptions,
 });
 app.options("*", (0, cors_1.default)(corsOptions));
 app.set("io", io);

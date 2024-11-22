@@ -5,6 +5,13 @@ import { IOrder } from "../../model/orderModel";
 import { IBookService } from "./bookServiceInterface";
 import { IBookRepository } from "../../respository/book/bookRepositoryInterface";
 
+interface PaginatedBooks {
+    books: IBooks[];
+    currentPage: number;
+    totalPages: number;
+    totalBooks: number;
+}
+
 export class BookService implements IBookService {
     private bookRepository: IBookRepository;
 
@@ -115,11 +122,11 @@ export class BookService implements IBookService {
         }
     }
 
-    async getRemoveBook(bookId:string):Promise<IBooks | null>{
-        try{
-            return await this.bookRepository.findRemoveBook(bookId)
-        }catch(error:any){
-            console.log("Error getRemoveBook",error)
+    async getRemoveBook(bookId: string): Promise<IBooks | null> {
+        try {
+            return await this.bookRepository.findRemoveBook(bookId);
+        } catch (error: any) {
+            console.log("Error getRemoveBook", error);
             throw error;
         }
     }
@@ -216,11 +223,20 @@ export class BookService implements IBookService {
     }
 
     async getAvailableBooksForRent(
-       userId: string
-    ): Promise<IBooks[]> {
+        userId: string,
+        page: number,
+        limit: number,
+        searchQuery: string,
+        genreName: string
+    ): Promise<PaginatedBooks> {
         try {
-            return await this.bookRepository.findAvailableBooksForRent(userId)
-            
+            return await this.bookRepository.findAvailableBooksForRent(
+                userId,
+                page,
+                limit,
+                searchQuery,
+                genreName
+            );
         } catch (error) {
             console.log("Error getUpdateOrderStatus:", error);
             throw error;
@@ -244,39 +260,44 @@ export class BookService implements IBookService {
         }
     }
 
-    async getVerifyingPickupCode (orderId: string,pickupCode:string): Promise<IOrder | null> {
+    async getVerifyingPickupCode(
+        orderId: string,
+        pickupCode: string
+    ): Promise<IOrder | null> {
         try {
-            return await this.bookRepository.findVerifyingPickup(orderId,pickupCode);
+            return await this.bookRepository.findVerifyingPickup(
+                orderId,
+                pickupCode
+            );
         } catch (error) {
             console.log("Error getUnArchiveBook:", error);
             throw error;
         }
     }
 
-    async getOrderById(orderId:string):Promise<IOrder | null>{
-        try{
-            return await this.bookRepository.findOrderById(orderId)
-        }catch(error){
-            console.log("Error getOrderById:",error)
+    async getOrderById(orderId: string): Promise<IOrder | null> {
+        try {
+            return await this.bookRepository.findOrderById(orderId);
+        } catch (error) {
+            console.log("Error getOrderById:", error);
             throw error;
         }
     }
 
     async getConfirmPickupLender(orderId: string): Promise<IOrder | null> {
-        try{
-            return await this.bookRepository.findConfirmPickupLender(orderId)
-        }catch(error){
-            console.log("Error getConfirmPickupStatusRenter:",error)
+        try {
+            return await this.bookRepository.findConfirmPickupLender(orderId);
+        } catch (error) {
+            console.log("Error getConfirmPickupStatusRenter:", error);
             throw error;
         }
     }
 
-
     async getConfirmReturnRenter(orderId: string): Promise<IOrder | null> {
-        try{
-            return await this.bookRepository.findConfirmReturnRenter(orderId)
-        }catch(error){
-            console.log("Error getConfirmPickupStatusRenter:",error)
+        try {
+            return await this.bookRepository.findConfirmReturnRenter(orderId);
+        } catch (error) {
+            console.log("Error getConfirmPickupStatusRenter:", error);
             throw error;
         }
     }

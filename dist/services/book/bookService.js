@@ -178,9 +178,9 @@ class BookService {
             throw error;
         }
     }
-    async getAvailableBooksForRent(userId) {
+    async getAvailableBooksForRent(userId, page, limit, searchQuery, genreName) {
         try {
-            return await this.bookRepository.findAvailableBooksForRent(userId);
+            return await this.bookRepository.findAvailableBooksForRent(userId, page, limit, searchQuery, genreName);
         }
         catch (error) {
             console.log("Error getUpdateOrderStatus:", error);

@@ -76,9 +76,7 @@ export class ChatRepository {
 
                 return (senderId && receiverId) !== null;
             });
-            console.log(filteredChatRooms,'filteredChatRooms')
             return filteredChatRooms;
-
         } catch (error) {
             console.log("Error findUserChatList:", error);
             throw error;

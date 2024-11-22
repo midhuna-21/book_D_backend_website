@@ -21,6 +21,7 @@ import { Types } from "mongoose";
 import { sendEmail } from "../utils/ReuseFunctions/sendEmail";
 import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
 import { UserRepository } from "../respository/user/userRepository";
+import { user } from "../model/userModel";
 
 interface CustomFile extends Express.Multer.File {
     location?: string;
@@ -49,7 +50,7 @@ const createNewUser = async (req: Request, res: Response) => {
     try {
         const { name, email, phone, password } = req.body;
 
-        let existUser = await userService.getUserByEmail(email);
+        let existUser = await userService.getUserIsVerified(email);
         if (existUser) {
             return res.status(400).json({ message: "Email already exist" });
         }
@@ -59,17 +60,21 @@ const createNewUser = async (req: Request, res: Response) => {
             });
         }
         const securePassword = await hashPassword(password);
-        const user: User = { name, email, phone, password: securePassword };
+        // const user: User = { name, email, phone, password: securePassword };
         const otp = await generateOtp(email);
         console.log(otp, "createNewUser");
-        res.cookie('otp', otp, {
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none', 
-            maxAge: 60 * 1000,
+        const userCreated: IUser | null = await userService.getCreateUser({
+            name,
+            email,
+            phone,
+            password: securePassword,
+            otp,
         });
-        // res.cookie("otp", otp, { maxAge: 60000 });
-        return res.status(200).json({ user });
+        const userId = userCreated?._id;
+        setTimeout(async () => {
+            await user.updateOne({ _id: userId }, { $unset: { otp: 1 } });
+        }, 60000);
+        return res.status(200).json({ user: userCreated });
     } catch (error: any) {
         console.error(error.message);
         return res.status(400).json({ message: "Internal server error" });
@@ -78,10 +83,13 @@ const createNewUser = async (req: Request, res: Response) => {
 
 const requestOtpResend = async (req: Request, res: Response) => {
     try {
-        const { email } = req.body;
+        const { email, userId } = req.body;
         let otp = await generateOtp(email);
         console.log(otp, "resend");
-        res.cookie("otp", otp, { maxAge: 60000 });
+        const otpUpdate = await userService.getUpdateUserOtp(userId, otp);
+        setTimeout(async () => {
+            await user.updateOne({ email: email }, { $unset: { otp: 1 } });
+        }, 60000);
         return res
             .status(200)
             .json({ message: "OTP generated and sent successfully" });
@@ -93,27 +101,25 @@ const requestOtpResend = async (req: Request, res: Response) => {
 
 const validateOtp = async (req: Request, res: Response) => {
     try {
-        const { response, origin, otp } = req.body;
+        const { userId, response, origin } = req.body;
+        const otp = Number(req.body.otp);
         const { name, email, phone, password } = response;
+        const isUser = await userService.getUserNotVerified(userId);
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
         }
-       
-        const otpFromCookie = req.cookies.otp;
-        console.log(otpFromCookie,'otpFromCookie')
-        if (!otpFromCookie) {
+
+        if (!isUser?.otp) {
             return res.status(400).json({ message: "please click Resend OTP" });
         }
-        if (otp !== otpFromCookie) {
+        if (otp !== isUser?.otp) {
             return res.status(400).json({ message: "Invalid OTP" });
         }
         if (origin === "sign-up") {
-            const user: IUser | null = await userService.getCreateUser({
-                name,
-                email,
-                phone,
-                password,
-            });
+            const user: IUser | null =
+                await userService.getUpdateUserIsVerified(
+                    isUser?._id.toString()
+                );
             if (user) {
                 const userId = user._id.toString()!;
                 const { accessToken, refreshToken } = generateUserTokens(res, {
@@ -227,7 +233,8 @@ const authenticateWithGoogle = async (req: Request, res: Response) => {
                     role: "user",
                 });
 
-                return res.status(200).json({success:true,
+                return res.status(200).json({
+                    success: true,
                     user: {
                         ...user.toObject(),
                         accessToken,
@@ -333,9 +340,7 @@ const updateUserProfileImage = async (
         if (!file || !file.location) {
             return res.status(400).json({ message: "No file uploaded" });
         }
-
         let imageUrl: string = file.location;
-
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
         return res.status(200).json({ user });
     } catch (error: any) {
@@ -357,17 +362,27 @@ const removeUserProfileImage = async (
         if (!imageToRemove) {
             return res.status(500).json({ messag: "Image is required." });
         }
-        const deleteParams = {
-            Bucket: config.BUCKET_NAME,
-            Key: imageToRemove,
-        };
+        const userExist = await userService.getUserById(userId);
+        if (userExist?.image) {
+            const imageKey = userExist.image.split("/").pop();
+            if (imageKey) {
+                const deleteParams = {
+                    Bucket: config.BUCKET_NAME,
+                    Key: imageKey,
+                };
 
-        const command = new DeleteObjectCommand(deleteParams);
-        await s3Client.send(command);
+                const deleteCommand = new DeleteObjectCommand(deleteParams);
+                try {
+                    await s3Client.send(deleteCommand);
+                } catch (deleteError) {
+                    console.error("Error removing image:", deleteError);
+                }
+            }
+        }
         const user = await userService.getDeleteUserImage(userId);
         return res.status(200).json({ user });
     } catch (error) {
-        console.log("Error deleteUserImage:", error);
+        console.log("Error removeUserProfileImage:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -380,15 +395,12 @@ const sendOtpForForgotPassword = async (req: Request, res: Response) => {
         );
         if (isValidEmail) {
             const otp = await generateOtp(email);
+            const userId = isValidEmail?._id.toString();
             console.log(otp, "forgot");
-
-            res.cookie('otp', otp, {
-                httpOnly: true, 
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'none', 
-                maxAge: 60 * 1000,
-            });
-            // res.cookie("otp", otp, { maxAge: 60000 });
+            await userService.getUpdateUserOtp(userId, otp);
+            setTimeout(async () => {
+                await user.updateOne({ _id: userId }, { $unset: { otp: 1 } });
+            }, 60000);
             return res.status(200).json({ isValidEmail });
         } else {
             return res.status(401).json({ message: "Invalid email id" });
@@ -524,6 +536,39 @@ const checkUserIsblock = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
+const checkIsCurrentPassword = async (req: Request, res: Response) => {
+    try {
+        const { userId, currentPassword } = req.params;
+        const user = await userService.getUserById(userId!);
+        const password = user?.password!;
+        const compare = await comparePassword(currentPassword, password);
+        return res.status(200).json({ compare });
+    } catch (error: any) {
+        console.log("Error checkUserIsblock controller:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkUserIsblock" });
+    }
+};
+const updateUserProfilePassword = async (req: Request, res: Response) => {
+    try {
+        const { userId, newPassword } = req.body;
+        const user = await userService.getUserById(userId!);
+        const securePassword = await hashPassword(newPassword);
+        const password = securePassword;
+        const updatedUser = await userService.getUpdateProfilePassword(
+            userId,
+            password
+        );
+        return res.status(200).json({ user: updatedUser });
+    } catch (error: any) {
+        console.log("Error checkUserIsblock controller:", error);
+        return res
+            .status(500)
+            .json({ message: "Internal server error at checkUserIsblock" });
+    }
+};
+
 export {
     createNewUser,
     requestOtpResend,
@@ -541,4 +586,6 @@ export {
     computeLocationDistance,
     sendOtpForForgotPassword,
     checkUserIsblock,
+    checkIsCurrentPassword,
+    updateUserProfilePassword,
 };

@@ -9,7 +9,9 @@ const checkBlocked = async (req, res, next) => {
     const userId = req.userId;
     const user = await userService.getUserById(userId);
     if (user && user.isBlocked) {
-        return res.status(403).json({ message: "Your account has been blocked." });
+        return res
+            .status(403)
+            .json({ message: "Your account has been blocked." });
     }
     next();
 };

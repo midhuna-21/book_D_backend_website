@@ -18,11 +18,11 @@ import {
 } from "../controllers/adminController";
 import upload from "../utils/imageFunctions/store";
 import { adminVerifyToken } from "../utils/middleware/adminAuthMiddleware";
-import {adminRefreshToken} from '../controllers/adminRefreshToken'
+import { adminRefreshToken } from "../controllers/adminRefreshToken";
 
 const adminRoutes = express.Router();
 
-adminRoutes.post('/refresh-token',adminRefreshToken)
+adminRoutes.post("/refresh-token", adminRefreshToken);
 
 adminRoutes.post("/login", authenticateAdmin);
 

@@ -40,16 +40,82 @@ const fetchGenresWithAvailableBooks = async (req, res) => {
 exports.fetchGenresWithAvailableBooks = fetchGenresWithAvailableBooks;
 const fetchAvailableBooksForRent = async (req, res) => {
     try {
+        const { page = 1, limit = 10, searchQuery = "", genreName = "", } = req.query;
         const userId = req.userId;
-        const books = await index_1.bookService.getAvailableBooksForRent(userId);
-        return res.status(200).json(books);
+        const data = await index_1.bookService.getAvailableBooksForRent(userId, +page, +limit, searchQuery, genreName);
+        res.status(200).json({
+            books: data?.books,
+            currentPage: data?.currentPage,
+            totalPages: data?.totalPages,
+            totalBooks: data?.totalBooks,
+        });
     }
     catch (error) {
-        console.log(error.message, "fetchBooks");
+        console.error(error.message, "fetchBooks");
         return res.status(500).json({ message: "Internal server error" });
     }
 };
 exports.fetchAvailableBooksForRent = fetchAvailableBooksForRent;
+// const fetchAvailableBooksForRent = async (
+//     req: AuthenticatedRequest,
+//     res: Response
+// ) => {
+//     try {
+//         const { page = 1, limit = 10, searchQuery = "", genreName = "" } = req.query;
+//         const userId = req.userId;
+//         const sanitizedQuery = escapeRegExp(searchQuery as string);
+//         const searchRegex = new RegExp(sanitizedQuery, "i");
+//         const genreFilter = genreName ? { genre: genreName } : {};
+//         const queryFilter: any = {
+//             ...genreFilter,
+//         };
+//         if (searchQuery) {
+//             queryFilter.$or = [
+//                 { bookTitle: searchRegex },
+//                 { author: searchRegex },
+//                 { publisher: searchRegex },
+//                 { genre: searchRegex },
+//                 { "address.city": searchRegex },
+//                 { "address.district": searchRegex },
+//                 { "address.state": searchRegex },
+//             ];
+//         }
+//         console.log("Query Filter:", JSON.stringify(queryFilter, null, 2));
+//         const pageNumber = Math.max(+page, 1);
+//         const limitNumber = Math.max(+limit, 1);
+//         const totalBooks = await books.countDocuments(queryFilter);
+//         console.log(totalBooks,'totalBooks')
+//         const bookss = await books
+//             .find(queryFilter)
+//             .skip((pageNumber - 1) * limitNumber)
+//             .limit(limitNumber);
+//             console.log(bookss,'books')
+//         res.status(200).json({
+//             books:bookss,
+//             currentPage: pageNumber,
+//             totalPages: Math.ceil(totalBooks / limitNumber),
+//             totalBooks,
+//         });
+//     } catch (error: any) {
+//         console.error(error.message, "fetchBooks");
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
+// const fetchAvailableBooksForRent = async (
+//     req: AuthenticatedRequest,
+//     res: Response
+// ): Promise<Response> => {
+//     try {
+//         const userId = req.userId;
+//         const books: IBooks[] = await bookService.getAvailableBooksForRent(
+//             userId!
+//         );
+//         return res.status(200).json(books);
+//     } catch (error: any) {
+//         console.log(error.message, "fetchBooks");
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
 const fetchBooksByGenre = async (req, res) => {
     try {
         const userId = req.userId;

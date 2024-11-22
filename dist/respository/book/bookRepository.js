@@ -5,7 +5,6 @@ const bookModel_1 = require("../../model/bookModel");
 const genresModel_1 = require("../../model/genresModel");
 const orderModel_1 = require("../../model/orderModel");
 const walletRepository_1 = require("../wallet/walletRepository");
-const userModel_1 = require("../../model/userModel");
 const walletRepository = new walletRepository_1.WalletRepository();
 class BookRepository {
     async findUpdateBookQuantity(bookId, quantity) {
@@ -146,7 +145,11 @@ class BookRepository {
     }
     async findGenresWithAvailableBooks(userId) {
         try {
-            const allBooks = await bookModel_1.books.find({ lenderId: { $ne: userId } });
+            const allBooks = await bookModel_1.books.find({
+                lenderId: { $ne: userId },
+                isArchived: false,
+                quantity: { $gt: 0 },
+            });
             const allGenres = await genresModel_1.genres.find();
             const genresWithBooks = allGenres.filter((genre) => allBooks.some((book) => book.genre === genre.genreName));
             return genresWithBooks;
@@ -396,24 +399,44 @@ class BookRepository {
             throw error;
         }
     }
-    async findAvailableBooksForRent(userId) {
+    async escapeRegExp(string) {
+        return string.replace(/[.,'*+?^${}()|[\]\\]/g, "\\$&");
+    }
+    async findAvailableBooksForRent(userId, page, limit, searchQuery, genreName) {
         try {
-            const allBooks = await bookModel_1.books
-                .find({
+            const sanitizedQuery = await this.escapeRegExp(searchQuery);
+            const searchRegex = new RegExp(sanitizedQuery, "i");
+            const genreFilter = genreName ? { genre: genreName } : {};
+            const queryFilter = {
+                ...genreFilter,
                 lenderId: { $ne: userId },
-                quantity: { $gt: 0 },
-                isArchived: false,
-            })
-                .sort({ updatedAt: -1 })
-                .exec();
-            const availableBooks = [];
-            for (const book of allBooks) {
-                const lender = await userModel_1.user.findById({ _id: book.lenderId });
-                if (lender && !lender.isBlocked) {
-                    availableBooks.push(book);
-                }
+            };
+            if (searchQuery) {
+                queryFilter.$or = [
+                    { bookTitle: searchRegex },
+                    { author: searchRegex },
+                    { publisher: searchRegex },
+                    { genre: searchRegex },
+                    { "address.city": searchRegex },
+                    { "address.district": searchRegex },
+                    { "address.state": searchRegex },
+                ];
             }
-            return availableBooks;
+            const pageNumber = Math.max(page, 1);
+            const limitNumber = Math.max(limit, 1);
+            const totalBooks = await bookModel_1.books.countDocuments(queryFilter);
+            const bookList = await bookModel_1.books
+                .find(queryFilter)
+                .lean()
+                .skip((pageNumber - 1) * limitNumber)
+                .limit(limitNumber)
+                .sort({ updatedAt: -1 });
+            return {
+                books: bookList,
+                currentPage: pageNumber,
+                totalPages: Math.ceil(totalBooks / limitNumber),
+                totalBooks,
+            };
         }
         catch (error) {
             console.log("Error getAvailableBooksForRent:", error);
@@ -453,7 +476,9 @@ class BookRepository {
     }
     async findOrderById(orderId) {
         try {
-            const order = await orderModel_1.orders.findById({ _id: orderId }).populate('userId');
+            const order = await orderModel_1.orders
+                .findById({ _id: orderId })
+                .populate("userId");
             return order;
         }
         catch (error) {
@@ -482,7 +507,7 @@ class BookRepository {
                 $set: {
                     rentedOn,
                     dueDate,
-                    bookStatus: 'not_returned'
+                    bookStatus: "not_returned",
                 },
             }, { new: true });
         }
@@ -496,7 +521,7 @@ class BookRepository {
             const updatedOrderCompleted = await orderModel_1.orders.findByIdAndUpdate(orderId, {
                 $set: {
                     checkoutDate: new Date(),
-                    bookStatus: 'completed'
+                    bookStatus: "completed",
                 },
             }, { new: true });
             if (updatedOrderCompleted) {

@@ -45,7 +45,9 @@ const createGenre = async (req: Request, res: Response) => {
         const { genreName } = req.body;
         const existGenre = await adminService.getGenreName(genreName);
         if (existGenre) {
-            return res.status(200).json({success:false, message: "Genre is already exist" });
+            return res
+                .status(200)
+                .json({ success: false, message: "Genre is already exist" });
         }
         // if (!genreName) {
         //     return res

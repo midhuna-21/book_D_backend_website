@@ -40,7 +40,7 @@ class AdminRepository {
     }
     async findAllUsers() {
         try {
-            return await userModel_1.user.find();
+            return await userModel_1.user.find({ isEmailVerified: true });
         }
         catch (error) {
             console.log("Error findAllUsers:", error);

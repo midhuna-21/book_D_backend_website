@@ -3,20 +3,48 @@ import { User } from "../../interfaces/data";
 import { IUserRepository } from "./userRepositoryInterface";
 
 export class UserRepository implements IUserRepository {
-    async findUserByPhone(phone: string): Promise<IUser | null> {
+    async findUserNotVerified(userId: string): Promise<IUser | null> {
         try {
-            const phoneNumber = await user.findOne({ phone: phone });
-
-            return phoneNumber;
+            return await user.findById({ _id: userId, isEmailVerified: false });
         } catch (error) {
-            console.log("Error findUserByPhone:", error);
+            console.log("Error findUserNotVerified:", error);
+            throw error;
+        }
+    }
+    async findUserIsVerified(email: string): Promise<IUser | null> {
+        try {
+            return await user.findOne({ email: email, isEmailVerified: true });
+        } catch (error) {
+            console.log("Error findUserNotVerified:", error);
+            throw error;
+        }
+    }
+    async findUpdateUserIsVerified(userId: string): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate(
+                { _id: userId },
+                { isEmailVerified: true }
+            );
+        } catch (error) {
+            console.log("Error findUpdateUserIsVerified:", error);
             throw error;
         }
     }
 
+    async findUpdateUserOtp(
+        userId: string,
+        otp: number
+    ): Promise<IUser | null> {
+        try {
+            return await user.findByIdAndUpdate({ _id: userId }, { otp: otp });
+        } catch (error) {
+            console.log("Error findUpdateUserOtp:", error);
+            throw error;
+        }
+    }
     async findUserByEmail(email: string): Promise<IUser | null> {
         try {
-            return await user.findOne({ email });
+            return await user.findOne({ email, isEmailVerified: true });
         } catch (error) {
             console.log("Error findUserByEmail:", error);
             throw error;
@@ -52,17 +80,10 @@ export class UserRepository implements IUserRepository {
                 email: data.email,
                 phone: data.phone,
                 password: data.password,
+                otp: data.otp,
             }).save();
         } catch (error) {
             console.log("Error createUser:", error);
-            throw error;
-        }
-    }
-    async findByUserName(name: string): Promise<IUser | null> {
-        try {
-            return user.findOne({ name });
-        } catch (error) {
-            console.log("Error findByUserName:", error);
             throw error;
         }
     }
@@ -74,6 +95,7 @@ export class UserRepository implements IUserRepository {
                 email: data.email,
                 image: data.image,
                 isGoogle: true,
+                isEmailVerified: true,
             }).save();
         } catch (error) {
             console.log("Error createUserByGoogle:", error);
@@ -90,6 +112,24 @@ export class UserRepository implements IUserRepository {
                         password: data.password,
                         resetToken: undefined,
                         resetTokenExpiration: undefined,
+                    },
+                }
+            );
+        } catch (error) {
+            console.log("Error updatePassword:", error);
+            throw error;
+        }
+    }
+    async findUpdateProfilePassword(
+        userId: string,
+        password: string
+    ): Promise<IUser | null> {
+        try {
+            return await user.findOneAndUpdate(
+                { _id: userId },
+                {
+                    $set: {
+                        password: password,
                     },
                 }
             );
@@ -162,7 +202,10 @@ export class UserRepository implements IUserRepository {
 
     async findActiveUsers(): Promise<IUser[]> {
         try {
-            const users = await user.find({ isBlocked: false });
+            const users = await user.find({
+                isBlocked: false,
+                isEmailVerified: true,
+            });
             return users;
         } catch (error: any) {
             console.log("Error getActiveUsers:", error);
@@ -194,7 +237,7 @@ export class UserRepository implements IUserRepository {
                 { new: true }
             );
         } catch (error) {
-            console.log("Error deleteUserImage:", error);
+            console.log("Error findDeleteUserImage:", error);
             throw error;
         }
     }

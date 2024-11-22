@@ -17,7 +17,6 @@ const fetchWalletTransactions = async (
             return res.status(400).json({ message: "user id is missing" });
         }
         const wallet = await walletService.getWalletTransactions(userId);
-        console.log(wallet,'wallet controller')
         res.status(200).json({ wallet });
     } catch (error) {
         console.error("Error updating order status:", error);
@@ -61,8 +60,8 @@ const createRentalOrderByWallet = async (req: Request, res: Response) => {
         }
 
         const existOrder = await cartService.getIsOrderExistByCart(cartId);
-        console.log(existOrder,'ordeerr')
-        if (existOrder?.isPaid==true) {
+        console.log(existOrder, "ordeerr");
+        if (existOrder?.isPaid == true) {
             return res.status(200).json({ order: existOrder });
         }
         const cartData = await cartService.getCartById(cartId);
@@ -85,21 +84,25 @@ const createRentalOrderByWallet = async (req: Request, res: Response) => {
                 pickupCode,
             };
 
-            const order = await bookService.getCreateOrder(orderData)
-           if(order){
-            const objectOrderId = order._id!;
-            const orderId = objectOrderId.toString();
-            const cart = await cartService.getUpdateIsPaid(cartId);
-            const totalAmount = Number(cart?.totalAmount);
-            const lenderWallet = await processWalletPayment(totalAmount,userId,orderId)
-            const wallet = await walletService.getUpdateBookWallet(
-                orderData.lenderId,
-                totalAmount,
-                userId
-            );
-            console.log(lenderWallet,'lenderWallet')
-           }
-           
+            const order = await bookService.getCreateOrder(orderData);
+            if (order) {
+                const objectOrderId = order._id!;
+                const orderId = objectOrderId.toString();
+                const cart = await cartService.getUpdateIsPaid(cartId);
+                const totalAmount = Number(cart?.totalAmount);
+                const lenderWallet = await processWalletPayment(
+                    totalAmount,
+                    userId,
+                    orderId
+                );
+                const wallet = await walletService.getUpdateBookWallet(
+                    orderData.lenderId,
+                    totalAmount,
+                    userId
+                );
+                console.log(lenderWallet, "lenderWallet");
+            }
+
             return res.status(200).json({ order });
         }
     } catch (error) {
@@ -110,7 +113,11 @@ const createRentalOrderByWallet = async (req: Request, res: Response) => {
     }
 };
 
-const processWalletPayment = async (totalAmount:number,userId:string,orderId:string) => {
+const processWalletPayment = async (
+    totalAmount: number,
+    userId: string,
+    orderId: string
+) => {
     try {
         let isWalletExist = await walletService.getWalletTransactions(userId);
 
@@ -124,7 +131,7 @@ const processWalletPayment = async (totalAmount:number,userId:string,orderId:str
         }
 
         isWalletExist.balance -= totalAmount;
-       
+
         const transaction = {
             total_amount: totalAmount,
             source: "payment_to_lender",
@@ -146,8 +153,8 @@ const processWalletPayment = async (totalAmount:number,userId:string,orderId:str
             });
             await adminWallet.save();
         }
-        console.log('adminWallet',adminWallet)
-        return isWalletExist
+        console.log("adminWallet", adminWallet);
+        return isWalletExist;
     } catch (error: any) {
         console.error("Error processWalletPayment :", error);
         throw new Error(error.message || "Failed to process wallet payment");
@@ -159,7 +166,7 @@ const processWalletPayment = async (totalAmount:number,userId:string,orderId:str
 // ) => {
 //     try {
 //         const { totalPrice } = req.body;
-        
+
 //         const {userId} = req.params;
 //         let isWalletExist = await walletService.getWalletTransactions(userId);
 
@@ -201,4 +208,9 @@ const processWalletPayment = async (totalAmount:number,userId:string,orderId:str
 //     }
 // };
 
-export { fetchWalletTransactions, createRentalOrderByWallet,processWalletPayment, checkWalletStatus };
+export {
+    fetchWalletTransactions,
+    createRentalOrderByWallet,
+    processWalletPayment,
+    checkWalletStatus,
+};

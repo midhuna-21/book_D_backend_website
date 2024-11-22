@@ -19,6 +19,8 @@ interface IUser extends Document {
     isGoogle?: boolean;
     resetToken?: string;
     resetTokenExpiration?: number;
+    isEmailVerified: boolean;
+    otp?: number;
 }
 const userSchema = new mongoose.Schema(
     {
@@ -27,7 +29,6 @@ const userSchema = new mongoose.Schema(
         },
         email: {
             type: String,
-            unique: true,
         },
         image: {
             type: String,
@@ -62,6 +63,13 @@ const userSchema = new mongoose.Schema(
             type: String,
         },
         resetTokenExpiration: {
+            type: Number,
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        otp: {
             type: Number,
         },
     },

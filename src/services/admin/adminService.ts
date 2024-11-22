@@ -93,7 +93,6 @@ export class AdminService implements IAdminService {
         }
     }
 
-
     async getBlockUser(_id: string): Promise<IUser | null> {
         try {
             return await this.adminRepository.findBlockUser(_id);

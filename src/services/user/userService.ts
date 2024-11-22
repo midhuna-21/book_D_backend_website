@@ -9,6 +9,7 @@ export class UserService implements IUserService {
     constructor(userRepository: IUserRepository) {
         this.userRepository = userRepository;
     }
+
     async getCreateUser(data: Partial<User>): Promise<IUser | null> {
         try {
             return await this.userRepository.findCreateUser(data);
@@ -18,6 +19,39 @@ export class UserService implements IUserService {
         }
     }
 
+    async getUserNotVerified(userId: string): Promise<IUser | null> {
+        try {
+            return await this.userRepository.findUserNotVerified(userId);
+        } catch (error) {
+            console.log("Error getCreateUser:", error);
+            throw error;
+        }
+    }
+    async getUserIsVerified(email: string): Promise<IUser | null> {
+        try {
+            return await this.userRepository.findUserIsVerified(email);
+        } catch (error) {
+            console.log("Error getUserIsVerified:", error);
+            throw error;
+        }
+    }
+    async getUpdateUserIsVerified(userId: string): Promise<IUser | null> {
+        try {
+            return await this.userRepository.findUpdateUserIsVerified(userId);
+        } catch (error) {
+            console.log("Error getUpdateUserIsVerified:", error);
+            throw error;
+        }
+    }
+
+    async getUpdateUserOtp(userId: string, otp: number): Promise<IUser | null> {
+        try {
+            return await this.userRepository.findUpdateUserOtp(userId, otp);
+        } catch (error) {
+            console.log("Error getUpdateUserOtp:", error);
+            throw error;
+        }
+    }
     async getDeleteUserImage(userId: string): Promise<IUser | null> {
         try {
             const user = await this.userRepository.findDeleteUserImage(userId);
@@ -36,14 +70,6 @@ export class UserService implements IUserService {
             throw error;
         }
     }
-    async getUserByPhone(phone: string): Promise<IUser | null> {
-        try {
-            return await this.userRepository.findUserByPhone(phone);
-        } catch (error) {
-            console.log("Error getUserByPhone:", error);
-            throw error;
-        }
-    }
 
     async getUserByGmail(email: string): Promise<IUser | null> {
         try {
@@ -59,15 +85,6 @@ export class UserService implements IUserService {
             return await this.userRepository.findUpdateIsGoogleTrue(email);
         } catch (error: any) {
             console.log("Error getUpdateIsGoogleTrue:", error);
-            throw error;
-        }
-    }
-
-    async getUserByName(name: string): Promise<IUser | null> {
-        try {
-            return await this.userRepository.findByUserName(name);
-        } catch (error) {
-            console.log("Error getUserByName:", error);
             throw error;
         }
     }
@@ -167,6 +184,21 @@ export class UserService implements IUserService {
                 gmail,
                 resetToken,
                 resetTokenExpiration
+            );
+        } catch (error) {
+            console.log("Error getUpdateIsGoogle:", error);
+            throw error;
+        }
+    }
+
+    async getUpdateProfilePassword(
+        userId: string,
+        password: string
+    ): Promise<IUser | null> {
+        try {
+            return await this.userRepository.findUpdateProfilePassword(
+                userId,
+                password
             );
         } catch (error) {
             console.log("Error getUpdateIsGoogle:", error);

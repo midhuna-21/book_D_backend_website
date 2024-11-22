@@ -61,7 +61,6 @@ class ChatRepository {
                 const receiverId = chatRoom.receiverId;
                 return (senderId && receiverId) !== null;
             });
-            console.log(filteredChatRooms, 'filteredChatRooms');
             return filteredChatRooms;
         }
         catch (error) {

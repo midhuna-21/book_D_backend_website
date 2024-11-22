@@ -74,9 +74,8 @@ const updateUserNotificationStatusIsRead = async (
         if (!userId) {
             return res.status(400).json({ message: "User Id not found" });
         }
-        const notifications = await notificationService.getUpdateNotificationsIsread(
-            userId
-        );
+        const notifications =
+            await notificationService.getUpdateNotificationsIsread(userId);
         return res.status(200).json({ notifications });
     } catch (error: any) {
         console.log("Error unReadNotifications:", error);
