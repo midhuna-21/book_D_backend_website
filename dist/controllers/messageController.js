@@ -58,7 +58,6 @@ exports.fetchUserChatList = fetchUserChatList;
 const fetchChatRoom = async (req, res) => {
     try {
         const { chatRoomId } = req.params;
-        console.log(chatRoomId, "chatRoomId");
         const chat = await index_1.chatService.getUserChat(chatRoomId);
         return res.status(200).json({ chat });
     }

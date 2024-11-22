@@ -59,7 +59,6 @@ const createRentalOrderByWallet = async (req, res) => {
                 .json({ message: "user or book id is missing" });
         }
         const existOrder = await index_1.cartService.getIsOrderExistByCart(cartId);
-        console.log(existOrder, "ordeerr");
         if (existOrder?.isPaid == true) {
             return res.status(200).json({ order: existOrder });
         }

@@ -121,7 +121,7 @@ export class UserService implements IUserService {
         filteredUser: User
     ): Promise<IUser | null> {
         try {
-            console.log(filteredUser, "filterd user at service ");
+          
             return await this.userRepository.findUpdateUser(
                 userId,
                 filteredUser

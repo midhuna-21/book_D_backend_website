@@ -82,7 +82,6 @@ class WalletRepository {
                         });
                     }
                     renterWallet.balance += depositAmount;
-                    console.log("why it is i not changing");
                     renterWallet.transactions.push({
                         total_amount: depositAmount,
                         source: "refund_to_user",

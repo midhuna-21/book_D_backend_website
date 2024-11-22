@@ -116,7 +116,6 @@ class UserService {
     }
     async getUpdateUser(userId, filteredUser) {
         try {
-            console.log(filteredUser, "filterd user at service ");
             return await this.userRepository.findUpdateUser(userId, filteredUser);
         }
         catch (error) {

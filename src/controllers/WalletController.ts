@@ -60,7 +60,6 @@ const createRentalOrderByWallet = async (req: Request, res: Response) => {
         }
 
         const existOrder = await cartService.getIsOrderExistByCart(cartId);
-        console.log(existOrder, "ordeerr");
         if (existOrder?.isPaid == true) {
             return res.status(200).json({ order: existOrder });
         }
