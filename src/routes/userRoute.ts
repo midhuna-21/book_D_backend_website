@@ -44,6 +44,7 @@ import {
     updateConfirmPickupByLender,
     updateConfirmReturnByRenter,
     checkIsOrderExistByOrderId,
+    cancelRentalOrder
 } from "../controllers/bookController";
 import {
     fetchWalletTransactions,
@@ -144,6 +145,8 @@ userRoutes.get(
 );
 
 //books
+
+userRoutes.put('/books/cancel-rental/:userId',userVerifyToken,checkBlocked,cancelRentalOrder)
 userRoutes.post(
     "/books/lend-book",
     userVerifyToken,

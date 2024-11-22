@@ -63,4 +63,5 @@ export interface IBookService {
     getOrderById(orderId: string): Promise<IOrder | null>;
     getConfirmPickupLender(orderId: string): Promise<IOrder | null>;
     getConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
+    getUpdateRentalOrder(userId:string,type:string):Promise<IOrder | null>
 }

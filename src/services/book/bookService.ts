@@ -19,6 +19,15 @@ export class BookService implements IBookService {
         this.bookRepository = bookRepository;
     }
 
+
+    async getUpdateRentalOrder(userId:string,type:string):Promise<IOrder | null>{
+        try{
+            return await this.bookRepository.updateRentalOrder(userId,type)
+        }catch(error){
+            console.log("Error getUpdateRentalOrder",error)
+            throw error
+        }
+    }
     async getAddToBookRent(bookRentData: Books): Promise<IBooks | null> {
         try {
             return await this.bookRepository.addToBookRent(bookRentData);

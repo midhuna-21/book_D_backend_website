@@ -689,7 +689,19 @@ const checkIsOrderExistByOrderId = async (req: Request, res: Response) => {
     }
 };
 
+const cancelRentalOrder = async(req:Request,res:Response)=>{
+    try{
+        const {userId} = req.params;
+        const {type} = req.body;
+        const updateOrder = await bookService.getUpdateRentalOrder(userId,type)
+        return res.status(200).json({updateOrder})
+    }catch(error){
+        res.status(500).json({error:"An error occurred"})
+    }
+}
+
 export {
+    cancelRentalOrder,
     fetchGenres,
     fetchAvailableBooksForRent,
     fetchGenresWithAvailableBooks,

@@ -60,4 +60,5 @@ export interface IBookRepository {
     findOrderById(orderId: string): Promise<IOrder | null>;
     findConfirmPickupLender(orderId: string): Promise<IOrder | null>;
     findConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
+    updateRentalOrder(userId:string,type:string):Promise<IOrder | null>
 }

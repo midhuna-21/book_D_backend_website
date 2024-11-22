@@ -6,17 +6,18 @@ import { books } from "../../model/bookModel";
 
 export class CartRepository implements ICartRepository {
     async findCreatCart(data: Cart): Promise<ICart | null> {
+        const {userId,ownerId,bookId,totalDays,quantity,totalAmount,total_deposit_amount,totalRentalPrice,types} = data
         try {
             return await new cart({
-                userId: data.userId,
-                ownerId: data.ownerId,
-                bookId: data.bookId,
-                totalDays: data.totalDays,
-                quantity: data.quantity,
-                totalAmount: data.totalAmount,
-                total_deposit_amount: data.total_deposit_amount,
-                totalRentalPrice: data.totalRentalPrice,
-                types: data.types,
+                userId: userId,
+                ownerId: ownerId,
+                bookId: bookId,
+                totalDays: totalDays,
+                quantity: quantity,
+                totalAmount: totalAmount,
+                total_deposit_amount: total_deposit_amount,
+                totalRentalPrice: totalRentalPrice,
+                types: types,
             }).save();
         } catch (error) {
             console.log("Error creatCart:", error);

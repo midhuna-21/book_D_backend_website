@@ -16,6 +16,17 @@ interface PaginatedBooks {
 
 const walletRepository = new WalletRepository();
 export class BookRepository {
+
+async updateRentalOrder(userId:string,type:string):Promise<IOrder | null>{
+    try{
+        const order = await orders.findOneAndUpdate({userId:userId},{bookStatus:type},{new:true})
+        return order
+    }catch(error){
+        console.log('error occurred updateRentalOrder',error)
+        throw error
+    }
+}
+
     async findUpdateBookQuantity(
         bookId: string,
         quantity: number
