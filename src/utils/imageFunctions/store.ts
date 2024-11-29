@@ -26,26 +26,25 @@ const s3Storage = multerS3({
 });
 
 function sanitizeFile(file: Express.Multer.File, cb: FileFilterCallback) {
-    const fileExts = [".png", ".jpg", ".jpeg", ".gif"];
-    const isAllowedExt = fileExts.includes(
-        path.extname(file.originalname).toLowerCase()
-    );
+    // const fileExts = [".png", ".jpg", ".jpeg", ".gif"];
+    // const isAllowedExt = fileExts.includes(
+    //     path.extname(file.originalname).toLowerCase()
+    // );
     const isAllowedMimeType = file.mimetype.startsWith("image/");
 
-    if (isAllowedExt && isAllowedMimeType) {
+    if ( isAllowedMimeType) {
         cb(null, true);
     } else {
         cb(null, false);
     }
 }
-
 export const upload = multer({
     storage: s3Storage,
     fileFilter: (req, file, callback: FileFilterCallback) => {
         sanitizeFile(file, callback);
     },
     limits: {
-        fileSize: 1024 * 1024 * 5,
+        fileSize: 1024 * 1024 * 100,
     },
 });
 

@@ -5,7 +5,7 @@ import crypto from "crypto";
 import config from "../config/config";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Books } from "../interfaces/data";
-import { books, IBooks } from "../model/bookModel";
+import { IBooks } from "../model/bookModel";
 import rentBookValidation from "../utils/ReuseFunctions/rentBookValidation";
 import { AuthenticatedRequest } from "../utils/middleware/userAuthMiddleware";
 import { s3Client } from "../utils/imageFunctions/store";
@@ -14,7 +14,6 @@ import { bookService } from "../services/index";
 import { cartService } from "../services/index";
 import { userService } from "../services/index";
 import { walletService } from "../services/index";
-import { message } from "../model/message";
 
 interface CustomMulterFile extends Express.Multer.File {
     location: string;
@@ -125,8 +124,6 @@ const fetchBookDetails = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-const randomImageName = (bytes = 32) =>
-    crypto.randomBytes(bytes).toString("hex");
 
 const createBookLend = async (req: AuthenticatedRequest, res: Response) => {
     try {
@@ -287,11 +284,6 @@ const updateLentBookDetails = async (
             longitude,
         };
 
-        // const validationError = rentBookValidation(bookRentData);
-        // if (validationError) {
-        //     return res.status(400).json({ message: validationError });
-        // }
-
         const bookAdded = await bookService.getUpdateBookRent(
             bookRentData,
             bookId
@@ -381,12 +373,8 @@ const createRentalCheckout = async (req: Request, res: Response) => {
         bookTitle,
         totalPrice,
         cartId,
-        quantity,
         userId,
-        lenderId,
         bookId,
-        depositAmount,
-        totalRentalPrice,
     } = req.body;
 
     try {
@@ -691,9 +679,10 @@ const checkIsOrderExistByOrderId = async (req: Request, res: Response) => {
 
 const cancelRentalOrder = async(req:Request,res:Response)=>{
     try{
-        const {userId} = req.params;
-        const {type} = req.body;
-        const updateOrder = await bookService.getUpdateRentalOrder(userId,type)
+        const {orderId,userId} = req.params;
+        console.log(orderId,'orderId cancel order')
+        const type = 'cancelled'
+        const updateOrder = await bookService.getUpdateCancelRental(orderId,userId,type)
         return res.status(200).json({updateOrder})
     }catch(error){
         res.status(500).json({error:"An error occurred"})

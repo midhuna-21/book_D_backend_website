@@ -1,7 +1,5 @@
-import { IUser } from "../../model/userModel";
-import { IGenre } from "../../model/genresModel";
+ import { IGenre } from "../../model/genresModel";
 import { IBooks } from "../../model/bookModel";
-import { IAdmin } from "../../model/adminModel";
 import { IOrder } from "../../model/orderModel";
 import { Books, Order } from "../../interfaces/data";
 
@@ -60,5 +58,5 @@ export interface IBookRepository {
     findOrderById(orderId: string): Promise<IOrder | null>;
     findConfirmPickupLender(orderId: string): Promise<IOrder | null>;
     findConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
-    updateRentalOrder(userId:string,type:string):Promise<IOrder | null>
+    updateCancelRental(orderId:string,userId:string,type:string):Promise<IOrder | null>
 }

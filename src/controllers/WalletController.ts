@@ -159,53 +159,6 @@ const processWalletPayment = async (
         throw new Error(error.message || "Failed to process wallet payment");
     }
 };
-// const processWalletPayment = async (
-//     req: Request,
-//     res: Response
-// ) => {
-//     try {
-//         const { totalPrice } = req.body;
-
-//         const {userId} = req.params;
-//         let isWalletExist = await walletService.getWalletTransactions(userId);
-
-//         if (!isWalletExist) {
-//             isWalletExist = new wallet({
-//                 userId: userId,
-//                 balance: 0,
-//                 transactions: [],
-//             });
-//             await isWalletExist.save();
-//         }
-
-//         isWalletExist.balance -= totalPrice;
-//         const transaction = {
-//             total_amount: totalPrice,
-//             source: "payment_to_lender",
-//             type: "debit",
-//             createdAt: new Date(),
-//         };
-//         isWalletExist.transactions.push(transaction);
-
-//         await isWalletExist.save();
-//         const adminWallet = await bookDWallet.findOne({});
-
-//         if (adminWallet) {
-//             adminWallet.balance += totalPrice;
-//             adminWallet.transactions.push({
-//                 source: "Payment received",
-//                 status: "credit",
-//                 total_amount: totalPrice,
-//             });
-//             await adminWallet.save();
-//         }
-//         res.status(200).json({ message: "Payment successful", wallet });
-//     } catch (error: any) {
-//         console.error("Error processWalletPayment :", error);
-
-//         res.status(500).json({ error: error.message });
-//     }
-// };
 
 export {
     fetchWalletTransactions,

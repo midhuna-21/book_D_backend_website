@@ -5,6 +5,15 @@ class BookService {
     constructor(bookRepository) {
         this.bookRepository = bookRepository;
     }
+    async getUpdateCancelRental(orderId, userId, type) {
+        try {
+            return await this.bookRepository.updateCancelRental(orderId, userId, type);
+        }
+        catch (error) {
+            console.log("Error getUpdateRentalOrder", error);
+            throw error;
+        }
+    }
     async getAddToBookRent(bookRentData) {
         try {
             return await this.bookRepository.addToBookRent(bookRentData);

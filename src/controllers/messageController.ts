@@ -102,7 +102,7 @@ const sendMessage = async (req: Request, res: Response) => {
         const chatRoomIdStr = isExistChatRoom._id as string;
         const messageIdStr = savedMessage._id as string;
 
-        const saveChatRoom = await chatService.getUpdateChatRoom(
+        await chatService.getUpdateChatRoom(
             chatRoomIdStr,
             messageIdStr
         );

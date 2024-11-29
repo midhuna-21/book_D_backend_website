@@ -6,7 +6,6 @@ import { books, IBooks } from "../../model/bookModel";
 import { IOrder, orders } from "../../model/orderModel";
 import { bookDWallet } from "../../model/bookDWallet";
 import { IAdminRepository } from "./adminRepositoryInterface";
-import { IChatRepository } from "../chat/chatRepositoryInterface";
 
 export class AdminRepository implements IAdminRepository {
     async findAdminByEmail(email: string): Promise<IAdmin | null> {

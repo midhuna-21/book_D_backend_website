@@ -42,7 +42,6 @@ const createNewUser = async (req, res) => {
             });
         }
         const securePassword = await (0, passwordValidation_1.hashPassword)(password);
-        // const user: User = { name, email, phone, password: securePassword };
         const otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "createNewUser");
         const userCreated = await userService.getCreateUser({
@@ -69,7 +68,7 @@ const requestOtpResend = async (req, res) => {
         const { email, userId } = req.body;
         let otp = await (0, otpGenerator_1.generateOtp)(email);
         console.log(otp, "resend");
-        const otpUpdate = await userService.getUpdateUserOtp(userId, otp);
+        await userService.getUpdateUserOtp(userId, otp);
         setTimeout(async () => {
             await userModel_1.user.updateOne({ email: email }, { $unset: { otp: 1 } });
         }, 60000);
@@ -87,7 +86,7 @@ const validateOtp = async (req, res) => {
     try {
         const { userId, response, origin } = req.body;
         const otp = Number(req.body.otp);
-        const { name, email, phone, password } = response;
+        const { email } = response;
         const isUser = await userService.getUserNotVerified(userId);
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
@@ -383,7 +382,7 @@ const resetUserPassword = async (req, res) => {
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email;
         if (isGmail) {
-            const udateIsGoogle = await userService.getUpdateIsGoogle(gmail, resetToken, resetTokenExpiration);
+            await userService.getUpdateIsGoogle(gmail, resetToken, resetTokenExpiration);
         }
         const securePassword = await (0, passwordValidation_1.hashPassword)(password);
         const data = {
@@ -426,7 +425,7 @@ const sendEmailForUnlinking = async (req, res) => {
         const resetToken = crypto_1.default.randomBytes(32).toString("hex");
         const resetTokenExpiration = Date.now() + 15 * 60 * 1000;
         const user = await userService.getSaveToken(userId, resetToken, resetTokenExpiration);
-        const send = await (0, sendEmail_1.sendEmail)(userId, email, resetToken, resetTokenExpiration);
+        await (0, sendEmail_1.sendEmail)(userId, email, resetToken, resetTokenExpiration);
         return res.status(200).json({ user });
     }
     catch (error) {
@@ -508,7 +507,6 @@ exports.checkIsCurrentPassword = checkIsCurrentPassword;
 const updateUserProfilePassword = async (req, res) => {
     try {
         const { userId, newPassword } = req.body;
-        const user = await userService.getUserById(userId);
         const securePassword = await (0, passwordValidation_1.hashPassword)(newPassword);
         const password = securePassword;
         const updatedUser = await userService.getUpdateProfilePassword(userId, password);

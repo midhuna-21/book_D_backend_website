@@ -40,26 +40,6 @@ const addItemToCart = async (req: Request, res: Response) => {
     }
 };
 
-// const checkRentalAcceptance = async (req: Request, res: Response) => {
-//     try {
-//         const { userId, bookId } = req.params;
-//         if (!userId || !bookId) {
-//             return res
-//                 .status(400)
-//                 .json({ message: "User ID or Book ID not found in request" });
-//         }
-
-//         const isAccepted = await cartService.getCheckAccepted(userId, bookId);
-
-//         return res.status(200).json({ isAccepted });
-//     } catch (error: any) {
-//         console.log("Error checkAccept:", error);
-//         return res
-//             .status(500)
-//             .json({ message: "Internal server error at checkAccept" });
-//     }
-// };
-
 const updateCartItem = async (req: Request, res: Response) => {
     try {
         const { cartId } = req.params;

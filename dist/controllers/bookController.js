@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkIsOrderExistByOrderId = exports.updateConfirmReturnByRenter = exports.updateConfirmPickupByLender = exports.removeBook = exports.unArchiveBook = exports.archiveBook = exports.fetchBooksByGenre = exports.updateOrderStatusByLender = exports.updateOrderStatusByRenter = exports.fetchSuccessfullRentalOrders = exports.fetchBooksBySearch = exports.fetchLentBooks = exports.fetchRentalOrders = exports.createRentalOrder = exports.createRentalCheckout = exports.rentalProcess = exports.soldBooks = exports.fetchUserLentBooks = exports.updateLentBookDetails = exports.createBookLend = exports.fetchBookDetails = exports.fetchGenresWithAvailableBooks = exports.fetchAvailableBooksForRent = exports.fetchGenres = void 0;
+exports.checkIsOrderExistByOrderId = exports.updateConfirmReturnByRenter = exports.updateConfirmPickupByLender = exports.removeBook = exports.unArchiveBook = exports.archiveBook = exports.fetchBooksByGenre = exports.updateOrderStatusByLender = exports.updateOrderStatusByRenter = exports.fetchSuccessfullRentalOrders = exports.fetchBooksBySearch = exports.fetchLentBooks = exports.fetchRentalOrders = exports.createRentalOrder = exports.createRentalCheckout = exports.rentalProcess = exports.soldBooks = exports.fetchUserLentBooks = exports.updateLentBookDetails = exports.createBookLend = exports.fetchBookDetails = exports.fetchGenresWithAvailableBooks = exports.fetchAvailableBooksForRent = exports.fetchGenres = exports.cancelRentalOrder = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const crypto_1 = __importDefault(require("crypto"));
 const config_1 = __importDefault(require("../config/config"));
@@ -98,7 +98,6 @@ const fetchBookDetails = async (req, res) => {
     }
 };
 exports.fetchBookDetails = fetchBookDetails;
-const randomImageName = (bytes = 32) => crypto_1.default.randomBytes(bytes).toString("hex");
 const createBookLend = async (req, res) => {
     try {
         const { bookTitle, description, author, publisher, publishedYear, genre, rentalFee, extraFee, quantity, street, city, district, state, pincode, maxDistance, maxDays, minDays, latitude, longitude, } = req.body;
@@ -205,10 +204,6 @@ const updateLentBookDetails = async (req, res) => {
             latitude,
             longitude,
         };
-        // const validationError = rentBookValidation(bookRentData);
-        // if (validationError) {
-        //     return res.status(400).json({ message: validationError });
-        // }
         const bookAdded = await index_1.bookService.getUpdateBookRent(bookRentData, bookId);
         return res
             .status(200)
@@ -290,7 +285,7 @@ exports.rentalProcess = rentalProcess;
 const stripeKey = config_1.default.STRIPE_KEY;
 const stripe = new stripe_1.default(stripeKey, { apiVersion: "2024-06-20" });
 const createRentalCheckout = async (req, res) => {
-    const { bookTitle, totalPrice, cartId, quantity, userId, lenderId, bookId, depositAmount, totalRentalPrice, } = req.body;
+    const { bookTitle, totalPrice, cartId, userId, bookId, } = req.body;
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -581,4 +576,17 @@ const checkIsOrderExistByOrderId = async (req, res) => {
     }
 };
 exports.checkIsOrderExistByOrderId = checkIsOrderExistByOrderId;
+const cancelRentalOrder = async (req, res) => {
+    try {
+        const { orderId, userId } = req.params;
+        console.log(orderId, 'orderId cancel order');
+        const type = 'cancelled';
+        const updateOrder = await index_1.bookService.getUpdateCancelRental(orderId, userId, type);
+        return res.status(200).json({ updateOrder });
+    }
+    catch (error) {
+        res.status(500).json({ error: "An error occurred" });
+    }
+};
+exports.cancelRentalOrder = cancelRentalOrder;
 //# sourceMappingURL=bookController.js.map

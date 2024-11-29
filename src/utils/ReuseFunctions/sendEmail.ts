@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import crypto from "crypto";
 import config from "../../config/config";
 import { userService } from "../../services";
 

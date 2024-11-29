@@ -60,7 +60,6 @@ const createNewUser = async (req: Request, res: Response) => {
             });
         }
         const securePassword = await hashPassword(password);
-        // const user: User = { name, email, phone, password: securePassword };
         const otp = await generateOtp(email);
         console.log(otp, "createNewUser");
         const userCreated: IUser | null = await userService.getCreateUser({
@@ -86,7 +85,7 @@ const requestOtpResend = async (req: Request, res: Response) => {
         const { email, userId } = req.body;
         let otp = await generateOtp(email);
         console.log(otp, "resend");
-        const otpUpdate = await userService.getUpdateUserOtp(userId, otp);
+        await userService.getUpdateUserOtp(userId, otp);
         setTimeout(async () => {
             await user.updateOne({ email: email }, { $unset: { otp: 1 } });
         }, 60000);
@@ -103,7 +102,7 @@ const validateOtp = async (req: Request, res: Response) => {
     try {
         const { userId, response, origin } = req.body;
         const otp = Number(req.body.otp);
-        const { name, email, phone, password } = response;
+        const { email } = response;
         const isUser = await userService.getUserNotVerified(userId);
         if (!otp) {
             return res.status(400).json({ message: "please enter otp" });
@@ -417,7 +416,7 @@ const resetUserPassword = async (req: Request, res: Response) => {
         const isGmail = await userService.getUserByGmail(email);
         const gmail = isGmail?.email!;
         if (isGmail) {
-            const udateIsGoogle = await userService.getUpdateIsGoogle(
+               await userService.getUpdateIsGoogle(
                 gmail,
                 resetToken,
                 resetTokenExpiration
@@ -469,7 +468,7 @@ const sendEmailForUnlinking = async (
             resetToken,
             resetTokenExpiration
         );
-        const send = await sendEmail(
+           await sendEmail(
             userId,
             email,
             resetToken,
@@ -553,7 +552,6 @@ const checkIsCurrentPassword = async (req: Request, res: Response) => {
 const updateUserProfilePassword = async (req: Request, res: Response) => {
     try {
         const { userId, newPassword } = req.body;
-        const user = await userService.getUserById(userId!);
         const securePassword = await hashPassword(newPassword);
         const password = securePassword;
         const updatedUser = await userService.getUpdateProfilePassword(

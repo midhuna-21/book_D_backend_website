@@ -2,9 +2,8 @@ import { IUser } from "../../model/userModel";
 import { IGenre } from "../../model/genresModel";
 import { IBooks } from "../../model/bookModel";
 import { IAdmin } from "../../model/adminModel";
-import { IBookWalletTransaction } from "../../model/bookDWallet";
 import { IOrder } from "../../model/orderModel";
-import { User, Genre, Admin } from "../../interfaces/data";
+import { Genre } from "../../interfaces/data";
 
 export interface IAdminRepository {
     findAdminByEmail(email: string): Promise<IAdmin | null>;

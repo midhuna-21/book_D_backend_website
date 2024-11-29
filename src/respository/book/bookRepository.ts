@@ -4,8 +4,8 @@ import { genres, IGenre } from "../../model/genresModel";
 import { Order } from "../../interfaces/data";
 import { orders, IOrder } from "../../model/orderModel";
 import { WalletRepository } from "../wallet/walletRepository";
-import { user } from "../../model/userModel";
 import { ICart } from "../../model/cartModel";
+import { wallet } from "../../model/walletModel";
 
 interface PaginatedBooks {
     books: IBooks[];
@@ -17,10 +17,49 @@ interface PaginatedBooks {
 const walletRepository = new WalletRepository();
 export class BookRepository {
 
-async updateRentalOrder(userId:string,type:string):Promise<IOrder | null>{
+async updateCancelRental(orderId:string,userId:string,type:string):Promise<IOrder | null>{
     try{
-        const order = await orders.findOneAndUpdate({userId:userId},{bookStatus:type},{new:true})
-        return order
+        const order = await orders.findById({_id:orderId}).populate("cartId");
+
+        if (!order) {
+            throw new Error("Order not found.");
+        }
+
+        if (order.bookStatus === "canceled") {
+            throw new Error("Order has already been canceled.");
+        }
+
+        const updatedOrder = await orders.findByIdAndUpdate(
+            { _id: orderId },
+            { bookStatus: type },
+            { new: true }
+        );
+        const cart = order.cartId as ICart;
+        const refundAmount = cart?.totalAmount!;
+        let userWallet = await wallet.findOne({ userId:userId });
+
+        if (!userWallet) {
+            console.log(
+                `Creating a new wallet for lender ${order?.lenderId}`
+            );
+            userWallet = new wallet({
+                userId: order?.lenderId,
+                balance: 0,
+                transactions: [],
+            });
+        }
+        userWallet.balance += refundAmount;
+        userWallet.transactions.push({
+                total_amount: refundAmount,
+                source: "refund_to_user",
+                orderId: order._id!,
+                type: "credit",
+                createdAt: new Date(),
+            });
+
+            await userWallet.save();
+           console.log(userWallet,'useWallet')
+        return updatedOrder
     }catch(error){
         console.log('error occurred updateRentalOrder',error)
         throw error

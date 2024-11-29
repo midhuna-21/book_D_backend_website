@@ -108,11 +108,8 @@ class WalletRepository {
                         return null;
                     }
                 }
-                else {
-                    console.log(`Order not found.`);
-                    return null;
-                }
             }
+            return null;
         }
         catch (error) {
             throw error;
@@ -130,7 +127,10 @@ class WalletRepository {
                 },
                 strictPopulate: false,
             });
-            return walletTransactions;
+            if (!walletTransactions) {
+                return [];
+            }
+            return walletTransactions.transactions.map(transaction => transaction.toObject());
         }
         catch (error) {
             console.log("Error createWallet:", error);

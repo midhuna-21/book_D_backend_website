@@ -1,6 +1,7 @@
 import { IWallet } from "../../model/walletModel";
 import { IWalletService } from "./walletServiceInterface";
 import { IWalletRepository } from "../../respository/wallet/walletRepositoryInterface";
+import { IBookWalletTransaction } from "../../model/bookDWallet";
 
 export class WalletService implements IWalletService {
     private walletRepository: IWalletRepository;
@@ -17,16 +18,17 @@ export class WalletService implements IWalletService {
         }
     }
 
-    async getWalletByAdminId(adminId: string): Promise<any> {
+    async getWalletByAdminId(adminId: string): Promise<IBookWalletTransaction[]> {
         try {
-            return await this.walletRepository.findWalletByAdminId(adminId);
+            const w= await this.walletRepository.findWalletByAdminId(adminId);
+            return w
         } catch (error) {
             console.error("Error getWalletByAdminId:", error);
             throw error;
         }
     }
 
-    async getCreateWalletAdmin(adminId: string): Promise<IWallet | null> {
+    async getCreateWalletAdmin(adminId: string): Promise<IBookWalletTransaction | null> {
         try {
             return await this.walletRepository.findCreateWalletAdmin(adminId);
         } catch (error) {

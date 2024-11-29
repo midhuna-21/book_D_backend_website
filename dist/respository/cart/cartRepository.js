@@ -5,17 +5,18 @@ const cartModel_1 = require("../../model/cartModel");
 const bookModel_1 = require("../../model/bookModel");
 class CartRepository {
     async findCreatCart(data) {
+        const { userId, ownerId, bookId, totalDays, quantity, totalAmount, total_deposit_amount, totalRentalPrice, types } = data;
         try {
             return await new cartModel_1.cart({
-                userId: data.userId,
-                ownerId: data.ownerId,
-                bookId: data.bookId,
-                totalDays: data.totalDays,
-                quantity: data.quantity,
-                totalAmount: data.totalAmount,
-                total_deposit_amount: data.total_deposit_amount,
-                totalRentalPrice: data.totalRentalPrice,
-                types: data.types,
+                userId: userId,
+                ownerId: ownerId,
+                bookId: bookId,
+                totalDays: totalDays,
+                quantity: quantity,
+                totalAmount: totalAmount,
+                total_deposit_amount: total_deposit_amount,
+                totalRentalPrice: totalRentalPrice,
+                types: types,
             }).save();
         }
         catch (error) {

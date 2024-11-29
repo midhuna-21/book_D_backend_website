@@ -14,14 +14,6 @@ class CartService {
             throw error;
         }
     }
-    // async getCheckAccepted(userId: string, bookId: string): Promise<ICart | null> {
-    //     try {
-    //         return await this.cartRepository.findCheckAccept(userId, bookId);
-    //     } catch (error) {
-    //         console.log("Error getUpdateProfileImage:", error);
-    //         throw error;
-    //     }
-    // }
     async getCartById(cartId) {
         try {
             return await this.cartRepository.findCartById(cartId);

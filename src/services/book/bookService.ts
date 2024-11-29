@@ -20,9 +20,9 @@ export class BookService implements IBookService {
     }
 
 
-    async getUpdateRentalOrder(userId:string,type:string):Promise<IOrder | null>{
+    async getUpdateCancelRental(orderId:string,userId:string,type:string):Promise<IOrder | null>{
         try{
-            return await this.bookRepository.updateRentalOrder(userId,type)
+            return await this.bookRepository.updateCancelRental(orderId,userId,type)
         }catch(error){
             console.log("Error getUpdateRentalOrder",error)
             throw error

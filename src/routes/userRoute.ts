@@ -146,7 +146,8 @@ userRoutes.get(
 
 //books
 
-userRoutes.put('/books/cancel-rental/:userId',userVerifyToken,checkBlocked,cancelRentalOrder)
+userRoutes.put('/books/update-cancellation-rental/:orderId/:userId',userVerifyToken,checkBlocked,cancelRentalOrder)
+
 userRoutes.post(
     "/books/lend-book",
     userVerifyToken,

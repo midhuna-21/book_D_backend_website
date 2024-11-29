@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { UserRepository } from "../../respository/user/userRepository";
 import { UserService } from "../../services/user/userService";
 import { AuthenticatedRequest } from "./userAuthMiddleware";

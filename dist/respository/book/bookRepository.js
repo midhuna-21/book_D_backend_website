@@ -5,8 +5,47 @@ const bookModel_1 = require("../../model/bookModel");
 const genresModel_1 = require("../../model/genresModel");
 const orderModel_1 = require("../../model/orderModel");
 const walletRepository_1 = require("../wallet/walletRepository");
+const walletModel_1 = require("../../model/walletModel");
 const walletRepository = new walletRepository_1.WalletRepository();
 class BookRepository {
+    async updateCancelRental(orderId, userId, type) {
+        try {
+            const order = await orderModel_1.orders.findById({ _id: orderId }).populate("cartId");
+            if (!order) {
+                throw new Error("Order not found.");
+            }
+            if (order.bookStatus === "canceled") {
+                throw new Error("Order has already been canceled.");
+            }
+            const updatedOrder = await orderModel_1.orders.findByIdAndUpdate({ _id: orderId }, { bookStatus: type }, { new: true });
+            const cart = order.cartId;
+            const refundAmount = cart?.totalAmount;
+            let userWallet = await walletModel_1.wallet.findOne({ userId: userId });
+            if (!userWallet) {
+                console.log(`Creating a new wallet for lender ${order?.lenderId}`);
+                userWallet = new walletModel_1.wallet({
+                    userId: order?.lenderId,
+                    balance: 0,
+                    transactions: [],
+                });
+            }
+            userWallet.balance += refundAmount;
+            userWallet.transactions.push({
+                total_amount: refundAmount,
+                source: "refund_to_user",
+                orderId: order._id,
+                type: "credit",
+                createdAt: new Date(),
+            });
+            await userWallet.save();
+            console.log(userWallet, 'useWallet');
+            return updatedOrder;
+        }
+        catch (error) {
+            console.log('error occurred updateRentalOrder', error);
+            throw error;
+        }
+    }
     async findUpdateBookQuantity(bookId, quantity) {
         try {
             const updateBook = await bookModel_1.books.findByIdAndUpdate({ _id: bookId }, { quantity: quantity }, { new: true });

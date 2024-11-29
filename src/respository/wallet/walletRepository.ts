@@ -1,7 +1,7 @@
 import { IWallet, wallet } from "../../model/walletModel";
 import { orders } from "../../model/orderModel";
 import { ICart } from "../../model/cartModel";
-import { bookDWallet } from "../../model/bookDWallet";
+import { bookDWallet, IBookWalletTransaction } from "../../model/bookDWallet";
 import { IWalletRepository } from "./walletRepositoryInterface";
 
 export class WalletRepository implements IWalletRepository {
@@ -42,7 +42,7 @@ export class WalletRepository implements IWalletRepository {
         }
     }
 
-    async findWalletPaymentTransfer(orderId: string): Promise<any> {
+    async findWalletPaymentTransfer(orderId: string): Promise<IBookWalletTransaction | null> {
         try {
             const order = await orders
                 .findById({ _id: orderId })
@@ -121,17 +121,15 @@ export class WalletRepository implements IWalletRepository {
                         console.log(`Admin wallet not found.`);
                         return null;
                     }
-                } else {
-                    console.log(`Order not found.`);
-                    return null;
-                }
-            }
+                } 
+        }
+        return null;
         } catch (error) {
             throw error;
         }
     }
 
-    async findWalletByAdminId(adminId: string): Promise<any> {
+    async findWalletByAdminId(adminId: string): Promise<IBookWalletTransaction[]> {
         try {
             const walletTransactions = await bookDWallet
                 .findOne({ adminId: adminId })
@@ -143,14 +141,18 @@ export class WalletRepository implements IWalletRepository {
                     },
                     strictPopulate: false,
                 });
-            return walletTransactions;
+                if (!walletTransactions) {
+                    return [];
+                }
+                
+                return walletTransactions.transactions.map(transaction => transaction.toObject());
         } catch (error) {
             console.log("Error createWallet:", error);
             throw error;
         }
     }
 
-    async findCreateWalletAdmin(adminId: string): Promise<any> {
+    async findCreateWalletAdmin(adminId: string): Promise<IBookWalletTransaction | null> {
         try {
             let wallet = await bookDWallet.findOne({ adminId: adminId });
             if (!wallet) {

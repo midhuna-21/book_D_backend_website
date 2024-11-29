@@ -1,5 +1,5 @@
 import { IUser } from "../../model/userModel";
-import { Genre, User } from "../../interfaces/data";
+import { Genre } from "../../interfaces/data";
 import { IAdmin } from "../../model/adminModel";
 import { IGenre } from "../../model/genresModel";
 import { IBooks } from "../../model/bookModel";

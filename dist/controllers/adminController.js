@@ -25,7 +25,7 @@ const authenticateAdmin = async (req, res) => {
             adminId,
             role: "admin",
         });
-        const wallet = await index_2.walletService.getCreateWalletAdmin(adminId);
+        await index_2.walletService.getCreateWalletAdmin(adminId);
         return res.status(200).json({ admin, accessToken, refreshToken });
     }
     catch (error) {
@@ -43,11 +43,6 @@ const createGenre = async (req, res) => {
                 .status(200)
                 .json({ success: false, message: "Genre is already exist" });
         }
-        // if (!genreName) {
-        //     return res
-        //         .status(200)
-        //         .json({ message: "Please provide a genre name" });
-        // }
         const file = req.file;
         if (!file) {
             return res.status(400).json({ message: "Please provide image" });

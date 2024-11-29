@@ -1,5 +1,4 @@
 import { Cart } from "../../interfaces/data";
-import { notification } from "../../model/notificationModel";
 import { cart, ICart } from "../../model/cartModel";
 import { ICartRepository } from "./cartRepositoryInterface";
 import { books } from "../../model/bookModel";

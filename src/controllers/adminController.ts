@@ -32,8 +32,7 @@ const authenticateAdmin = async (req: Request, res: Response) => {
             role: "admin",
         });
 
-        const wallet = await walletService.getCreateWalletAdmin(adminId);
-
+        await walletService.getCreateWalletAdmin(adminId);
         return res.status(200).json({ admin, accessToken, refreshToken });
     } catch (error: any) {
         console.log(error.message);
@@ -49,11 +48,6 @@ const createGenre = async (req: Request, res: Response) => {
                 .status(200)
                 .json({ success: false, message: "Genre is already exist" });
         }
-        // if (!genreName) {
-        //     return res
-        //         .status(200)
-        //         .json({ message: "Please provide a genre name" });
-        // }
         const file = req.file as CustomMulterFile;
         if (!file) {
             return res.status(400).json({ message: "Please provide image" });

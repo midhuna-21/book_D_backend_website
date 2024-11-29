@@ -1,6 +1,4 @@
-import { IUser } from "../../model/userModel";
-import { Books, Genre, User, Order } from "../../interfaces/data";
-import { IAdmin } from "../../model/adminModel";
+import { Books, Order } from "../../interfaces/data";
 import { IGenre } from "../../model/genresModel";
 import { IBooks } from "../../model/bookModel";
 import { IOrder } from "../../model/orderModel";
@@ -63,5 +61,5 @@ export interface IBookService {
     getOrderById(orderId: string): Promise<IOrder | null>;
     getConfirmPickupLender(orderId: string): Promise<IOrder | null>;
     getConfirmReturnRenter(orderId: string): Promise<IOrder | null>;
-    getUpdateRentalOrder(userId:string,type:string):Promise<IOrder | null>
+    getUpdateCancelRental(orderId:string,userId:string,type:string):Promise<IOrder | null>
 }

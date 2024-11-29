@@ -16,7 +16,8 @@ class WalletService {
     }
     async getWalletByAdminId(adminId) {
         try {
-            return await this.walletRepository.findWalletByAdminId(adminId);
+            const w = await this.walletRepository.findWalletByAdminId(adminId);
+            return w;
         }
         catch (error) {
             console.error("Error getWalletByAdminId:", error);

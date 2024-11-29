@@ -85,7 +85,7 @@ const sendMessage = async (req, res) => {
         }
         const chatRoomIdStr = isExistChatRoom._id;
         const messageIdStr = savedMessage._id;
-        const saveChatRoom = await index_1.chatService.getUpdateChatRoom(chatRoomIdStr, messageIdStr);
+        await index_1.chatService.getUpdateChatRoom(chatRoomIdStr, messageIdStr);
         const message = await index_1.chatService.getMesssage(messageIdStr);
         return res.status(200).json({ message });
     }

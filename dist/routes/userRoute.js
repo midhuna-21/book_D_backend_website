@@ -36,6 +36,7 @@ userRoutes.post("/logout", userController_1.logoutUser);
 userRoutes.delete("/profile/remove-image", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, userController_1.removeUserProfileImage);
 userRoutes.get("/user/check/isBlock", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, userController_1.checkUserIsblock);
 //books
+userRoutes.put('/books/update-cancellation-rental/:orderId/:userId', userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.cancelRentalOrder);
 userRoutes.post("/books/lend-book", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, store_1.default.array("images", 10), bookController_1.createBookLend);
 userRoutes.get("/books/genres", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.fetchGenresWithAvailableBooks);
 userRoutes.get("/books/available-for-rent", userAuthMiddleware_1.userVerifyToken, checkUserBlock_1.checkBlocked, bookController_1.fetchAvailableBooksForRent);

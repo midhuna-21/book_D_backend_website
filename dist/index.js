@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = __importDefault(require("./config/db"));
 const userRoute_1 = __importDefault(require("./routes/userRoute"));
@@ -26,29 +27,18 @@ const corsOptions = {
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
 };
-const apiOrigin = config_1.default.API ?? "*";
 app.use((0, cors_1.default)(corsOptions));
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", apiOrigin);
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    next();
-});
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: corsOptions,
 });
-app.options("*", (0, cors_1.default)(corsOptions));
 app.set("io", io);
 (0, db_1.default)();
+app.options('*', (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
-// app.use(morgan('dev'))
+app.use((0, morgan_1.default)('dev'));
 app.use(express_1.default.static("public/"));
 (0, socket_connection_1.initializeSocket)(io, chatService, services_1.notificationService);
 app.use("/api/user", userRoute_1.default);
