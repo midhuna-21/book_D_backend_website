@@ -302,8 +302,8 @@ const createRentalCheckout = async (req, res) => {
                 },
             ],
             mode: "payment",
-            success_url: `${config_1.default.API}/payment/success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${config_1.default.API}/payment-cancel`,
+            success_url: `${config_1.default.API_URL}/payment/success?book_id=${bookId}&user_id=${userId}&cart_id=${cartId}&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${config_1.default.API_URL}/payment-cancel`,
         });
         res.json({ id: session.id });
     }

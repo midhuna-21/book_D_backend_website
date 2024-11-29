@@ -16,7 +16,7 @@ exports.default = {
     SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
     JWT_SECRET: process.env.JWT_SECRET,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-    API: process.env.API,
+    API_URL: process.env.API,
     STRIPE_KEY: process.env.STRIPE_KEY,
     REDIS_PORT: process.env.REDIS_PORT,
     REDIS_HOST: process.env.REDIS_HOST

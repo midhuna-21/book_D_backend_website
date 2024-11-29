@@ -21,7 +21,7 @@ const sendEmail = async (userId, email, resetToken, resetTokenExpiration) => {
     const user = await services_1.userService.getUserById(userId);
     const userName = user?.name;
     const logoUrl = "D:Book.D\backendsrcpublicsiteLogo.png";
-    const resetLink = `${config_1.default.API}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
+    const resetLink = `${config_1.default.API_URL}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
     const info = await transporter.sendMail({
         from: '"Book.D" <krishnamidhuna850@gmail.com>',
         to: email,

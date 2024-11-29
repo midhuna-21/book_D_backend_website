@@ -23,7 +23,7 @@ export const sendEmail = async (
     const userName = user?.name;
 
     const logoUrl = "D:Book.D\backendsrcpublicsiteLogo.png";
-    const resetLink = `${config.API}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
+    const resetLink = `${config.API_URL}/reset-password?token=${resetToken}&email=${email}&expires=${resetTokenExpiration}`;
 
     const info = await transporter.sendMail({
         from: '"Book.D" <krishnamidhuna850@gmail.com>',
