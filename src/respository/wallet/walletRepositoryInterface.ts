@@ -12,4 +12,3 @@ export interface IWalletRepository {
         userId: string
     ): Promise<any>;
 }
-console.log('f')
