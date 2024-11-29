@@ -23,9 +23,7 @@ const corsOptions = {
     origin: config.API,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
 };
-app.use(cors(corsOptions));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -35,7 +33,6 @@ const io = new Server(server, {
 app.set("io", io);
 
 dbConnect();
-app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -43,6 +40,8 @@ app.use(morgan('dev'))
 app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
+
+app.use(cors(corsOptions));
 
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
