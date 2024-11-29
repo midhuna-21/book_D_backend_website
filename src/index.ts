@@ -19,15 +19,13 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
-const corsOptions = {
-    origin: config.API_URL,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-};
-
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: corsOptions,
+    cors: {
+        origin: config.API_URL,
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true,
+    },
 });
 
 app.set("io", io);
@@ -41,7 +39,11 @@ app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
 
-app.use(cors(corsOptions));
+app.use(cors({
+    origin: config.API_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+}));
 
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
