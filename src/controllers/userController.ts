@@ -393,13 +393,7 @@ const sendOtpForForgotPassword = async (req: Request, res: Response) => {
             email
         );
         if (isValidEmail) {
-            const otp = await generateOtp(email);
-            const userId = isValidEmail?._id.toString();
-            console.log(otp, "forgot");
-            await userService.getUpdateUserOtp(userId, otp);
-            setTimeout(async () => {
-                await user.updateOne({ _id: userId }, { $unset: { otp: 1 } });
-            }, 60000);
+                                  [[[]]]
             return res.status(200).json({ isValidEmail });
         } else {
             return res.status(401).json({ message: "Invalid email id" });

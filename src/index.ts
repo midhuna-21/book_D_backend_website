@@ -28,8 +28,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 const server = http.createServer(app);
+// const io = new Server(server, {
+//     cors: corsOptions,
+// });
 const io = new Server(server, {
-    cors: corsOptions,
+    cors: {
+        origin: config.API,
+        methods: ["GET", "POST"],
+        credentials: true,
+    },
 });
 
 app.set("io", io);
