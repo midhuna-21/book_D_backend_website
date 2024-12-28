@@ -29,8 +29,15 @@ const corsOptions = {
 };
 app.use((0, cors_1.default)(corsOptions));
 const server = http_1.default.createServer(app);
+// const io = new Server(server, {
+//     cors: corsOptions,
+// });
 const io = new socket_io_1.Server(server, {
-    cors: corsOptions,
+    cors: {
+        origin: config_1.default.API,
+        methods: ["GET", "POST"],
+        credentials: true,
+    },
 });
 app.set("io", io);
 (0, db_1.default)();
