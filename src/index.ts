@@ -19,6 +19,7 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
+console.log(config.API)
 const corsOptions = {
     origin: config.API,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
