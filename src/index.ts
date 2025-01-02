@@ -19,11 +19,31 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
+<<<<<<< HEAD
+=======
+console.log(config.API)
+const corsOptions = {
+    origin: config.API,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
+
+>>>>>>> feature-branch
 const server = http.createServer(app);
+// const io = new Server(server, {
+//     cors: corsOptions,
+// });
 const io = new Server(server, {
     cors: {
+<<<<<<< HEAD
         origin: config.API_URL,
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
+=======
+        origin: config.API,
+        methods: ["GET", "POST"],
+>>>>>>> feature-branch
         credentials: true,
     },
 });

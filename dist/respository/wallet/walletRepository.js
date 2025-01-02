@@ -44,6 +44,7 @@ class WalletRepository {
             const order = await orderModel_1.orders
                 .findById({ _id: orderId })
                 .populate("cartId");
+            console.log(order, 'order');
             if (order) {
                 const cart = order?.cartId;
                 const totalRentalPrice = cart.totalRentalPrice;

@@ -22,10 +22,18 @@ const chatRepository = new chatRepository_1.ChatRepository();
 const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
+// const io = new Server(server, {
+//     cors: corsOptions,
+// });
 const io = new socket_io_1.Server(server, {
     cors: {
+<<<<<<< HEAD
         origin: config_1.default.API_URL,
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
+=======
+        origin: config_1.default.API,
+        methods: ["GET", "POST"],
+>>>>>>> feature-branch
         credentials: true,
     },
 });
