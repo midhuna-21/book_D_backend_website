@@ -3,7 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import morgan from 'morgan';
-import cors from "cors";
+import cors,{CorsOptions} from "cors";
 import dbConnect from "./config/db";
 import userRoutes from "./routes/userRoute";
 import adminRoutes from "./routes/adminRoute";
@@ -19,35 +19,16 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
-<<<<<<< HEAD
-=======
-console.log(config.API)
-const corsOptions = {
-    origin: config.API,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
-
->>>>>>> feature-branch
+let corsOptions:CorsOptions={
+    origin:[config.API_URL!],
+    methods:['GET','POST','PUT','DELETE'],
+    credentials:true
+}
 const server = http.createServer(app);
-// const io = new Server(server, {
-//     cors: corsOptions,
-// });
-const io = new Server(server, {
-    cors: {
-<<<<<<< HEAD
-        origin: config.API_URL,
-        methods: ['GET', 'POST', 'PUT', 'DELETE'],
-=======
-        origin: config.API,
-        methods: ["GET", "POST"],
->>>>>>> feature-branch
-        credentials: true,
-    },
-});
 
+const io = new Server(server, {
+    cors:corsOptions
+});
 app.set("io", io);
 
 dbConnect();
@@ -59,11 +40,17 @@ app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
 
-app.use(cors({
-    origin: config.API_URL,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-}));
+app.use(cors(
+   corsOptions
+));
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5000"); 
+    res.header("Access-Control-Allow-Credentials", "true"); 
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
+  });
+  
 
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
