@@ -18,7 +18,7 @@ const s3Client = new client_s3_1.S3Client({
 exports.s3Client = s3Client;
 const s3Storage = (0, multer_s3_1.default)({
     s3: s3Client,
-    bucket: config_1.default.BUCKET_NAME,
+    bucket: 'bookdwebsite',
     metadata: function (req, file, cb) {
         cb(null, { fieldName: file.fieldname });
     },
