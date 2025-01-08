@@ -5,7 +5,7 @@ const dbConnect = async (): Promise<void> => {
     try {
 
         console.log(config.MONGODB_URI,'mongourl')
-        const mongoURI: any = config.MONGODB_URI!;
+        const mongoURI: any = 'mongodb+srv://krishnamidhuna850:midhunard@cluster0.cajmhf6.mongodb.net/';
         await mongoose.connect(mongoURI);
         console.log("DB Connected");
     } catch (error) {
