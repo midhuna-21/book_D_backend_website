@@ -9,11 +9,11 @@ const multer_s3_1 = __importDefault(require("multer-s3"));
 const client_s3_1 = require("@aws-sdk/client-s3");
 const config_1 = __importDefault(require("../../config/config"));
 const s3Client = new client_s3_1.S3Client({
+    region: "ap-south-1",
     credentials: {
         accessKeyId: config_1.default.ACCESS_KEY || "",
         secretAccessKey: config_1.default.SECRET_ACCESS_KEY || "",
     },
-    region: config_1.default.BUCKET_REGION || "",
 });
 exports.s3Client = s3Client;
 const s3Storage = (0, multer_s3_1.default)({

@@ -22,9 +22,9 @@ const chatRepository = new chatRepository_1.ChatRepository();
 const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
 let corsOptions = {
-    origin: ['https://book-d-frontend-website-m85e.vercel.app'],
+    origin: config_1.default.API_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
+    credentials: true
 };
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
