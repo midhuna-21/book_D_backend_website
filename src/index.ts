@@ -19,6 +19,7 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
+console.log(config.API_URL,'api url')
 let corsOptions:CorsOptions={
     origin:config.API_URL,
     methods:['GET','POST','PUT','DELETE'],
@@ -51,6 +52,6 @@ app.use(cors(
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 
-server.listen(9000, () => {
+server.listen(config.PORT, () => {
     console.log(`Server running at ${config.PORT}`);
 });

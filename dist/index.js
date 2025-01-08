@@ -21,6 +21,7 @@ const socket_connection_1 = require("./sockets/socket-connection");
 const chatRepository = new chatRepository_1.ChatRepository();
 const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
+console.log(config_1.default.API_URL, 'api url');
 let corsOptions = {
     origin: config_1.default.API_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -42,7 +43,7 @@ app.use(express_1.default.static("public/"));
 app.use((0, cors_1.default)(corsOptions));
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
-server.listen(9000, () => {
+server.listen(config_1.default.PORT, () => {
     console.log(`Server running at ${config_1.default.PORT}`);
 });
 //# sourceMappingURL=index.js.map
