@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config()
 
+console.log(process.env.MONGODB_URI,'mogno db uri')
 export default {
    PORT:process.env.PORT,
    MONGODB_URI:process.env.MONGODB_URI,

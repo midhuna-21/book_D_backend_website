@@ -7,6 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const config_1 = __importDefault(require("./config"));
 const dbConnect = async () => {
     try {
+        console.log(config_1.default.MONGODB_URI, 'mongourl');
         const mongoURI = config_1.default.MONGODB_URI;
         await mongoose_1.default.connect(mongoURI);
         console.log("DB Connected");

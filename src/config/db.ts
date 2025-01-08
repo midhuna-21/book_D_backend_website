@@ -3,6 +3,8 @@ import config from "./config";
 
 const dbConnect = async (): Promise<void> => {
     try {
+
+        console.log(config.MONGODB_URI,'mongourl')
         const mongoURI: any = config.MONGODB_URI!;
         await mongoose.connect(mongoURI);
         console.log("DB Connected");
