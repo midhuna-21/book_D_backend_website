@@ -40,7 +40,7 @@ app.use((0, cookie_parser_1.default)());
 app.use((0, morgan_1.default)('dev'));
 app.use(express_1.default.static("public/"));
 (0, socket_connection_1.initializeSocket)(io, chatService, services_1.notificationService);
-app.use((0, cors_1.default)(corsOptions));
+app.use((0, cors_1.default)());
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
 server.listen(config_1.default.PORT, () => {
