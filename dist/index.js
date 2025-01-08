@@ -22,7 +22,7 @@ const chatRepository = new chatRepository_1.ChatRepository();
 const chatService = new chatService_1.ChatService(chatRepository);
 const app = (0, express_1.default)();
 let corsOptions = {
-    origin: 'https://book-d-frontend-website-m85e-igf32w13o.vercel.app/',
+    origin: config_1.default.API_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true

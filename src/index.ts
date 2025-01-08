@@ -20,7 +20,7 @@ const chatService = new ChatService(chatRepository);
 const app = express();
 
 let corsOptions:CorsOptions={
-    origin:'https://book-d-frontend-website-m85e-igf32w13o.vercel.app/',
+    origin:config.API_URL,
     methods:['GET','POST','PUT','DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials:true
