@@ -43,7 +43,7 @@ app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
 
-app.use(cors());
+app.use(cors(corsOptions));
 
 
 app.use("/api/user", userRoutes);
