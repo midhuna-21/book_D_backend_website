@@ -19,18 +19,18 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
-let corsOptions: CorsOptions = {
-    origin: ['https://book-d-frontend-website-m85e.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-};
-
+let corsOptions:CorsOptions={
+    origin:config.API_URL,
+    methods:['GET','POST','PUT','DELETE'],
+    credentials:true
+}
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors:corsOptions,
 });
 app.set("io", io);
+
 
 dbConnect();
 app.use(express.json());
