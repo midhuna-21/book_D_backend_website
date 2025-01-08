@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    " ": "^3.598.0",
     "@aws-sdk/s3-request-presigner": "^3.598.0",
     "aws-sdk": "^2.1642.0",
     "axios": "^1.7.2",
