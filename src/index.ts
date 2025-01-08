@@ -19,15 +19,16 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
-let corsOptions:CorsOptions={
-    origin:[config.API_URL!],
-    methods:['GET','POST','PUT','DELETE'],
-    credentials:true
-}
+let corsOptions: CorsOptions = {
+    origin: ['https://book-d-frontend-website-m85e.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+};
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors:corsOptions
+    cors:corsOptions,
 });
 app.set("io", io);
 
@@ -43,13 +44,7 @@ initializeSocket(io, chatService, notificationService);
 app.use(cors(
    corsOptions
 ));
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5000"); 
-    res.header("Access-Control-Allow-Credentials", "true"); 
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    next();
-  });
+
   
 
 app.use("/api/user", userRoutes);
