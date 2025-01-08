@@ -50,6 +50,6 @@ app.use(cors(
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 
-server.listen(config.PORT, () => {
+server.listen(9000, () => {
     console.log(`Server running at ${config.PORT}`);
 });

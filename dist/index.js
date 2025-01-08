@@ -41,7 +41,7 @@ app.use(express_1.default.static("public/"));
 app.use((0, cors_1.default)(corsOptions));
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
-server.listen(config_1.default.PORT, () => {
+server.listen(9000, () => {
     console.log(`Server running at ${config_1.default.PORT}`);
 });
 //# sourceMappingURL=index.js.map
