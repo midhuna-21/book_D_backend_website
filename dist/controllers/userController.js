@@ -308,6 +308,7 @@ const updateUserProfileImage = async (req, res) => {
         }
         let imageUrl = file.location;
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
+        console.log(user, 'user');
         return res.status(200).json({ user });
     }
     catch (error) {

@@ -329,6 +329,7 @@ const updateUserProfileImage = async (
     res: Response
 ) => {
     try {
+     
         const userId = req.userId!;
         const userExist: IUser | null = await userService.getUserById(userId);
         if (!userExist) {
@@ -341,6 +342,7 @@ const updateUserProfileImage = async (
         }
         let imageUrl: string = file.location;
         const user = await userService.getUpdateProfileImage(userId, imageUrl);
+        console.log(user,'user')
         return res.status(200).json({ user });
     } catch (error: any) {
         console.error("Error updating user:", error.message);

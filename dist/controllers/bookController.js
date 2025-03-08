@@ -28,8 +28,10 @@ const fetchGenres = async (req, res) => {
 exports.fetchGenres = fetchGenres;
 const fetchGenresWithAvailableBooks = async (req, res) => {
     try {
+        console.log('ivde enthelum happening');
         const userId = req.userId;
         const genres = await index_1.bookService.getGenresWithAvailableBooks(userId);
+        console.log(genres, 'geners ate here ');
         return res.status(200).json(genres);
     }
     catch (error) {
@@ -159,6 +161,7 @@ const createBookLend = async (req, res) => {
 exports.createBookLend = createBookLend;
 const updateLentBookDetails = async (req, res) => {
     try {
+        console.log(req.files, 'files images book editing');
         const { bookTitle, description, author, publisher, publishedYear, genre, rentalFee, extraFee, quantity, street, city, district, state, pincode, maxDistance, maxDays, minDays, latitude, longitude, } = req.body;
         const { bookId } = req.params;
         if (!req.userId) {

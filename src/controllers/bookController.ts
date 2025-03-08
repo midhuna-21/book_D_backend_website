@@ -33,10 +33,12 @@ const fetchGenresWithAvailableBooks = async (
     res: Response
 ) => {
     try {
+        console.log('ivde enthelum happening')
         const userId = req.userId!;
         const genres: IGenre[] = await bookService.getGenresWithAvailableBooks(
             userId
         );
+        console.log(genres,'geners ate here ')
         return res.status(200).json(genres);
     } catch (error: any) {
         console.log(error.message);
@@ -214,6 +216,8 @@ const updateLentBookDetails = async (
     res: Response
 ) => {
     try {
+console.log(req.files,'files images book editing')
+
         const {
             bookTitle,
             description,
@@ -243,12 +247,14 @@ const updateLentBookDetails = async (
                 .json({ message: "User ID not found in request" });
         }
         const userId = req.userId;
+
         let { images } = req.body;
         if (typeof images === "string") {
             images = [images];
         }
         images = images || [];
 
+        
         let finalImages: string[] = [...images];
 
         const files = req.files as CustomMulterFile[];

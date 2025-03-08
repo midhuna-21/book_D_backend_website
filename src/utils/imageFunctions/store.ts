@@ -13,7 +13,7 @@ const s3Client = new S3Client({
 
 const s3Storage = multerS3({
     s3: s3Client,
-    bucket:'bookdwebsite',
+    bucket:'bookim',
     metadata: function (req, file, cb) {
         cb(null, { fieldName: file.fieldname });
     },

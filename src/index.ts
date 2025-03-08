@@ -19,13 +19,21 @@ const chatService = new ChatService(chatRepository);
 
 const app = express();
 
-console.log(config.API_URL,'api url')
-let corsOptions:CorsOptions={
-    origin:config.API_URL,
-    methods:['GET','POST','PUT','DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials:true
+const corsOptions = {
+    origin: 'http://localhost:5000',
+    credentials: true,
+    optionSuccessStatus: 200
 }
+
+app.use(cors(corsOptions));
+
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', "http://localhost:5000");
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    next();
+});
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -43,7 +51,7 @@ app.use(express.static("public/"));
 
 initializeSocket(io, chatService, notificationService);
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions)); 
 
 
 app.use("/api/user", userRoutes);
